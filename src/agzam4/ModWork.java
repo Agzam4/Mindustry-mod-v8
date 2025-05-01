@@ -12,6 +12,7 @@ import arc.func.Cons2;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.graphics.Pixmaps;
+import arc.input.KeyBind;
 import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.scene.style.Drawable;
@@ -110,6 +111,8 @@ public class ModWork {
 			} else {
 				key = KeyCode.all[bind];
 			}
+			
+			KeyBind.add(keybind, def, AgzamMod.mod.name);
 		}
 
 		void put() {
@@ -291,6 +294,10 @@ public class ModWork {
 		return Core.bundle.get("agzam4mod." + string, "ERR TO LOAD TEXT");
 	}
 
+	public static String settingName(String string) {
+		return "agzam4mod.settings." + string;
+	}
+	
 	public static boolean setting(String string) {
 		return Core.settings.getBool("agzam4mod.settings." + string, true);
 	}
@@ -774,7 +781,7 @@ public class ModWork {
 	public static void getRequired(ConstructBuild cb, Cons2<Item, Integer> amount) {
 		for (int i = 0; i < cb.current.requirements.length; i++) {
 			ItemStack stack = cb.current.requirements[i];
-			amount.get(stack.item, (int) ((stack.amount - (stack.amount*cb.progress))*Vars.state.rules.buildCostMultiplier));
+			amount.get(stack.item, (int) ((stack.amount*(1f-cb.progress))*Vars.state.rules.buildCostMultiplier));
 		}
 	}
 	

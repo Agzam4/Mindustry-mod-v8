@@ -22,7 +22,6 @@ public class MyIndexer {
 		for (int i = 0; i < ores.length; i++) {
 			ores[i] = new Seq<Tile>();
 		}
-
         Events.on(WorldLoadEndEvent.class, e -> {
     		for (int i = 0; i < ores.length; i++) {
     			ores[i].clear();
@@ -39,7 +38,6 @@ public class MyIndexer {
         		}
         	}
         });
-        
 
         Events.on(TilePreChangeEvent.class, e -> {
         	if(e.tile == null) return;

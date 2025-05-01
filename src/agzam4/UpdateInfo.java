@@ -24,7 +24,7 @@ public class UpdateInfo {
 	
 	public static void check() {
 		Log.info("Checking mod updates");
-		Http.get(Vars.ghApi + "/repos/Agzam4/Mindustry-mod/releases", res -> {
+		Http.get(Vars.ghApi + "/repos/Agzam4/Mindustry-mod-v8/releases", res -> {
 			String version = Vars.mods.getMod("agzam4mod").meta.version;
 			if(version == null) version = "1.0";
 			

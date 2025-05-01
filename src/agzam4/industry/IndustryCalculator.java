@@ -3,7 +3,6 @@ package agzam4.industry;
 import static agzam4.ModWork.bs;
 import static agzam4.ModWork.gs;
 import static agzam4.ModWork.rs;
-import static mindustry.Vars.state;
 
 import agzam4.ModWork;
 import agzam4.MyDraw;
@@ -49,7 +48,6 @@ import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.consumers.Consume;
-import mindustry.world.modules.ItemModule;
 
 public class IndustryCalculator {
 
@@ -58,7 +56,6 @@ public class IndustryCalculator {
 	
 	private static final Seq<Block>[] crafters = createCrafters();
 	private static final Seq<Block>[] liquidCrafters = createLiquidCrafters();
-	
 	
 	public static boolean[] hasLiquid = new boolean[Vars.content.liquids().size]; // that can be got using pumps
 	
@@ -86,18 +83,6 @@ public class IndustryCalculator {
 			}
 		});
 	}
-	
-//	private static final Block[] drills = {
-//			Blocks.mechanicalDrill,
-//			Blocks.pneumaticDrill,
-//			Blocks.laserDrill,
-//			Blocks.blastDrill
-//	};
-//
-//	private static final boolean[] withWater = {
-//			false, false, true, true
-//	};
-	
 	
 	public static BuildTooltip buildTooltip = new BuildTooltip();
 	
@@ -133,8 +118,8 @@ public class IndustryCalculator {
 			Block block = building.block;
 			if(building instanceof ConstructBuild) {
 				ConstructBuild cb = (ConstructBuild) building;
+				buildTooltip.line(cb.current, "[white]" + cb.current.localizedName.toUpperCase());
 				ModWork.getRequired(cb, (item, amount) -> {
-					buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
 					buildTooltip.line(item, "[white]" + amount);
 				});
 			}
@@ -163,11 +148,8 @@ public class IndustryCalculator {
 					});
 				}
 			}
-			
-			
 			Draw.z(Layer.playerName);
 			buildTooltip.draw(mouseX, mouseY);
-			
 //			MyDraw.drawTooltip(info.toString(), mouseX, mouseY);
 		}
 	}

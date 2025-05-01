@@ -99,7 +99,7 @@ public class PlayerAI {
 			requireUpdateCamera = false;
 		}
 
-        if(ModWork.acceptKey()) camera.add(Tmp.v1.setZero().add(Core.input.axis(Binding.move_x), Core.input.axis(Binding.move_y)).nor()
+        if(ModWork.acceptKey()) camera.add(Tmp.v1.setZero().add(Core.input.axis(Binding.moveX), Core.input.axis(Binding.moveY)).nor()
 				.scl(panSpeed() * Time.delta));
 		
         if(input.keyDown(Binding.pan) && !scene.hasField() && !scene.hasDialog() && ModWork.acceptKey()){

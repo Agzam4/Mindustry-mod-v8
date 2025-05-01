@@ -3,18 +3,14 @@ package agzam4;
 import arc.ApplicationListener;
 import arc.Core;
 import arc.Events;
-import arc.KeyBinds.Section;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.Texture.TextureFilter;
-import arc.graphics.g2d.Bloom;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureAtlas.AtlasRegion;
 import arc.graphics.g2d.TextureRegion;
-import arc.input.InputDevice.DeviceType;
 import arc.input.KeyCode;
 import arc.math.Mathf;
-import arc.scene.event.ClickListener;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.ui.Dialog;
@@ -25,15 +21,11 @@ import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
-import mindustry.content.UnitTypes;
-import mindustry.ctype.ContentType;
-import mindustry.entities.Units;
 import mindustry.game.EventType.ClientServerConnectEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.TapEvent;
 import mindustry.game.EventType.Trigger;
 import mindustry.game.EventType.UnitDamageEvent;
-import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.gen.Icon;
 import mindustry.gen.Iconc;
@@ -42,12 +34,15 @@ import mindustry.mod.Mod;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
+import mindustry.ui.dialogs.KeybindDialog;
 import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable;
+import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable.CheckSetting;
 import mindustry.world.meta.BuildVisibility;
 
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
 import agzam4.industry.IndustryCalculator;
+import agzam4.ui.ModSettingsDialog;
 import agzam4.uiOverride.CustomChatFragment;
 import agzam4.uiOverride.UiOverride;
 import agzam4.utils.PlayerAI;
@@ -68,13 +63,13 @@ public class AgzamMod extends Mod {
 	int pauseRandomNum = 0;
 	String pingText = "@Agzam 000";
 
-	private boolean afkAvalible;
+	public static boolean afkAvalible;
 	
 	private boolean debug = false; // FIXME
 	
 	public static long updates = 0;
 	
-	LoadedMod mod;
+	public static LoadedMod mod;
 	
 	@Override
 	public void init() {
@@ -142,107 +137,15 @@ public class AgzamMod extends Mod {
             
             
         });
-		
+
 		boolean needUpdate = UpdateInfo.needUpdate();
 		
-		Cons<SettingsTable> builder = settingsTable -> {
-			settingsTable.defaults().left(); // .size(350f, 800f)
-			
-			Table table = new Table();
-			
-			if(needUpdate) {
-				table.add(ModWork.bungle("need-update")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
-				
-				table.button("@mods.browser.reinstall", Icon.download, () -> UpdateInfo.githubImportMod(mod.getRepo(), null));
-			}
-			
-			
-			addCategory(table, "unlock");
-            
-			unlockContent = table.button(ModWork.bungle("settings.unlock-content"), Icon.lockOpen, Styles.defaultt, () -> {
-				unlockDatabaseContent();
-				if(unlockContent != null) unlockContent.disabled(true);
-			}).growX().pad(10).padBottom(4);
-			table.row();
-			
-			unlockBlocks = table.button(ModWork.bungle("settings.unlock-blocks"), Icon.lockOpen, Styles.defaultt, () -> {
-				unlockBlocksContent();
-				if(unlockBlocks != null) unlockBlocks.disabled(true);
-			}).growX().pad(10).padBottom(4);
-			table.row();
-
-			addCategory(table, "cursors");
-            addCheck(table, "cursors-tracking");
-
-			addCategory(table, "units-and-buildings");
-            addCheck(table, "show-turrets-range");
-            addCheck(table, "show-build-health");
-            addCheck(table, "show-units-health");
-            addCheck(table, "wave-viewer");
-			addCheck(table, "enemies-paths", false, b -> ClientPathfinder.enabled = b);
-			addKeyBind(table, KeyBinds.hideUnits);
-			addKeyBind(table, KeyBinds.slowMovement);
-
-			addCategory(table, "calculations");
-			addCheck(table, "show-blocks-tooltip");
-			addCheck(table, "selection-calculations");
-			addCheck(table, "buildplans-calculations");
-			
-			addKeyBind(table, KeyBinds.selection);
-			addKeyBind(table, KeyBinds.clearSelection);
-			
-			addCategory(table, "afk");
-			
-			try {
-				afkAvalible = true;
-				if(Awt.avalible && !Vars.mobile) {
-					table.field(getCustomAfk(), t -> {
-						Core.settings.put("agzam4mod.afk-start", t);
-					}).tooltip(ModWork.bungle("afk.automessage-start-tooltip")).width(Core.scene.getWidth()/2f).row();
-				} else {
-					afkAvalible = false;
-			        table.add(ModWork.bungle("afk-err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
-				}
-			} catch (Throwable e) {
-				afkAvalible = false;
-		        table.add(ModWork.bungle("afk-err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
-			}
-			
-            settingsTable.add(table);
-            settingsTable.row();
-//
-			settingsTable.name = ModWork.bungle("settings.name");
-			settingsTable.visible = true;
-			
-			addCategory(table, "utils");
-			addKeyBind(table, KeyBinds.openUtils);
-			
-			addCategory(table, "custom-ui");
-			addCheck(table, "custom-chat-fragment", b -> UiOverride.set());
-			addCheck(table, "outline-chat", b -> CustomChatFragment.font = b ? Fonts.outline : Fonts.def);
-			
-
-			addCategory(table, "report-bugs");
-			table.button(Iconc.github + " Github", Styles.defaultt, () -> {
-	            if(!Core.app.openURI("https://github.com/Agzam4")){
-	                Vars.ui.showErrorMessage("@linkfail");
-	                Core.app.setClipboardText("https://github.com/Agzam4");
-	            }
-			}).growX().pad(20).padBottom(4);
-			table.row();	
-			table.button(Iconc.play + " YouTube", Styles.defaultt, () -> {
-	            if(!Core.app.openURI("https://www.youtube.com/@agzam4/")){
-	            	Vars.ui.showErrorMessage("@linkfail");
-	                Core.app.setClipboardText("https://www.youtube.com/@agzam4/");
-	            }
-			}).growX().pad(20).padBottom(4);
-			table.row();
-		};
+//		Cons<SettingsTable> builder = settingsTable -> {};
 		
 		if(needUpdate) {
-			Vars.ui.settings.addCategory(ModWork.bungle("settings.name") + " [red]" + Iconc.warning, Icon.wrench, builder);
+			Vars.ui.settings.addCategory(ModWork.bungle("settings.name") + " [red]" + Iconc.warning, Icon.wrench, ModSettingsDialog.builder);
 		} else {
-			Vars.ui.settings.addCategory(ModWork.bungle("settings.name"), Icon.wrench, builder);
+			Vars.ui.settings.addCategory(ModWork.bungle("settings.name"), Icon.wrench, ModSettingsDialog.builder);
 		}
 
 		Events.on(TapEvent.class, e -> {
@@ -375,31 +278,32 @@ public class AgzamMod extends Mod {
 		}
 	}
 	
-	private String getCustomAfk() {
+	public static String getCustomAfk() {
 		String def = ModWork.bungle("afk.automessage");
 		String str = Core.settings.getString("agzam4mod.afk-start", def);
 		if(str.isEmpty()) return def;
 		return str;
 	}
 
+	@Deprecated
 	private void addKeyBind(Table table, final KeyBinds keybind) {
-        Table hotkeyTable = new Table();
-        hotkeyTable.add().height(10);
-        hotkeyTable.row();
-        hotkeyTable.add(ModWork.bungle("settings.keybinds." + keybind.keybind), Color.white).left().padRight(40).padLeft(8);
-        hotkeyTable.label(() -> keybind.key.toString()).color(Pal.accent).left().minWidth(90).padRight(20);
-        hotkeyTable.button("@settings.rebind", Styles.defaultt, () -> {
-        	if(ModWork.hasKeyBoard()) {
-            	openDialog(keybind);
-        	}
-        }).width(130f);
-        hotkeyTable.button("@settings.resetKey", Styles.defaultt, () -> {
-        	keybind.key = keybind.def;
-        	keybind.put();
-        }).width(130f).pad(2f).padLeft(4f);
-        hotkeyTable.row();
-        table.add(hotkeyTable);
-        table.row();		
+//        Table hotkeyTable = new Table();
+//        hotkeyTable.add().height(10);
+//        hotkeyTable.row();
+//        hotkeyTable.add(ModWork.bungle("settings.keybinds." + keybind.keybind), Color.white).left().padRight(40).padLeft(8);
+//        hotkeyTable.label(() -> keybind.key.toString()).color(Pal.accent).left().minWidth(90).padRight(20);
+//        hotkeyTable.button("@settings.rebind", Styles.defaultt, () -> {
+//        	if(ModWork.hasKeyBoard()) {
+//            	openDialog(keybind);
+//        	}
+//        }).width(130f);
+//        hotkeyTable.button("@settings.resetKey", Styles.defaultt, () -> {
+//        	keybind.key = keybind.def;
+//        	keybind.put();
+//        }).width(130f).pad(2f).padLeft(4f);
+//        hotkeyTable.row();
+//        table.add(hotkeyTable);
+//        table.row();		
 	}
 
 	private void addCategory(Table table, String category) {
@@ -407,20 +311,13 @@ public class AgzamMod extends Mod {
 		table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();		
 	}
 
-	private void addCheck(Table table, String settings) {
-		addCheck(table, settings, null);
-	}
-
-	private void addCheck(Table table, String settings, Cons<Boolean> listener) {
-		addCheck(table, settings, true, listener);
-	}
-	
-	private void addCheck(Table table, String settings, boolean def, Cons<Boolean> listener) {
-		table.check(ModWork.bungle("settings." + settings), ModWork.settingDef(settings, def), b -> {
-			ModWork.setting(settings, b);
-			if(listener != null) listener.get(b);
-		}).colspan(4).pad(10).padBottom(4).tooltip(ModWork.bungle("settings-tooltip." + settings)).row();;
-	}
+//	private void addCheck(Table table, String settings) {
+//		addCheck(table, settings, null);
+//	}
+//
+//	private void addCheck(Table table, String settings, Cons<Boolean> listener) {
+//		addCheck(table, settings, true, listener);
+//	}
 	
 	private void createPingText(String stripName) {
 		pingText = ("@" + stripName + " " + Mathf.random(100, 999)).toLowerCase();
@@ -430,18 +327,6 @@ public class AgzamMod extends Mod {
 		long afk = System.nanoTime()-pauseStartTime;
 		
 		return afk / Time.nanosPerMilli / 1000;
-	}
-
-	private void unlockDatabaseContent() {
-		Vars.content.units().each(u -> u.hidden = false);
-		Vars.content.items().each(i -> i.hidden = false);
-		Vars.content.liquids().each(l -> l.hidden = false);		
-	}
-	
-	private void unlockBlocksContent() {
-		Vars.content.blocks().each(b -> {
-			b.buildVisibility = BuildVisibility.shown;
-		});
 	}
 
 //	private float megaAccel, megaDragg, megaSpeed;
@@ -480,44 +365,43 @@ public class AgzamMod extends Mod {
 		}
 	}
 
-	Section section = Core.keybinds.getSections()[0];
-    
-	private void openDialog(final KeyBinds keybind) {
-		Dialog keybindDialog = new Dialog(Core.bundle.get("keybind.press"));
-
-		keybindDialog.titleTable.getCells().first().pad(4);
-			
-        if(section.device.type() == DeviceType.keyboard){
-
-        	keybindDialog.addListener(new InputListener(){
-                @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
-                    if(Core.app.isAndroid()) return false;
-                    rebind(keybindDialog, keybind, button);
-                    return false;
-                }
-
-                @Override
-                public boolean keyDown(InputEvent event, KeyCode button){
-                	keybindDialog.hide();
-                    if(button == KeyCode.escape) return false;
-                    rebind(keybindDialog, keybind, button);
-                    return false;
-                }
-
-                @Override
-                public boolean scrolled(InputEvent event, float x, float y, float amountX, float amountY){
-                    keybindDialog.hide();
-                    rebind(keybindDialog, keybind, KeyCode.scroll);
-                    return false;
-                }
-            });
-        }
-
-        keybindDialog.show();
-        Time.runTask(1f, () -> keybindDialog.getScene().setScrollFocus(keybindDialog));
-    }
-	
+//	Section section = Core.keybinds.getSections()[0];
+//	private void openDialog(final KeyBinds keybind) {
+//		Dialog keybindDialog = new Dialog(Core.bundle.get("keybind.press"));
+//
+//		keybindDialog.titleTable.getCells().first().pad(4);
+//			
+//        if(section.device.type() == DeviceType.keyboard){
+//
+//        	keybindDialog.addListener(new InputListener(){
+//                @Override
+//                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+//                    if(Core.app.isAndroid()) return false;
+//                    rebind(keybindDialog, keybind, button);
+//                    return false;
+//                }
+//
+//                @Override
+//                public boolean keyDown(InputEvent event, KeyCode button){
+//                	keybindDialog.hide();
+//                    if(button == KeyCode.escape) return false;
+//                    rebind(keybindDialog, keybind, button);
+//                    return false;
+//                }
+//
+//                @Override
+//                public boolean scrolled(InputEvent event, float x, float y, float amountX, float amountY){
+//                    keybindDialog.hide();
+//                    rebind(keybindDialog, keybind, KeyCode.scroll);
+//                    return false;
+//                }
+//            });
+//        }
+//
+//        keybindDialog.show();
+//        Time.runTask(1f, () -> keybindDialog.getScene().setScrollFocus(keybindDialog));
+//    }
+//	
 	void rebind(Dialog rebindDialog, KeyBinds keyBinds, KeyCode newKey){
         rebindDialog.hide();
         keyBinds.key = newKey;

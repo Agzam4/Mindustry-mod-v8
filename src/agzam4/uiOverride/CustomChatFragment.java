@@ -88,7 +88,7 @@ public class CustomChatFragment extends Table {
 				toggle();
 			}
 			if(shown){
-				if(input.keyTap(Binding.chat_history_prev) && historyPos < history.size - 1){
+				if(input.keyTap(Binding.chatHistoryPrev) && historyPos < history.size - 1){
 					if(historyPos == 0){
 						String message = chatfield.getText();
 						if(!message.isEmpty()) {
@@ -98,14 +98,14 @@ public class CustomChatFragment extends Table {
 					historyPos++;
 					updateChat();
 				}
-				if(input.keyTap(Binding.chat_history_next) && historyPos > 0){
+				if(input.keyTap(Binding.chatHistoryNext) && historyPos > 0){
 					historyPos--;
 					updateChat();
 				}
-				if(input.keyTap(Binding.chat_mode)){
+				if(input.keyTap(Binding.chatMode)){
 					nextMode();
 				}
-				scrollPos = (int)Mathf.clamp(scrollPos + input.axis(Binding.chat_scroll), 0, Math.max(0, messages.size - messagesShown));
+				scrollPos = (int)Mathf.clamp(scrollPos + input.axis(Binding.chatScroll), 0, Math.max(0, messages.size - messagesShown));
 			}
 		});
 	}
@@ -143,9 +143,9 @@ public class CustomChatFragment extends Table {
 	}
 
 	public void clearMessages(){
-		messages.clear();
-		history.clear();
-		history.insert(0, "");
+//		messages.clear();
+//		history.clear();
+		if(history.isEmpty()) history.insert(0, "");
 	}
 
 	private void setup(){
