@@ -49,8 +49,7 @@ public class PlayerUtils {
             
             t.button(Blocks.payloadSource.emoji() + " " + ModWork.bungle("dialog.utils.unit-spawn"), Styles.defaultt, () -> {
             	UnitSpawner.show();
-            }).growX().pad(10).padBottom(4).wrapLabel(false).disabled(b -> (ModWork.isNetGame() && Vars.net.client()))
-            .row();
+            }).growX().pad(10).padBottom(4).wrapLabel(false).disabled(b -> !UnitSpawner.avaliable()).row();
             
             t.check(UnitTypes.mono.emoji() + " " + ModWork.bungle("dialog.utils.player-ai"), PlayerAI.enabled, b -> PlayerAI.enabled = b)
             .growX().pad(10).padBottom(4).wrapLabel(false).row();

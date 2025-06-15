@@ -1,8 +1,5 @@
 package agzam4;
 
-import static mindustry.Vars.net;
-import static mindustry.Vars.state;
-
 import java.lang.reflect.Field;
 
 import arc.Core;
@@ -21,11 +18,9 @@ import arc.struct.ObjectIntMap;
 import arc.struct.Seq;
 import arc.util.Strings;
 import mindustry.Vars;
-import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.Planets;
 import mindustry.core.UI;
-import mindustry.entities.bullet.SpaceLiquidBulletType;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.WorldLoadEndEvent;
 import mindustry.gen.Building;
@@ -34,7 +29,6 @@ import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
-import mindustry.type.Planet;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.units.Reconstructor;
@@ -47,7 +41,6 @@ import mindustry.world.consumers.ConsumeItems;
 import mindustry.world.consumers.ConsumeLiquid;
 import mindustry.world.consumers.ConsumeLiquids;
 import mindustry.world.consumers.ConsumePower;
-import mindustry.world.modules.ItemModule;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.ConstructBlock.ConstructBuild;
@@ -291,32 +284,42 @@ public class ModWork {
 	}
 
 	public static String bungle(String string) {
-		return Core.bundle.get("agzam4mod." + string, "ERR TO LOAD TEXT");
+		return Core.bundle.get("agzam4mod." + string, "[red]??" + string + "??[]");
 	}
 
 	public static String settingName(String string) {
 		return "agzam4mod.settings." + string;
 	}
-	
+
 	public static boolean setting(String string) {
 		return Core.settings.getBool("agzam4mod.settings." + string, true);
 	}
+
 	
 	public static boolean settingDef(String string, boolean def) {
 		return Core.settings.getBool("agzam4mod.settings." + string, def);
 	}
-	
+
 	public static void setting(String string, boolean value) {
 		Core.settings.put("agzam4mod.settings." + string, value);
 	}
+
 	
 	public static void setting(String string, float value) {
 		Core.settings.put("agzam4mod.settings." + string, value);
 	}
-	
 	public static float settingFloat(String string, float def) {
 		return Core.settings.getFloat("agzam4mod.settings." + string, def);
 	}
+	
+
+	public static void setting(String string, String value) {
+		Core.settings.put("agzam4mod.settings." + string, value);
+	}
+	public static String settingDef(String string, String def) {
+		return Core.settings.getString("agzam4mod.settings." + string, def);
+	}
+	
 
 	public static String strip(String name) {
 		return Strings.stripGlyphs(Strings.stripColors(name));
@@ -348,7 +351,7 @@ public class ModWork {
 			{"V", "\u0412"},
 			{"W", "\u0412"},
 			{"X", "\u0425"},
-			{"Y", "\u0423"},
+			{"Y", "\u0418"},
 			{"Z", "\u0417"},
 	};
 	

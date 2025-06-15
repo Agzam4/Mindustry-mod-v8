@@ -43,7 +43,6 @@ import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
 import agzam4.industry.IndustryCalculator;
 import agzam4.ui.ModSettingsDialog;
-import agzam4.uiOverride.CustomChatFragment;
 import agzam4.uiOverride.UiOverride;
 import agzam4.utils.PlayerAI;
 import agzam4.utils.PlayerUtils;
@@ -51,19 +50,24 @@ import agzam4.utils.ProcessorGenerator;
 import agzam4.utils.UnitSpawner;
 
 public class AgzamMod extends Mod {
+	
+	
+	/**
+	 * TODO:
+	 * [V] Range only for enemies team fix
+	 * [V] Hide unit spawn on servers
+	 * [V] Words list for ping
+	 * [V] Auto-enable AFK mode
+	 * [V] Colored text
+	 * Pixelisation fix
+	 */
 
 	public static boolean hideUnits;
 	private static UnitTextures[] unitTextures;
 	private static TextureRegion minelaser, minelaserEnd;
 	private Cell<TextButton> unlockContent = null, unlockBlocks = null;
-
-	private boolean isPaused = false;
-	private long pauseStartTime = System.nanoTime();
 	
 	int pauseRandomNum = 0;
-	String pingText = "@Agzam 000";
-
-	public static boolean afkAvalible;
 	
 	private boolean debug = false; // FIXME
 	
@@ -81,6 +85,7 @@ public class AgzamMod extends Mod {
 //		Vars.netServer.admins.kickedIPs
 //		Vars.player.unit().cap();
 		mod = Vars.mods.getMod("agzam4mod");
+		Afk.init();
 		ClientPathfinder.init();
 		MyFonts.load();
 		MyIndexer.init();
@@ -131,11 +136,8 @@ public class AgzamMod extends Mod {
                 		PlayerUtils.show();
                 	}
                 }
-
                 return super.keyDown(event, keyCode);
             }
-            
-            
         });
 
 		boolean needUpdate = UpdateInfo.needUpdate();
@@ -191,52 +193,7 @@ public class AgzamMod extends Mod {
 			DamageNumbers.unitDamageEvent(e);
 		});
 		
-		Events.on(PlayerChatEvent.class, e -> {
-			if(!afkAvalible) return;
-			if(!Awt.avalible) return;
-			if(!ModWork.setting("afk-ping")) return;
-			if(e.message == null) return;	
-			if(!isPaused) return;
-			if(e.player == null) return;
-			if(Vars.player == null) return;
-			if(e.player.plainName().equals(Vars.player.plainName())) return;
-
-			String stripName = ModWork.strip(Vars.player.name).replaceAll(" ", "_");
-			String ruName = ModWork.toRus(stripName);
-			
-			long afk = getAfkTimeInSec();
-			if(afk >= 10) {
-				String msg = Strings.stripColors(e.message).toLowerCase();
-				if(msg.startsWith(pingText)) {
-					msg = msg.substring(pingText.length());
-					createPingText(stripName);
-					if(Awt.message(Strings.stripColors(e.player.name()) + ": " + msg)) {
-				        Call.sendChatMessage("[lightgray]" + ModWork.bungle("afk.message-send"));
-					} else {
-				        Call.sendChatMessage("[lightgray]" + ModWork.bungle("afk.message-not-send"));
-					}
-					return;
-				}
-				if(msg.indexOf(ruName) != -1 || msg.indexOf(stripName.toLowerCase()) != -1) {
-					createPingText(stripName);
-					Awt.beep();
-					String time = Mathf.floor(afk/60) + " " + ModWork.bungle("afk.min");
-					if(afk < 60) {
-						time = afk + " " + ModWork.bungle("afk.sec");
-					}
-					String text = "[lightgray]" + getCustomAfk()
-							.replaceAll("@name", Strings.stripColors(stripName))
-							.replaceAll("@time", time + "");
-					if(text.indexOf("@pingText") == -1) {
-						text += ModWork.bungle("afk.automessage-end").replaceFirst("@pingText", pingText);
-					} else {
-						text = text.replaceAll("@pingText", pingText);
-					}
-					Call.sendChatMessage(text); 
-					//"[lightgray]Похоже Agzam в АФК уже " + time + ". Напиши [orange]" + pingText + " ваше_сообщение[], чтобы отправить ему сообщение");
-				}
-			}
-		});
+		
 		
 		// Check if player in net game to save traffic and don't get err
 		Events.on(ClientServerConnectEvent.class, e -> { 
@@ -250,23 +207,11 @@ public class AgzamMod extends Mod {
 		if(debug) {
 			MobileUI.build();
 		}
+		
 		if(Vars.mobile) {
 			MobileUI.build();
 		} else {
-			Core.app.addListener(new ApplicationListener() {
-
-				@Override
-				public void pause() {
-					isPaused = true;
-					pauseStartTime = Time.nanos();
-				}
 				
-				@Override
-				public void resume() {
-					isPaused = false;
-				}
-				
-			});	
 		}
 			
 
@@ -278,12 +223,6 @@ public class AgzamMod extends Mod {
 		}
 	}
 	
-	public static String getCustomAfk() {
-		String def = ModWork.bungle("afk.automessage");
-		String str = Core.settings.getString("agzam4mod.afk-start", def);
-		if(str.isEmpty()) return def;
-		return str;
-	}
 
 	@Deprecated
 	private void addKeyBind(Table table, final KeyBinds keybind) {
@@ -319,15 +258,6 @@ public class AgzamMod extends Mod {
 //		addCheck(table, settings, true, listener);
 //	}
 	
-	private void createPingText(String stripName) {
-		pingText = ("@" + stripName + " " + Mathf.random(100, 999)).toLowerCase();
-	}
-
-	private long getAfkTimeInSec() {
-		long afk = System.nanoTime()-pauseStartTime;
-		
-		return afk / Time.nanosPerMilli / 1000;
-	}
 
 //	private float megaAccel, megaDragg, megaSpeed;
 
@@ -417,7 +347,7 @@ public class AgzamMod extends Mod {
 		lockUnit = b;
 	}
 
-	static TextureRegion sprite(String name) {
+	public static TextureRegion sprite(String name) {
 		return Core.atlas.find("agzam4mod-" + name);
 	}
 	

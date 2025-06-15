@@ -225,7 +225,7 @@ public class UnitSpawner {
 				ModWork.settingFloat("mobile-payloadspawn-y", 0)
 				);
 		
-		mainTable.visible(() -> visible && ModWork.acceptKeyNoFocus());
+		mainTable.visible(() -> visible && ModWork.acceptKeyNoFocus() && avaliable());
 		mainTable.exited(() -> Core.scene.setScrollFocus(null));
 		
 		//ItemSelection.
@@ -238,6 +238,10 @@ public class UnitSpawner {
 		);
 		
 		
+	}
+	
+	public static boolean avaliable() {
+		return !(ModWork.isNetGame() && Vars.net.client());
 	}
 	
 	private static Cell<CrossImageButton> disableButton(Table container, String name, Runnable listener) {

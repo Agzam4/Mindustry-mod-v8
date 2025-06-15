@@ -13,6 +13,7 @@ import arc.Core;
 import arc.Events;
 import arc.Input.TextInput;
 import arc.func.Boolp;
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Font;
@@ -27,6 +28,7 @@ import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.Nullable;
 import arc.util.Reflect;
 import arc.util.Time;
 import mindustry.Vars;
@@ -39,6 +41,18 @@ import mindustry.ui.Fonts;
 public class CustomChatFragment extends Table {
 
 	private static final int messagesShown = 10;
+
+	public static final Seq<Color> messageColors = loadColors();
+	
+	private static Seq<Color> loadColors() {
+		Seq<Color> pal = new Seq<Color>();
+		String[] colors = ModWork.settingDef("messages-gradient", "").split(" ");
+		for (String color : colors) {
+			if(color.isEmpty()) continue;
+			pal.add(Color.valueOf(color));
+		}
+		return pal;
+	}
 
 	private Seq<String> messages = new Seq<>();
 	private TextField chatfield;
@@ -259,9 +273,23 @@ public class CustomChatFragment extends Table {
 		if(message.isEmpty()) return;
 
 		history.insert(1, message);
-
-		message = mode.normalizedPrefix() + message;
-
+		
+		if(messageColors.size == 0 || message.startsWith("/")) message = mode.normalizedPrefix() + message;
+		else {
+			StringBuilder msg = new StringBuilder(mode.normalizedPrefix());
+			int lastColor = Color.white.rgb888();
+			for (int i = 0; i < message.length(); i++) {
+				Color color = messageColors.get(i*messageColors.size/message.length());
+				if(color.rgb888() != lastColor) {
+					lastColor = color.rgb888();
+					msg.append("[#");
+					msg.append(color.toString());
+					msg.append("]");
+				}
+				msg.append(message.charAt(i));
+			}
+			message = msg.toString();
+		}
 		Events.fire(new ClientChatEvent(message));
 		Call.sendChatMessage(message);
 	}

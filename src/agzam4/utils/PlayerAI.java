@@ -5,6 +5,7 @@ import static arc.Core.scene;
 import static mindustry.Vars.control;
 
 import agzam4.MyIndexer;
+import agzam4.Afk;
 import agzam4.ModWork;
 import agzam4.ModWork.KeyBinds;
 import arc.Core;
@@ -51,7 +52,7 @@ public class PlayerAI {
 			requireUpdateCamera = true;
 			return;
 		}
-		if(enabled && camera != null && !Vars.mobile) {
+		if(enabled() && camera != null && !Vars.mobile) {
 			Core.camera.position.set(camera);
 		}
 	}
@@ -84,8 +85,12 @@ public class PlayerAI {
 	public static float panScale = 0.005f;
 	
 	
+	public static boolean enabled() {
+		return enabled || (Afk.autoAI && Afk.isAfk());
+	}
+	
 	public static void updatePlayer() {
-		if(!enabled) {
+		if(!enabled()) {
 			requireUpdateCamera = true;
 			return;
 		}

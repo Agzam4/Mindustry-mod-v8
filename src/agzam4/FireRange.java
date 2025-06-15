@@ -8,38 +8,36 @@ import mindustry.core.World;
 import mindustry.game.Teams.TeamData;
 import mindustry.gen.Building;
 import mindustry.graphics.Layer;
+import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.defense.turrets.Turret;
-
-import static arc.graphics.g2d.Draw.color;
-
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 
+import static arc.graphics.g2d.Draw.color;
+
 public class FireRange {
 
-	public static final Seq<Turret> turrets = ModWork.getBlocks(Turret.class);
+	public static final Seq<BaseTurret> turrets = ModWork.getBlocks(BaseTurret.class);
 	
 	public static void draw() {
 		if(!ModWork.setting("show-turrets-range")) return;
 		Draw.z(Layer.effect);
-		
-//        color(Color.scarlet);
 
 		final float x = Vars.player.x;
 		final float y = Vars.player.y;
 
 		final float hitSize2 = getPlayerHitSize2();
 		
-		for (int team = 0; team < Vars.state.teams.active.size; team++) {
-			TeamData data = Vars.state.teams.active.get(team);
+		for (int team = 0; team < Vars.state.teams.present.size; team++) {
+			TeamData data = Vars.state.teams.present.get(team);
 			Lines.stroke(1f, data.team.color);
 			if(data.team == Vars.player.team()) continue;
 			for (int t = 0; t < turrets.size; t++) {
 				if(!canBeAttacked(turrets.get(t))) continue;
 				final float tRange = turrets.get(t).range;
+				
 				final float extraRange = Vars.tilesize*Vars.tilesize*25*25+hitSize2;
-//				final float locateRange2 = tRange*tRange ;//+ getPlayerHitSize2() + ;
 				Seq<Building> builds = data.getBuildings(turrets.get(t));
 				
 				for (int i = 0; i < builds.size; i++) {
@@ -83,33 +81,22 @@ public class FireRange {
 				}
 			}
 		}
-//        Vec2 e = new Vec2(Vars.player.getX(), Vars.player.getY());
-//        stroke(e.fout() * 0.9f + 0.6f);
-//
-//        Fx.rand.setSeed(e.id);
-//        for(int i = 0; i < 7; i++){
-//            Fx.v.trns(e.rotation, Fx.rand.random(8f, v.dst(e.x, e.y) - 8f));
-//            Lines.lineAngleCenter(e.x + Fx.v.x, e.y + Fx.v.y, e.rotation + e.finpow(), e.foutpowdown() * 20f * Fx.rand.random(0.5f, 1f) + 0.3f);
-//        }
-//
-//        e.scaled(14f, b -> {
-//            stroke(b.fout() * 1.5f);
-//            color(e.color);
-//            Lines.line(e.x, e.y, v.x, v.y);
-//        });
 	}
 	
-	private static boolean canBeAttacked(Turret turret) {
+	private static boolean canBeAttacked(BaseTurret baseTurret) {
 		if(Vars.player.unit() == null) return false;
 		if(Vars.player.unit().type.canBoost) return true;
-		if(turret.targetGround && !Vars.player.unit().type.flying) return true;
-		if(turret.targetAir && Vars.player.unit().type.flying)return true;
-		return false;
+		if(baseTurret instanceof Turret) {
+			Turret t = (Turret) baseTurret;
+			if(t.targetGround && !Vars.player.unit().type.flying) return true;
+			if(t.targetAir && Vars.player.unit().type.flying) return true;
+			return false;
+		}
+		return true;
 	}
 
 	private static float getPlayerHitSize2() {
 		if(Vars.player.unit() == null) return 0;
-		// hitSize / SQRT(2)
 		return Vars.player.unit().hitSize*Vars.player.unit().hitSize/2f;
 	}
 }
