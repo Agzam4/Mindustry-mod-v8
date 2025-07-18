@@ -30,6 +30,7 @@ import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
 import arc.util.Reflect;
+import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.game.EventType.ClientChatEvent;
@@ -43,6 +44,7 @@ public class CustomChatFragment extends Table {
 	private static final int messagesShown = 10;
 
 	public static final Seq<Color> messageColors = loadColors();
+	public static String colorTrigger = ModWork.settingDef("messages-gradient-trigger", "");
 	
 	private static Seq<Color> loadColors() {
 		Seq<Color> pal = new Seq<Color>();
@@ -61,6 +63,7 @@ public class CustomChatFragment extends Table {
 	private Seq<String> history;
 	
 	public static Font font = Fonts.outline;
+
 	private float fadetime;
 	private boolean shown = false;
 	private ChatMode mode = ChatMode.normal;
@@ -169,7 +172,7 @@ public class CustomChatFragment extends Table {
 
 		chatfield = new TextField("", new TextFieldStyle(scene.getStyle(TextFieldStyle.class)));
 //		chatfield.setStyle(new TextFieldStyle(scene.getStyle(TextFieldStyle.class)));
-		chatfield.setMaxLength(Vars.maxTextLength);
+//		chatfield.setMaxLength(Vars.maxTextLength);
 		chatfield.getStyle().background = null;
 		chatfield.getStyle().fontColor = Color.white;
 		chatfield.setStyle(chatfield.getStyle());
@@ -274,8 +277,9 @@ public class CustomChatFragment extends Table {
 
 		history.insert(1, message);
 		
-		if(messageColors.size == 0 || message.startsWith("/")) message = mode.normalizedPrefix() + message;
+		if(messageColors.size == 0 || message.startsWith("/") || !message.startsWith(colorTrigger) || message.length() != Strings.stripColors(message).length()) message = mode.normalizedPrefix() + message;
 		else {
+			message = message.substring(colorTrigger.length());
 			StringBuilder msg = new StringBuilder(mode.normalizedPrefix());
 			int lastColor = Color.white.rgb888();
 			for (int i = 0; i < message.length(); i++) {
