@@ -1,7 +1,13 @@
-/.gradle/
+
 /bin/
+
+# Gradle
+/.gradle/
+gradlew
+gradlew.bat
 
 # Eclipse
 .classpath
 .project
 /.settings/
+/build/

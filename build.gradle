@@ -67,6 +67,22 @@ jar{
     from("assets/"){
         include "**"
     }
+    
+    doLast {
+		def path = file(System.getenv("AppData") + '/Mindustry/mods');
+		def pathfrom = file("build/libs/${project.archivesBaseName}Desktop.jar");
+	
+		if(!pathfrom.exists()) throw new GradleException("$pathfrom not found");
+		if(!path.exists()) throw new GradleException("$path not found");
+		
+		System.out.println("Copying from $pathfrom to $path");
+    	copy {
+    		from "$pathfrom"
+    		into "$path"
+    	}
+        println "copy: ${pathfrom} to ${path}"
+    }
+    
 }
 
 task deploy(type: Jar){
@@ -83,3 +99,8 @@ task deploy(type: Jar){
         }
     }
 }
+
+task copyToMods(type: Copy) {
+
+}   
+
