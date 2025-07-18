@@ -16,6 +16,7 @@ import arc.scene.style.Drawable;
 import arc.scene.style.TextureRegionDrawable;
 import arc.struct.ObjectIntMap;
 import arc.struct.Seq;
+import arc.util.Nullable;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Items;
@@ -547,7 +548,9 @@ public class ModWork {
 		return new LiquidStack(liquidDrop, amount);
 	}
 	
-	protected static ItemStack countOre(Drill drill, Tile tile){
+	protected static @Nullable ItemStack countOre(Drill drill, @Nullable Tile tile){
+		if(tile == null) return null;
+		
 	    final ObjectIntMap<Item> oreCount = new ObjectIntMap<>();
 	    final Seq<Item> itemArray = new Seq<>();
         final Seq<Tile> tempTiles = new Seq<>();
