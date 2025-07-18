@@ -4,8 +4,8 @@
   author: "Agzam4"
   main: "agzam4.AgzamMod"
   description: "Additional functionality"
-  version: 2.1.0
-  minGameVersion: 147
+  version: 149.0.3
+  minGameVersion: 149
   java: true
   hidden: true
 }
