@@ -41,13 +41,16 @@ task jarAndroid{
 
     doLast{
         if(!sdkRoot || !new File(sdkRoot).exists()) throw new GradleException("No valid Android SDK found. Ensure that ANDROID_HOME is set to your Android SDK directory.");
-		def platformRoot = new File("C:/Android/android-sdk/platforms").listFiles().sort().reverse().find{ f -> new File(f, "android.jar").exists()}
+		def platformRoot = new File("$sdkRoot/platforms").listFiles().sort().reverse().find{ f -> new File(f, "android.jar").exists()}
+		def d8Path = new File("$sdkRoot/build-tools").listFiles().sort().reverse().find{ f -> new File(f, "d8.bat").exists()}
+		
         if(!platformRoot) throw new GradleException("No android.jar found. Ensure that you have an Android platform installed.")
         //collect dependencies needed for desugaring
         def dependencies = (configurations.compileClasspath.asList() + configurations.runtimeClasspath.asList() + [new File(platformRoot, "android.jar")]).collect{ "--classpath $it.path" }.join(" ")
 		System.out.println("Starting d8: $dependencies");
+		System.out.println("d8 path: $d8Path/d8.bat");
         //dex and desugar files - this requires d8 in your PATH
-        "d8.bat $dependencies --min-api 14 --output ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"
+        "$d8Path/d8.bat $dependencies --min-api 14 --output ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"
             .execute(null, new File("$buildDir/libs")).waitForProcessOutput(System.out, System.err)
 		System.out.println("end d8");
     }
