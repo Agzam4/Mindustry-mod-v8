@@ -30,6 +30,8 @@ import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.blocks.production.HeatCrafter;
+import mindustry.world.blocks.production.HeatCrafter.HeatCrafterBuild;
 import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.units.Reconstructor;
 import mindustry.world.blocks.units.UnitFactory;
@@ -47,6 +49,11 @@ import mindustry.world.blocks.ConstructBlock.ConstructBuild;
 import mindustry.world.blocks.defense.ForceProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.defense.turrets.ItemTurret.ItemTurretBuild;
+import mindustry.world.blocks.defense.turrets.PowerTurret;
+import mindustry.world.blocks.heat.HeatBlock;
+import mindustry.world.blocks.heat.HeatConductor.HeatConductorBuild;
+import mindustry.world.blocks.heat.HeatConsumer;
+import mindustry.world.blocks.heat.HeatProducer;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.power.PowerGenerator;
 import mindustry.world.blocks.power.PowerGenerator.GeneratorBuild;
@@ -119,10 +126,14 @@ public class ModWork {
 		}
 		
 	}
-	
+
 	public static boolean keyDown(KeyBinds key) {
 		if(key.isDown()) return true;
 		return Core.input.keyDown(key.key);
+	}
+
+	public static boolean keyJustDown(KeyBinds key) {
+		return Core.input.keyTap(key.key);
 	}
 	
 	public static int getGradientIndex(float health, float maxHealth) {
@@ -152,40 +163,26 @@ public class ModWork {
 		return seq;
 	}
 
-	public static float getCraftSpeed(Building building) {
-		Block block = building.block;
-		if(block.consumers.length == 0) return 0;
-		boolean hasConsumer = false;
-		for (int i = 0; i < block.consumers.length; i++) {
-			if(block.consumers[i] instanceof ConsumeItems
-					|| block.consumers[i] instanceof ConsumeLiquid
-					|| block.consumers[i] instanceof ConsumeItemDynamic
-					|| block.consumers[i] instanceof ConsumeItemFilter) {
-				hasConsumer = true;
-				break;
-			}
-		}
-		if(!hasConsumer) return 0;
+	public static void getCraftSpeed(Building building, Cons2<Float, Float> cons) {
+		Block block = building.block; // TODO: cache block's craft speed
 		float craftSpeed = 1f;
-		if(block instanceof GenericCrafter) {
-			craftSpeed = 60f / ((GenericCrafter) block).craftTime;
+		float craftSpeedMultiplier = 1f;
+		if(block instanceof GenericCrafter crafter) craftSpeed = 60f / crafter.craftTime;
+		if(block instanceof HeatCrafter crafter && building.efficiencyScale() == 0) {
+			craftSpeedMultiplier = crafter.maxEfficiency;
+			cons.get(craftSpeed*craftSpeedMultiplier, craftSpeedMultiplier);
+			return;
 		}
-		if(building instanceof AttributeCrafterBuild) {
-			craftSpeed *= ((AttributeCrafterBuild) building).efficiencyMultiplier();
+		if(building instanceof AttributeCrafterBuild crafterBuild) craftSpeedMultiplier = crafterBuild.efficiencyMultiplier();
+		if(building instanceof UnitFactoryBuild factoryBuild && block instanceof UnitFactory factory) {
+			int plan = factoryBuild.currentPlan;
+			if(plan == -1) return;
+			craftSpeed = 60f/factory.plans.get(plan).time;
 		}
-		if(building instanceof UnitFactoryBuild && block instanceof UnitFactory) {
-			int plan = ((UnitFactoryBuild)building).currentPlan;
-			if(plan == -1) return 0;
-			craftSpeed = 60f/((UnitFactory)block).plans.get(plan).time;
-		}
-		if(block instanceof Reconstructor) {
-			craftSpeed = 60f/((Reconstructor)block).constructTime;
-		}
-		if(block instanceof Separator) {
-			craftSpeed = ((Separator)block).craftTime/60f;
-		}
-		if(block instanceof ConsumeGenerator) {
-			craftSpeed = 60f/((ConsumeGenerator)block).itemDuration;
+		if(block instanceof Reconstructor reconstructor) craftSpeed = 60f/reconstructor.constructTime;
+		if(block instanceof Separator separator) craftSpeed = separator.craftTime/60f;
+		if(block instanceof ConsumeGenerator generator) {
+			craftSpeed = 60f/generator.itemDuration;
 		} else {
 			Field[] fields = block.getClass().getFields();
 			for (int i = 0; i < fields.length; i++) {
@@ -205,10 +202,9 @@ public class ModWork {
 				}
 			}
 		}
-		if(block instanceof ForceProjector) {
-			craftSpeed = 60f/((ForceProjector)block).phaseUseTime;
-		}
-		return craftSpeed;
+		if(block instanceof ForceProjector projector) craftSpeed = 60f/projector.phaseUseTime;
+		craftSpeedMultiplier *= building.efficiencyScale();
+		cons.get(craftSpeed*craftSpeedMultiplier, craftSpeedMultiplier);
 	}
 
 
@@ -226,32 +222,20 @@ public class ModWork {
 		}
 		if(!hasConsumer) return 0;
 		float craftSpeed = 1f;
-		if(block instanceof GenericCrafter) {
-			craftSpeed = 60f / ((GenericCrafter) block).craftTime;
+		if(block instanceof GenericCrafter crafter) craftSpeed = 60f / crafter.craftTime;
+		if(block instanceof AttributeCrafter attribute) {
+			craftSpeed *= attribute.baseEfficiency + Math.min(attribute.maxBoost, attribute.boostScale * block.sumAttribute(attribute.attribute, x, y));
 		}
-		if(block instanceof AttributeCrafter) {
-			AttributeCrafter attribute = (AttributeCrafter) block;
-			float efficiencyMultiplier = attribute.baseEfficiency 
-					+ Math.min(attribute.maxBoost,
-					attribute.boostScale * block.sumAttribute(attribute.attribute, x, y));
-			craftSpeed *= efficiencyMultiplier;
-		}
-		if(block instanceof UnitFactory && block instanceof UnitFactory && config instanceof Integer) {
+		if(block instanceof UnitFactory factory && block instanceof UnitFactory && config instanceof Integer) {
 			int plan = (Integer)config;
 			if(plan == -1) return 0;
-			craftSpeed = 60f/((UnitFactory)block).plans.get(plan).time;
+			craftSpeed = 60f/factory.plans.get(plan).time;
 		}
-		if(block instanceof Reconstructor) {
-			craftSpeed = 60f/((Reconstructor)block).constructTime;
-		}
-		if(block instanceof Separator) {
-			craftSpeed = ((Separator)block).craftTime/60f;
-		}
-		if(block instanceof ForceProjector) {
-			craftSpeed = 60f/((ForceProjector)block).phaseUseTime;
-		}
-		if(block instanceof ConsumeGenerator) {
-			craftSpeed = 60f/((ConsumeGenerator)block).itemDuration;
+		if(block instanceof Reconstructor reconstructor) craftSpeed = 60f/reconstructor.constructTime;
+		if(block instanceof Separator separator) craftSpeed = separator.craftTime/60f;
+		if(block instanceof ForceProjector projector) craftSpeed = 60f/projector.phaseUseTime;
+		if(block instanceof ConsumeGenerator generator) {
+			craftSpeed = 60f/generator.itemDuration;
 		} else {
 			Field[] fields = block.getClass().getFields();
 			for (int i = 0; i < fields.length; i++) {
@@ -406,12 +390,8 @@ public class ModWork {
 	}
 
 	public static void produceItems(Building building, float craftSpeed, Cons2<Item, Float> cons) {
-		if(building instanceof DrillBuild) {
-			DrillBuild drill = (DrillBuild) building;
-			cons.get(drill.dominantItem, drill.lastDrillSpeed*60*drill.timeScale());
-		}
-		if(building.block instanceof GenericCrafter) {
-			GenericCrafter crafter = (GenericCrafter) building.block;
+		if(building instanceof DrillBuild drill) cons.get(drill.dominantItem, drill.lastDrillSpeed*60*drill.timeScale());
+		if(building.block instanceof GenericCrafter crafter) {
 			if(crafter.outputItems != null) {
 				for (int i = 0; i < crafter.outputItems.length; i++) {
 					ItemStack output = crafter.outputItems[i];
@@ -419,8 +399,7 @@ public class ModWork {
 				}
 			}
 		}
-		if(building.block instanceof Separator) {
-			Separator separator = (Separator) building.block;
+		if(building.block instanceof Separator separator) {
 			if(separator.results != null) {
 				for (int i = 0; i < separator.results.length; i++) {
 					ItemStack output = separator.results[i];
@@ -430,49 +409,48 @@ public class ModWork {
 		}
 	}
 	
-	public static void consumeLiquids(Consume consume, Building building, float craftSpeed, Cons2<Liquid, Float> cons) {
-		if(consume instanceof ConsumeLiquid) {
-			ConsumeLiquid liquid = (ConsumeLiquid) consume;
-			float lps = 60f*liquid.amount*building.timeScale();
+	public static void consumeLiquids(Consume consume, Building building, float craftSpeedMultiplier, Cons2<Liquid, Float> cons) {
+		if(consume instanceof ConsumeLiquid liquid) {
+			float lps = liquid.amount*building.timeScale()*craftSpeedMultiplier*60f;
 			cons.get(liquid.liquid, lps);
 			return;
 		}
-		if(consume instanceof ConsumeLiquids) {
-			ConsumeLiquids liquids = (ConsumeLiquids) consume;
+		if(consume instanceof ConsumeLiquids liquids) {
 			LiquidStack[] stacks = liquids.liquids;
 			if(stacks == null) return;
 			for (int liquid = 0; liquid < stacks.length; liquid++) {
 				LiquidStack stack = stacks[liquid];
-				float lps = 60f*stack.amount*building.timeScale();
+				float lps = stack.amount*building.timeScale()*craftSpeedMultiplier*60f;
 				cons.get(stack.liquid, lps);
 			}
 			return;
 		}
 	}
 
-	public static void consumePower(Consume consume, Building building, float craftSpeed, Cons<Float> cons) {
-		if(consume instanceof ConsumePower) {
-			ConsumePower power = (ConsumePower) consume;
-			cons.get(power.usage * 60f * building.timeScale());
-		}
+	public static void consumePower(Consume consume, Building building, Cons<Float> cons) {
+		if(consume instanceof ConsumePower power) cons.get(power.usage * 60f * building.timeScale());
 	}
-	
+
+	public static float consumeHeat(Building building, float craftSpeed) {
+		if(building instanceof HeatConductorBuild) return 0;
+		if(building instanceof HeatCrafterBuild crafterBuild && building.block instanceof HeatCrafter crafter) {
+			return crafterBuild.heatRequirement() * crafter.maxEfficiency;
+		}
+		if(building instanceof HeatConsumer consumer) return consumer.heatRequirement();
+		return 0;
+	}
 
 	public static void produceLiquids(Building building, float craftSpeed, Cons2<Liquid, Float> con) {
-		if(building instanceof PumpBuild && building.block instanceof Pump) {
-			PumpBuild pump = (PumpBuild) building;
+		if(building instanceof PumpBuild pump && building.block instanceof Pump pb) {
 			if(pump.liquidDrop != null) {
 	            float fraction = pump.amount;
-	            if(building instanceof SolidPumpBuild && building.block instanceof SolidPump) {
-	            	SolidPumpBuild sp = (SolidPumpBuild) building;
-	            	SolidPump spb = (SolidPump) building.block;
+	            if(building instanceof SolidPumpBuild sp && building.block instanceof SolidPump spb) {
 	            	fraction = Math.max(sp.validTiles + sp.boost + (spb.attribute == null ? 0 : spb.attribute.env()), 0);
 	            }
-				con.get(pump.liquidDrop, fraction * ((Pump)building.block).pumpAmount * 60f * building.timeScale());
+				con.get(pump.liquidDrop, fraction * pb.pumpAmount * 60f * building.timeScale());
 			}
 		}
-		if(building.block instanceof GenericCrafter) {
-			GenericCrafter crafter = (GenericCrafter) building.block;
+		if(building.block instanceof GenericCrafter crafter) {
 			if(crafter.outputLiquids != null) {
 				for (int i = 0; i < crafter.outputLiquids.length; i++) {
 					LiquidStack output = crafter.outputLiquids[i];
@@ -483,19 +461,19 @@ public class ModWork {
 	}
 
 	public static void producePower(Building building, float craftSpeed, Cons<Float> con) {
-		if(building instanceof GeneratorBuild) {
-			GeneratorBuild generator = (GeneratorBuild) building;
-			con.get(generator.getPowerProduction() * 60 * building.timeScale());
-		}
+		if(building instanceof GeneratorBuild generator) con.get(generator.getPowerProduction() * 60 * building.timeScale());
+	}
+
+	public static void produceHeat(Building building, float craftSpeed, Cons<Float> con) {
+		if(building instanceof HeatConductorBuild) return;
+		if(building instanceof HeatBlock heatBlock) con.get(heatBlock.heat());
 	}
 	
 	
 	
 	public static void produceBlock(Block block, int x, int y, Object config, float craftSpeed,
-			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons) {
-
-		if(block instanceof Drill) {
-			Drill drill = (Drill) block;
+			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons, Cons<Float> heatCons) {
+		if(block instanceof Drill drill) {
 			ItemStack stack = countOre(drill, Vars.world.tile(x, y));
 			if(stack != null) {
 				float speed = drillSpeed(drill, stack.item, needDrillWaterBoost(drill, stack.item));
@@ -503,8 +481,7 @@ public class ModWork {
 				itemCons.get(stack.item, (float) stack.amount*speed);
 			}
 		}
-		if(block instanceof GenericCrafter) {
-			GenericCrafter crafter = (GenericCrafter) block;
+		if(block instanceof GenericCrafter crafter) {
 			if(crafter.outputItems != null) {
 				for (int i = 0; i < crafter.outputItems.length; i++) {
 					ItemStack output = crafter.outputItems[i];
@@ -518,8 +495,7 @@ public class ModWork {
 				}
 			}
 		}
-		if(block instanceof Separator) {
-			Separator separator = (Separator) block;
+		if(block instanceof Separator separator) {
 			if(separator.results != null) {
 				for (int i = 0; i < separator.results.length; i++) {
 					ItemStack output = separator.results[i];
@@ -527,8 +503,7 @@ public class ModWork {
 				}
 			}
 		}
-		if(block instanceof Pump) {
-			Pump pump = (Pump) block;
+		if(block instanceof Pump pump) {
 			LiquidStack liquidStack = countLiquid(pump, Vars.world.tile(x, y));
 			if(liquidStack != null) {
 				if(block instanceof SolidPump) {
@@ -538,20 +513,15 @@ public class ModWork {
 				}
 			}
 		}
-		if(block instanceof PowerGenerator) {
-			PowerGenerator g = (PowerGenerator) block;
-			powerCons.get(g.powerProduction*60f);
-		}
+		if(block instanceof PowerGenerator g) powerCons.get(g.powerProduction*60f);
+		if(block instanceof HeatProducer p) heatCons.get(p.heatOutput);
 	}
-	
 
 	protected static LiquidStack countLiquid(Pump pump, Tile tile){
 		if(tile == null) return null;
         final Seq<Tile> tempTiles = new Seq<>();
 
-        if(pump instanceof SolidPump) {
-        	SolidPump solidPump = (SolidPump) pump;
-
+        if(pump instanceof SolidPump solidPump) {
         	float amount = 0;
     		for(Tile other : tile.getLinkedTilesAs(pump, tempTiles)){
     	     	if(other != null && !other.floor().isLiquid) {
@@ -561,7 +531,6 @@ public class ModWork {
     				}
     	     	}
     		}
-        	
     		return new LiquidStack(solidPump.result, amount);
         }
         
@@ -609,12 +578,11 @@ public class ModWork {
     }
 
 	public static void consumeBlock(Block block, int x, int y, Object config, float craftSpeed,
-			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons) {
+			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons, Cons<Float> heatCons) {
 		if(block.consumers != null) {
 			for (int c = 0; c < block.consumers.length; c++) {
 				Consume consume = block.consumers[c];
-				if(consume instanceof ConsumeItems) {
-					ConsumeItems items = (ConsumeItems) consume;
+				if(consume instanceof ConsumeItems items) {
 					ItemStack[] stacks = items.items;
 					for (int i = 0; i < stacks.length; i++) {
 						ItemStack stack = stacks[i];
@@ -642,25 +610,21 @@ public class ModWork {
 ////					liquidCons.get(filter.it, 60*liquid.amount);
 ////					continue;
 //				}
-				if(consume instanceof ConsumePower) {
-					ConsumePower power = (ConsumePower) consume;
-					powerCons.get(power.usage*60);
-				}
-				if(consume instanceof ConsumeLiquid) {
-					ConsumeLiquid liquid = (ConsumeLiquid) consume;
+				if(consume instanceof ConsumePower power) powerCons.get(power.usage*60);
+				if(consume instanceof ConsumeLiquid liquid) {
 					liquidCons.get(liquid.liquid, 60*liquid.amount);
 					continue;
 				}
 			}
 		}
+		if(block instanceof HeatCrafter heatCrafter) heatCons.get(heatCrafter.heatRequirement * heatCrafter.maxEfficiency);
+		if(block instanceof PowerTurret powerTurret) heatCons.get(powerTurret.heatRequirement);
 	}
 
 	
 	public static float drillSpeed(Drill drill, Item item, boolean liquid) {
 		float waterBoost = 1;
-		if(liquid) {
-			waterBoost = drill.liquidBoostIntensity*drill.liquidBoostIntensity;
-		}
+		if(liquid) waterBoost = drill.liquidBoostIntensity*drill.liquidBoostIntensity;
 		int area = drill.size*drill.size;
 		return 60f*area*waterBoost/drill.getDrillTime(item);
 	}
@@ -716,10 +680,7 @@ public class ModWork {
 			return items;
 		}
 		
-		if(block instanceof ItemTurret && tmp instanceof ItemTurretBuild) {
-			ItemTurretBuild turret = (ItemTurretBuild) tmp;
-			ItemTurret iTurret = (ItemTurret) block;
-			
+		if(block instanceof ItemTurret iTurret && tmp instanceof ItemTurretBuild turret) {
 			for (int item = Vars.content.items().size-1; item >= 0; item--) {
 				int maximumAccepted = turret.acceptStack(Vars.content.item(item), Integer.MAX_VALUE, null);
 				if(maximumAccepted > 0) items.add(

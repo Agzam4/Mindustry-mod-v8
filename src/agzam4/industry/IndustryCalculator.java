@@ -4,27 +4,41 @@ import static agzam4.ModWork.bs;
 import static agzam4.ModWork.gs;
 import static agzam4.ModWork.rs;
 
+import java.lang.reflect.Field;
+
 import agzam4.ModWork;
 import agzam4.MyDraw;
+import agzam4.debug.Debug;
+import agzam4.debug.ObjectInspector;
 import agzam4.ModWork.KeyBinds;
 import arc.Core;
 import arc.Events;
+import arc.audio.Soloud;
+import arc.audio.Sound;
+import arc.func.Cons;
+import arc.func.Cons2;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Font;
 import arc.graphics.g2d.GlyphLayout;
 import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.TextureRegion;
+import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.math.geom.Point2;
 import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.Log;
 import arc.util.Nullable;
+import arc.util.Reflect;
 import arc.util.pooling.Pools;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.core.World;
+import mindustry.entities.Effect;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.TileChangeEvent;
 import mindustry.game.EventType.WorldLoadEndEvent;
@@ -43,8 +57,12 @@ import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.defense.turrets.ReloadTurret;
 import mindustry.world.blocks.defense.turrets.Turret;
+import mindustry.world.blocks.heat.HeatBlock;
+import mindustry.world.blocks.heat.HeatProducer;
+import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.blocks.production.Drill;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.blocks.production.HeatCrafter;
 import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.consumers.Consume;
@@ -53,9 +71,12 @@ public class IndustryCalculator {
 
 	private static final Seq<Drill> drills = ModWork.getBlocks(Drill.class);
 	private static final Seq<Pump> pumps = ModWork.getBlocks(Pump.class);
+	private static final Seq<HeaterGenerator> heatGenerators = ModWork.getBlocks(HeaterGenerator.class);
+	private static final Seq<HeatProducer> heatProducers = ModWork.getBlocks(HeatProducer.class);
 	
 	private static final Seq<Block>[] crafters = createCrafters();
 	private static final Seq<Block>[] liquidCrafters = createLiquidCrafters();
+	
 	
 	public static boolean[] hasLiquid = new boolean[Vars.content.liquids().size]; // that can be got using pumps
 	
@@ -84,6 +105,7 @@ public class IndustryCalculator {
 		});
 	}
 	
+
 	public static BuildTooltip buildTooltip = new BuildTooltip();
 	
 	public static void draw() {
@@ -112,9 +134,13 @@ public class IndustryCalculator {
 					rs[index], gs[index], bs[index], 1, Align.center);
 		}
 		
+
+		if(Debug.debug && Core.input.keyTap(KeyCode.mouseMiddle) && Core.input.ctrl()) {
+//			ObjectInspector.show(building);
+			new ObjectInspector(building).show();
+		}
+		
 		if(building.team == Vars.player.team() && ModWork.setting("show-blocks-tooltip")) {
-
-
 			Block block = building.block;
 			if(building instanceof ConstructBuild) {
 				ConstructBuild cb = (ConstructBuild) building;
@@ -124,32 +150,47 @@ public class IndustryCalculator {
 				});
 			}
 			
-			float craftSpeed = ModWork.getCraftSpeed(building);
-
-			if(craftSpeed <= 0) {
+			ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
 				if(building instanceof ConstructBuild) {
 					Draw.z(Layer.playerName);
 					buildTooltip.draw(mouseX, mouseY);
+					return;
 				}
-				return;
-			}
+				
+//					return;
 
-//			StringBuilder info = new StringBuilder(block.emoji() + " " + block.localizedName.toUpperCase());
-			buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
-//			buildTooltip.color(Pal.accent);
-			
-			if(block.consumers != null) {
-				for (int i = 0; i < block.consumers.length; i++) {
-					ModWork.consumeItems(block.consumers[i], building, craftSpeed, (item, ips) -> {
-						addItemInfo(buildTooltip, block, item, ips, false);
-					});
-					ModWork.consumeLiquids(block.consumers[i], building, craftSpeed, (liquid, lps) -> {
-						addLiquidInfo(buildTooltip, block, liquid, lps, false);
-					});
+//				StringBuilder info = new StringBuilder(block.emoji() + " " + block.localizedName.toUpperCase());
+				buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
+				
+				if(Debug.debug) {
+					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed);
 				}
-			}
-			Draw.z(Layer.playerName);
-			buildTooltip.draw(mouseX, mouseY);
+//				buildTooltip.color(Pal.accent);
+
+				if(craftSpeed > 0) {
+					if(block.consumers != null) {
+						for (int i = 0; i < block.consumers.length; i++) {
+							ModWork.consumeItems(block.consumers[i], building, craftSpeed, (item, ips) -> {
+								addItemInfo(buildTooltip, block, item, ips, false);
+							});
+							ModWork.consumeLiquids(block.consumers[i], building, craftSpeedMultiplier, (liquid, lps) -> {
+								addLiquidInfo(buildTooltip, block, liquid, lps, false);
+							});
+						}
+					}
+				}
+				
+				float heat = ModWork.consumeHeat(building, craftSpeed);
+				if(heat > 0) {
+					buildTooltip.line("[red]" + Iconc.waves + " [lightgray]" + ModWork.round(heat) + "/sec");
+					addHeatCrafters(buildTooltip, block, heat);
+				}
+						
+				Draw.z(Layer.playerName);
+				buildTooltip.draw(mouseX, mouseY);
+			});
+
+			
 //			MyDraw.drawTooltip(info.toString(), mouseX, mouseY);
 		}
 	}
@@ -324,6 +365,7 @@ public class IndustryCalculator {
 	private static float airDps = 0;
 	private static float groundDps = 0;
 	private static float power = 0;
+	private static float heat = 0;
 
 	static Seq<Tile> selected_ = new Seq<>();
 	
@@ -353,6 +395,13 @@ public class IndustryCalculator {
 		airDps = 0;
 		groundDps = 0;
 		power = 0;
+		heat = 0;
+
+		Cons<Float> heatProduce = hps -> heat += hps;
+		Cons<Float> heatConsume = hps -> heat -= hps;
+		
+		Cons<Float> powerProduce = pps -> power += pps;
+		Cons<Float> powerConsume = pps -> power -= pps;
 
 		boolean buildPlans = false;
 		if(ModWork.setting("buildplans-calculations")) {
@@ -368,18 +417,19 @@ public class IndustryCalculator {
 									buildPlan.config, craftSpeed, 
 									(item, ips) -> itemsBalance[item.id] -= ips,
 									(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-									(pps) -> power -= pps);
+									powerConsume, heatConsume);
 							ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
 									buildPlan.config, craftSpeed, 
 									(item, ips) -> itemsBalance[item.id] += ips,
 									(liquid, lps) -> liquidBalance[liquid.id] += lps,
-									(pps) -> power += pps);
+									powerProduce, heatProduce);
 						}
 						
 						buildPlans = true;
 					}
 				}
 			}
+//			Log.info("1 heat: @", heat);
 			if(Vars.control.input.selectPlans.size > 0) {
 				for (int i = 0; i < Vars.control.input.selectPlans.size; i++) {
 					BuildPlan buildPlan = Vars.control.input.selectPlans.get(i);
@@ -390,15 +440,16 @@ public class IndustryCalculator {
 							buildPlan.config, craftSpeed, 
 							(item, ips) -> itemsBalance[item.id] -= ips,
 							(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-							(pps) -> power -= pps);
+							powerConsume, heatConsume);
 					ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
 							buildPlan.config, craftSpeed, 
 							(item, ips) -> itemsBalance[item.id] += ips,
 							(liquid, lps) -> liquidBalance[liquid.id] += lps,
-							(pps) -> power += pps);
+							powerProduce, heatProduce);
 				}
 				buildPlans = true;
 			}
+//			Log.info("2 heat: @", heat);
 			
 			if(Vars.control.input.linePlans.size > 0) {
 				for (int i = 0; i < Vars.control.input.linePlans.size; i++) {
@@ -410,15 +461,17 @@ public class IndustryCalculator {
 							buildPlan.config, craftSpeed, 
 							(item, ips) -> itemsBalance[item.id] -= ips,
 							(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-							(pps) -> power -= pps);
+							powerConsume, heatConsume);
 					ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
 							buildPlan.config, craftSpeed, 
 							(item, ips) -> itemsBalance[item.id] += ips,
 							(liquid, lps) -> liquidBalance[liquid.id] += lps,
-							(pps) -> power += pps);
+							powerProduce, heatProduce);
 				}
 				buildPlans = true;
 			}
+			
+//			Log.info("3 heat: @", heat);
 		}
 		
 		balanceFragment.element.rebuild();
@@ -476,49 +529,35 @@ public class IndustryCalculator {
 				}
 			}
 
-			float craftSpeed = ModWork.getCraftSpeed(building);
-
-//			if(building instanceof UnitFactoryBuild && block instanceof UnitFactory) {
-//				int plan = ((UnitFactoryBuild)building).currentPlan;
-//				if(plan != -1) {
-//					ItemStack[] requirements = ((UnitFactory)block).plans.get(plan).requirements;
-//					for (int i = 0; i < requirements.length; i++) {
-//						ItemStack stack = requirements[i];
-//						float ips = craftSpeed*stack.amount*building.timeScale();
-//						itemsBalance[stack.item.id] -= ips;
-//					}
-//				}
-//			}
-
-			ModWork.produceItems(building, craftSpeed, (item, ips) -> {
-				itemsBalance[item.id] += ips;
-				if(building.items != null) {
-					if(building.items.get(item) >= building.getMaximumAccepted(item)) {
-						itemsWarn[item.id] = true;
+			ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
+				ModWork.produceItems(building, craftSpeed, (item, ips) -> {
+					itemsBalance[item.id] += ips;
+					if(building.items != null) {
+						if(building.items.get(item) >= building.getMaximumAccepted(item)) {
+							itemsWarn[item.id] = true;
+						}
 					}
+				});
+
+				ModWork.produceLiquids(building, craftSpeed, (liquid, lps) -> {
+					liquidBalance[liquid.id] += lps;
+				});
+
+				ModWork.producePower(building, craftSpeed, powerProduce);
+				ModWork.produceHeat(building, craftSpeed, heatProduce);
+				
+				for (int c = 0; c < block.consumers.length; c++) {
+					Consume consume = block.consumers[c];
+					ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> {
+						itemsBalance[item.id] -= ips;
+					});
+					ModWork.consumeLiquids(consume, building, craftSpeedMultiplier, (liquid, lps) -> {
+						liquidBalance[liquid.id] -= lps;
+					});
+					ModWork.consumePower(consume, building, powerConsume);
 				}
+				heat -= ModWork.consumeHeat(building, craftSpeed);
 			});
-
-			ModWork.produceLiquids(building, craftSpeed, (liquid, lps) -> {
-				liquidBalance[liquid.id] += lps;
-			});
-
-			ModWork.producePower(building, craftSpeed, (pps) -> {
-				power += pps;
-			});
-			
-			for (int c = 0; c < block.consumers.length; c++) {
-				Consume consume = block.consumers[c];
-				ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> {
-					itemsBalance[item.id] -= ips;
-				});
-				ModWork.consumeLiquids(consume, building, craftSpeed, (liquid, lps) -> {
-					liquidBalance[liquid.id] -= lps;
-				});
-				ModWork.consumePower(consume, building, craftSpeed, (pps) -> {
-					power -= pps;
-				});
-			}
 		}
 
 		for (int i = 0; i < itemsBalance.length; i++) {
@@ -543,6 +582,10 @@ public class IndustryCalculator {
 		if(power != 0) {
 			balanceFragment.element.line(Icon.power.getRegion(), (power > 0 ? "[green]" : "[scarlet]") + ModWork.round(power) + "/sec");
 			balanceFragment.element.color(Pal.engine);
+		}
+		if(heat != 0) {
+			balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + "/sec");
+			if(heat < 0) addHeatCrafters(balanceFragment.element, null, -heat);
 		}
 		if(airDps != 0 || groundDps != 0) {
 			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(airDps) + " air damage/sec");
@@ -672,10 +715,9 @@ public class IndustryCalculator {
 				}
 			}
 		});
-		
 		return crafters;
 	}
-
+	
 	/**
 	 * Add pumps info
 	 * @param builder - StringBuilder to append text
@@ -804,10 +846,39 @@ public class IndustryCalculator {
 			
 			float count = lps/cps;
 			if(block != null) {
-				element.line("[lightgray]> ", crafter, " [white]" + "x" + ModWork.round(count) + "[lightgray] or [white]",
-						block, "[white] x" + ModWork.round(1/count));
+				element.line("[lightgray]> ", crafter, " [white]" + "x" + ModWork.round(count) + "[lightgray] or [white]", block, "[white] x" + ModWork.round(1/count));
 			} else {
 				element.line("[lightgray]> ", crafter, " [white]" + "x" + ModWork.round(count));
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param element
+	 * @param block
+	 * @param hps
+	 */
+	private static void addHeatCrafters(IndustryElement element, @Nullable Block block, float hps) {
+		for (HeaterGenerator generator : heatGenerators) {
+			if(!generator.environmentBuildable()) continue;
+			if(!generator.isPlaceable()) continue;
+			float count = hps/generator.heatOutput;
+			if(block != null) {
+				element.line("[lightgray]> ", generator, " [white]" + "x" + ModWork.round(count) + "[lightgray] or [white]",
+						block, "[white] x" + ModWork.round(1f/count));
+			} else {
+				element.line("[lightgray]> ", generator, " [white]" + "x" + ModWork.round(count));
+			}
+		}
+		for (HeatProducer producer : heatProducers) {
+			if(!producer.environmentBuildable()) continue;
+			if(!producer.isPlaceable()) continue;
+			float count = hps/producer.heatOutput;
+			if(block != null) {
+				element.line("[lightgray]> ", producer, " [white]" + "x" + ModWork.round(count) + "[lightgray] or [white]", block, "[white] x" + ModWork.round(1f/count));
+			} else {
+				element.line("[lightgray]> ", producer, " [white]" + "x" + ModWork.round(count));
 			}
 		}
 	}
