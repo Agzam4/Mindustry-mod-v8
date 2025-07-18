@@ -70,7 +70,6 @@ public class Afk {
 						text = text.replaceAll("@pingText", pingText);
 					}
 					Call.sendChatMessage(text); 
-					//"[lightgray]Похоже Agzam в АФК уже " + time + ". Напиши [orange]" + pingText + " ваше_сообщение[], чтобы отправить ему сообщение");
 				}
 			}
 		});		

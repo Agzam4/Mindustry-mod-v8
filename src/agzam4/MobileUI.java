@@ -70,7 +70,7 @@ public class MobileUI {
 	}
 	
 	public static Table mainTable, container;
-	private static Drawable background = ((TextureRegionDrawable)Tex.whiteui).tint(.2f, .2f, .2f, 1f);
+	public static Drawable background = ((TextureRegionDrawable)Tex.whiteui).tint(.2f, .2f, .2f, 1f);
 	
 	public static void build() {
 		

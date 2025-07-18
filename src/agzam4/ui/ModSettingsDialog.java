@@ -217,7 +217,7 @@ public class ModSettingsDialog extends Table {
 	}
 	
 	private static void createMessagesGradientPicker(Table mainTable) {
-		mainTable.label(() -> ModWork.bungle("settings.messages-gradient")).growX().colspan(4).pad(10).padBottom(10).row();
+		mainTable.label(() -> ModWork.bungle("settings.ui.messages-gradient")).growX().colspan(4).pad(10).padBottom(10).row();
 		
 		Table colorsTable = mainTable.table().get();
 		
@@ -232,7 +232,12 @@ public class ModSettingsDialog extends Table {
 		}).growX().pad(20).padBottom(4);
 		
 		mainTable.row();
-		
+
+		mainTable.label(() -> ModWork.bungle("settings.ui.messages-gradient-trigger")).growX().colspan(4).pad(10).padBottom(10).row();
+		mainTable.field(CustomChatFragment.colorTrigger, t -> {
+			CustomChatFragment.colorTrigger = t;
+			ModWork.setting("messages-gradient-trigger", t);
+		}).row();
 		
 		
 //		chatColor = table.button(Iconc.chat + "[white]" + ModWork.bungle("settings.ui.chat-color"), Styles.defaultt, () -> {

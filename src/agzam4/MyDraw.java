@@ -2,12 +2,7 @@ package agzam4;
 
 import arc.graphics.Blending;
 import arc.graphics.Color;
-import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
-import arc.graphics.g2d.Font;
-import arc.graphics.g2d.GlyphLayout;
-import arc.graphics.g2d.Lines;
-import arc.graphics.g2d.TextureRegion;
+import arc.graphics.g2d.*;
 import arc.math.geom.Position;
 import arc.scene.ui.layout.Scl;
 import arc.util.Align;
@@ -118,8 +113,7 @@ public class MyDraw {
 		font.draw(text, x, y + textHeight*scale, 0, align, false);
 		Draw.color();
 		
-		font.getData().setScale(1f);
-		
+		font.getData().setScale(0.25f / Scl.scl(1f));
 		return layout;
 	}
 
@@ -159,4 +153,59 @@ public class MyDraw {
 			Lines.arc(center.getX(), center.getY(), rad, .2f, statAngle+angle);
 		}		
 	}
+	
+
+	public static GlyphLayout textOld(String text, float x, float y, float size, int align, Font font) {
+		GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+		font.setUseIntegerPositions(false);
+
+		font.getData().setScale(1f / Scl.scl(1f));
+		layout.setText(font, text);
+		
+		float scale = size / layout.height;
+		
+		font.getData().setScale(scale / Scl.scl(1f));
+		layout.setText(font, text);
+		
+		font.setColor(Draw.getColor());
+
+		y += layout.height/2f;//layout.height/2f;
+		
+		if(Align.isTop(align)) {
+			y += layout.height/2f;
+		}
+		if(Align.isBottom(align)) {
+			y -= layout.height/2f;
+		}
+		font.draw(text, x, y, 0, align, false);
+		font.getData().setScale(0.25f / Scl.scl(1f));
+		return layout;
+	}
+	
+	public static GlyphLayout text(String text, float x, float y, float size, int align, Font font) {
+		GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+		font.setUseIntegerPositions(false);
+
+		font.getData().setScale(1f / Scl.scl(1f));
+		
+		float scale = size / font.getCapHeight();
+		
+		font.getData().setScale(scale / Scl.scl(1f));
+		layout.setText(font, text);
+		
+		font.setColor(Draw.getColor());
+
+		y += size/2f;//layout.height/2f;
+		
+		if(Align.isTop(align)) {
+			y += size/2f;
+		}
+		if(Align.isBottom(align)) {
+			y -= size/2f;
+		}
+		font.draw(text, x, y, 0, align, false);
+		font.getData().setScale(1f);
+		return layout;
+	}
+	
 }

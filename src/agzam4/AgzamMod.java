@@ -1,53 +1,28 @@
 package agzam4;
 
-import arc.ApplicationListener;
-import arc.Core;
-import arc.Events;
-import arc.func.Cons;
-import arc.graphics.Color;
+import arc.*;
 import arc.graphics.Texture.TextureFilter;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureAtlas.AtlasRegion;
 import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
-import arc.math.Mathf;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
-import arc.scene.ui.Dialog;
-import arc.scene.ui.TextButton;
-import arc.scene.ui.layout.Cell;
-import arc.scene.ui.layout.Table;
+import arc.scene.event.*;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.*;
 import arc.util.Log;
-import arc.util.Strings;
-import arc.util.Time;
 import mindustry.Vars;
-import mindustry.game.EventType.ClientServerConnectEvent;
-import mindustry.game.EventType.PlayerChatEvent;
-import mindustry.game.EventType.TapEvent;
-import mindustry.game.EventType.Trigger;
-import mindustry.game.EventType.UnitDamageEvent;
-import mindustry.gen.Call;
-import mindustry.gen.Icon;
-import mindustry.gen.Iconc;
+import mindustry.game.EventType.*;
+import mindustry.gen.*;
 import mindustry.graphics.Pal;
 import mindustry.mod.Mod;
 import mindustry.mod.Mods.LoadedMod;
-import mindustry.ui.Fonts;
-import mindustry.ui.Styles;
-import mindustry.ui.dialogs.KeybindDialog;
-import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable;
-import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable.CheckSetting;
-import mindustry.world.meta.BuildVisibility;
-
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
 import agzam4.industry.IndustryCalculator;
 import agzam4.ui.ModSettingsDialog;
+import agzam4.ui.mapeditor.MapEditorDialog;
 import agzam4.uiOverride.UiOverride;
-import agzam4.utils.PlayerAI;
-import agzam4.utils.PlayerUtils;
-import agzam4.utils.ProcessorGenerator;
-import agzam4.utils.UnitSpawner;
+import agzam4.utils.*;
 
 public class AgzamMod extends Mod {
 	
@@ -60,12 +35,13 @@ public class AgzamMod extends Mod {
 	 * [V] Auto-enable AFK mode
 	 * [V] Colored text
 	 * Pixelisation fix
+	 * Messge limit
 	 */
 
 	public static boolean hideUnits;
 	private static UnitTextures[] unitTextures;
 	private static TextureRegion minelaser, minelaserEnd;
-	private Cell<TextButton> unlockContent = null, unlockBlocks = null;
+//	private Cell<TextButton> unlockContent = null, unlockBlocks = null;
 	
 	int pauseRandomNum = 0;
 	
@@ -86,7 +62,6 @@ public class AgzamMod extends Mod {
 //		Vars.player.unit().cap();
 		mod = Vars.mods.getMod("agzam4mod");
 		Afk.init();
-		ClientPathfinder.init();
 		MyFonts.load();
 		MyIndexer.init();
 		
@@ -112,11 +87,8 @@ public class AgzamMod extends Mod {
 		try {
 			try {
 				Awt.avalible = Awt.avalible();
-			} catch (Error e) {
-
-			} 
-		} catch (Throwable e) {
-		}
+			} catch (Error e) {} 
+		} catch (Throwable e) {}
 		
 		minelaser = Core.atlas.find("minelaser");
 		minelaserEnd = Core.atlas.find("minelaser-end");
@@ -148,6 +120,15 @@ public class AgzamMod extends Mod {
 			Vars.ui.settings.addCategory(ModWork.bungle("settings.name") + " [red]" + Iconc.warning, Icon.wrench, ModSettingsDialog.builder);
 		} else {
 			Vars.ui.settings.addCategory(ModWork.bungle("settings.name"), Icon.wrench, ModSettingsDialog.builder);
+		}
+		if(Debug.debug) {
+			Vars.ui.settings.addCategory("TEST EDITOR", Icon.wrench, t -> {
+				t.button("TEST BUTTOM", () -> {
+//					MapEditor.instance.beginEdit(100,100);
+//					Vars.ui.editor.beginEditMap(getConfig());
+					MapEditorDialog.instance.beginEdit(100, 100);
+				});
+			});
 		}
 
 		Events.on(TapEvent.class, e -> {
@@ -210,10 +191,7 @@ public class AgzamMod extends Mod {
 		
 		if(Vars.mobile) {
 			MobileUI.build();
-		} else {
-				
-		}
-			
+		} else {}
 
 		if(true) return;
 			
