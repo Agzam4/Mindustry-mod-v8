@@ -4,30 +4,10 @@ import mindustry.Vars;
 
 public class Awt {
 
-	public static boolean avalible = false;// = avalible();
+	public static boolean avalible = false;
 	
-	@SuppressWarnings("deprecation")
-	public static boolean avalible() { // FIXME
-//		return false;
-//		try {
-//			return Package.getPackage("java.awt") != null;
-//			String result = Vars.mods.getScripts().runConsole("java.lang.Package.getPackage(\"java.awt\") != null;");//Vars.mods.mainLoader().getDefinedPackage(\"java.awt\")");
-//			if(result == null) return false;
-//			return !result.equals("null");//Vars.mods.mainLoader().getDefinedPackage("java.awt") != null;
-//			boolean pcl = ClassLoader.getPlatformClassLoader().getDefinedPackage("java.awt") != null;
-//			boolean scl = ClassLoader.getSystemClassLoader().getDefinedPackage("java.awt") != null;
-//			if(!pcl) {
-//				Log.info("PlatformClassLoader not loaded java.awt");
-//			}
-//			if(!scl) {
-//				Log.info("SystemClassLoader not loaded java.awt");
-//			}
-			return Package.getPackage("java.awt") != null;
-//			return pcl && scl;
-//		} catch (Error e) {
-//			return false;
-//		}
-//		return MyTray.class.getClassLoader().getDefinedPackage("java.awt") != null;
+	public static boolean avalible() {
+		return Package.getPackage("java.awt") != null;
 	}
 
 	public static boolean message(String string) {
@@ -50,7 +30,6 @@ public class Awt {
 		} catch (Exception | Error e) {
 			return false;
 		}
-		
         //*/
 	}
 
