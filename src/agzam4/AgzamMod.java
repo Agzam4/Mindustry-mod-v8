@@ -8,12 +8,10 @@ import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.scene.event.*;
 import arc.scene.ui.*;
-import arc.scene.ui.layout.*;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
-import mindustry.graphics.Pal;
 import mindustry.mod.Mod;
 import mindustry.mod.Mods.LoadedMod;
 import agzam4.ModWork.KeyBinds;
@@ -26,14 +24,11 @@ import agzam4.utils.*;
 
 public class AgzamMod extends Mod {
 	
+	/** Safe URL is mod.getRepo() is null **/
+	public static final String repo = "Agzam4/Mindustry-mod-v8";
 	
 	/**
 	 * TODO:
-	 * [V] Range only for enemies team fix
-	 * [V] Hide unit spawn on servers
-	 * [V] Words list for ping
-	 * [V] Auto-enable AFK mode
-	 * [V] Colored text
 	 * Pixelisation fix
 	 * Messge limit
 	 */
@@ -41,25 +36,14 @@ public class AgzamMod extends Mod {
 	public static boolean hideUnits;
 	private static UnitTextures[] unitTextures;
 	private static TextureRegion minelaser, minelaserEnd;
-//	private Cell<TextButton> unlockContent = null, unlockBlocks = null;
 	
 	int pauseRandomNum = 0;
 	
-	private boolean debug = false; // FIXME
-	
-	public static long updates = 0;
 	
 	public static LoadedMod mod;
 	
 	@Override
 	public void init() {
-//		Vars.content.unitsclone()
-//		Vars.content.getByName(ContentType.unit, "anthicus-missile").
-//		Vars.content.getByName(ContentType.unit, "anthicus-missile").playerControllable = true
-//		Vars.state.rules.
-//		Team.
-//		Vars.netServer.admins.kickedIPs
-//		Vars.player.unit().cap();
 		mod = Vars.mods.getMod("agzam4mod");
 		Afk.init();
 		MyFonts.load();
@@ -71,15 +55,12 @@ public class AgzamMod extends Mod {
 			CursorTracker.init();
 			
 			Vars.content.items().each(b -> {
-				if(!b.hasEmoji()) {
-					MyFonts.createEmoji(b.uiIcon, b.name);
-				}
+				if(b.hasEmoji()) return;
+				MyFonts.createEmoji(b.uiIcon, b.name);
 			});
 			Vars.content.blocks().each(b -> {
-				if(!b.hasEmoji()) {
-					MyFonts.createEmoji(b.uiIcon, b.name);
-//					Vars.ui.hudfrag;
-				}
+				if(b.hasEmoji()) return;
+				MyFonts.createEmoji(b.uiIcon, b.name);
 			});
 			IndustryCalculator.init();
 			WaveViewer.init();
@@ -112,15 +93,8 @@ public class AgzamMod extends Mod {
             }
         });
 
-		boolean needUpdate = UpdateInfo.needUpdate();
+		ModSettingsDialog.updateCategory();
 		
-//		Cons<SettingsTable> builder = settingsTable -> {};
-		
-		if(needUpdate) {
-			Vars.ui.settings.addCategory(ModWork.bungle("settings.name") + " [red]" + Iconc.warning, Icon.wrench, ModSettingsDialog.builder);
-		} else {
-			Vars.ui.settings.addCategory(ModWork.bungle("settings.name"), Icon.wrench, ModSettingsDialog.builder);
-		}
 		if(Debug.debug) {
 			Vars.ui.settings.addCategory("TEST EDITOR", Icon.wrench, t -> {
 				t.button("TEST BUTTOM", () -> {
@@ -139,7 +113,6 @@ public class AgzamMod extends Mod {
 		});
 		
 		Events.run(Trigger.update, () -> {
-			updates++;
 			IndustryCalculator.update();
 			PlayerAI.updatePlayer();
 			UnitSpawner.update();
@@ -179,15 +152,11 @@ public class AgzamMod extends Mod {
 		// Check if player in net game to save traffic and don't get err
 		Events.on(ClientServerConnectEvent.class, e -> { 
 			if(!UpdateInfo.isCurrentSessionChecked) {
-				UpdateInfo.check();
+				UpdateInfo.check((old, now) -> {});
 			}
 		});
 
 		// mobile OK
-		
-		if(debug) {
-			MobileUI.build();
-		}
 		
 		if(Vars.mobile) {
 			MobileUI.build();
@@ -201,59 +170,11 @@ public class AgzamMod extends Mod {
 		}
 	}
 	
-
-	@Deprecated
-	private void addKeyBind(Table table, final KeyBinds keybind) {
-//        Table hotkeyTable = new Table();
-//        hotkeyTable.add().height(10);
-//        hotkeyTable.row();
-//        hotkeyTable.add(ModWork.bungle("settings.keybinds." + keybind.keybind), Color.white).left().padRight(40).padLeft(8);
-//        hotkeyTable.label(() -> keybind.key.toString()).color(Pal.accent).left().minWidth(90).padRight(20);
-//        hotkeyTable.button("@settings.rebind", Styles.defaultt, () -> {
-//        	if(ModWork.hasKeyBoard()) {
-//            	openDialog(keybind);
-//        	}
-//        }).width(130f);
-//        hotkeyTable.button("@settings.resetKey", Styles.defaultt, () -> {
-//        	keybind.key = keybind.def;
-//        	keybind.put();
-//        }).width(130f).pad(2f).padLeft(4f);
-//        hotkeyTable.row();
-//        table.add(hotkeyTable);
-//        table.row();		
+	public void dispose() {
+		ModSettingsDialog.clearCategory();
+		Vars.ui.settings.getCategories().removeAll(c -> c.name.equals("TEST EDITOR"));
 	}
 
-	private void addCategory(Table table, String category) {
-        table.add(ModWork.bungle("category." + category)).color(Pal.accent).colspan(4).pad(10).padBottom(4).row();
-		table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();		
-	}
-
-//	private void addCheck(Table table, String settings) {
-//		addCheck(table, settings, null);
-//	}
-//
-//	private void addCheck(Table table, String settings, Cons<Boolean> listener) {
-//		addCheck(table, settings, true, listener);
-//	}
-	
-
-//	private float megaAccel, megaDragg, megaSpeed;
-
-//	private void comfortMega(boolean b) {
-//		comfortMega = b;
-//		Core.settings.put("agzam4mod-units.settings.comfortMega", b);
-//		Core.settings.saveValues();
-//		if(comfortMega) {
-//			mega.accel = emanate.accel;
-//			mega.drag = emanate.drag;
-////			mega.speed = 3;
-//		} else {
-//			mega.accel = megaAccel;
-//			mega.drag = megaDragg;
-////			mega.speed = megaSpeed;
-//		}
-//	}
-	
 	public static void hideUnits(boolean b) {
 		hideUnits = b;
 		if(b) {
@@ -334,4 +255,11 @@ public class AgzamMod extends Mod {
 		a.texture.setFilter(TextureFilter.mipMapLinearLinear);
 		return a;
 	}
+
+	public static String getRepo() {
+		String r = mod.getRepo();
+		if(r == null) return repo;
+		return r;
+	}
+	
 }

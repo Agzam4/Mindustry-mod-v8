@@ -18,7 +18,11 @@ public class UiOverride {
 		oldChatFragment = Vars.ui.chatfrag;
 		oldConsoleFragment = Vars.ui.consolefrag;
 		
-		set();
+		try {
+			set();
+		} catch (Exception e) {
+			Vars.ui.showErrorMessage(e.getMessage());
+		}
 	}
 	
 	public static void set() {

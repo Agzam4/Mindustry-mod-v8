@@ -5,29 +5,33 @@ import agzam4.AgzamMod;
 import agzam4.Awt;
 import agzam4.ModWork;
 import agzam4.UpdateInfo;
+import agzam4.debug.Debug;
 import agzam4.uiOverride.CustomChatFragment;
 import agzam4.uiOverride.UiOverride;
 import arc.Core;
+import arc.files.Fi;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.Mathf;
 import arc.scene.style.TextureRegionDrawable;
-import arc.scene.ui.TextArea;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
-import arc.util.Log;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectSet;
+import arc.util.Reflect;
 import arc.util.Strings;
 import mindustry.Vars;
-import mindustry.content.Blocks;
+import mindustry.ctype.UnlockableContent;
 import mindustry.gen.Icon;
 import mindustry.gen.Iconc;
-import mindustry.gen.Tex;
 import mindustry.graphics.Pal;
+import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
-import mindustry.ui.dialogs.ColorPicker;
 import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable;
+import mindustry.world.Block;
 import mindustry.world.meta.BuildVisibility;
 
 public class ModSettingsDialog extends Table {
@@ -37,31 +41,147 @@ public class ModSettingsDialog extends Table {
 	static Cell<TextButton> chatColor = null;
 	
 	static TextureRegion colorBox = AgzamMod.sprite("color-box");
+	
+	static String versionInfo = "";
 
-	public static Cons<SettingsTable> builder = settingsTable -> {
-		boolean needUpdate = UpdateInfo.needUpdate();
-		
+	static Cell<Table> updateTable = null;
+	static Cons<Table> updateBuilder;
+
+	static Cell<Table> unlockTable = null;
+	
+	static String random = "" + Mathf.random(100000, 999999);
+	
+	public static void builder(SettingsTable settingsTable) {
 		settingsTable.defaults().left();
 		Table table = new Table();
-		if(needUpdate) {
-			table.add(ModWork.bungle("need-update")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
-			table.button("@mods.browser.reinstall", Icon.download, () -> UpdateInfo.githubImportMod(AgzamMod.mod.getRepo(), null))
-			.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
-		}
+		
+        settingsTable.add(table);
+        settingsTable.row();
+//
+		settingsTable.name = ModWork.bungle("settings.name");
+		settingsTable.visible = true;
+
+		addCategory(table, "updates");
+		
+		updateBuilder = t -> {
+			t.label(() -> UpdateInfo.currentName() + " v" + UpdateInfo.currentVersion() + " " + versionInfo).row();
+			if(Debug.debug) t.label(() -> "random: " + random).row();
+			t.button(ModWork.bungle("settings.checkupdates.checkupdates"), Icon.refresh, Styles.defaultt, () -> {
+				versionInfo = Core.bundle.get("loading");
+				UpdateInfo.check((old, now) -> {
+					versionInfo = (now ? "[red]" : "[lime]") + ModWork.bungle(now ? "settings.updates.outdated" : "settings.updates.latest");
+					if(old != now) {
+						updateTable.get().clearChildren();
+						updateBuilder.get(updateTable.get());
+						updateTable.fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+						updateTable.row();
+						updateCategory();
+					}
+				});
+			}).wrapLabel(false).growX().pad(10).padBottom(4);
+			t.row();
+			
+			if(UpdateInfo.needUpdate()) {
+				t.add(ModWork.bungle("need-update")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
+				t.button("@mods.browser.reinstall", Icon.download, () -> UpdateInfo.githubImportMod(AgzamMod.getRepo(), null))
+				.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
+			}
+			// Vars.mods.getMod("agzam4mod").meta.version = 'as'
+			if(Debug.debug) {
+				t.button("Reload mod", Icon.refreshSmall, () -> {
+//					try {
+//						ClassLoaderCloser.close(AgzamMod.mod.loader);
+//					} catch(Exception e){
+//						Log.err(e);
+//						Vars.ui.showErrorMessage(e.getMessage());
+//					}
+
+			        Vars.mods.list().remove(AgzamMod.mod);
+//			        Vars.mods.loadMod(AgzamMod.mod);
+//			        AgzamMod.mod.dispose();
+			        
+			        AgzamMod.mod.dispose();
+			        if(AgzamMod.mod.main instanceof AgzamMod mod) mod.dispose();
+			        
+			        LoadedMod mod = Reflect.invoke(Vars.mods, "loadMod", new Object[] {
+							AgzamMod.mod.file,
+							false, true,
+					}, Fi.class, Boolean.TYPE, Boolean.TYPE);
+			        Vars.mods.list().add(mod);
+			        mod.main.init();
+					Vars.ui.showInfo("Reloaded");
+				})
+				.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
+			}
+		};
+		
+		updateTable = table.table(updateBuilder);
+		updateTable.fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+		updateTable.row();
+		
 		
 		addCategory(table, "unlock");
-
-		unlockContent = table.button(ModWork.bungle("settings.unlock-content"), Icon.lockOpen, Styles.defaultt, () -> {
-			unlockDatabaseContent();
-			if(unlockContent != null) unlockContent.disabled(true);
-		}).growX().pad(10).padBottom(4);
-		table.row();
 		
-		unlockBlocks = table.button(ModWork.bungle("settings.unlock-blocks"), Icon.lockOpen, Styles.defaultt, () -> {
-			unlockBlocksContent();
-			if(unlockBlocks != null) unlockBlocks.disabled(true);
-		}).growX().pad(10).padBottom(4);
-		table.row();
+
+		unlockTable = table.table(t -> {
+//			t.label(() -> UpdateInfo.currentName() + " v" + UpdateInfo.currentVersion() + " " + versionInfo).row();
+//			if(Debug.debug) t.label(() -> "random: " + random).row();
+//			EditorMapsDialog
+
+//	        t.button("@editor.openin", Icon.export, () -> {
+//	        }).growX().fillX().height(54f).marginLeft(10).padRight(5f);
+//
+//	        t.button("@delete", Icon.trash, () -> {
+//	        }).growX().fillX().height(54f).marginLeft(10).padLeft(5f);
+
+			table.check(ModWork.bungle("settings.unlock-content"), false, b -> {
+				if(b) showHiddenContent();
+				else hideHiddenContent();
+			}).colspan(4).pad(10).padBottom(4).left().row();
+
+			table.check(ModWork.bungle("settings.unlock-blocks"), false, b -> {
+				if(b) unlockBlocksContent();
+				else lockBlocksContent();
+			}).colspan(4).pad(10).padBottom(4).left().row();
+
+//			unlockContent = t.button(ModWork.bungle("settings.unlock-content"), Icon.lockOpen, Styles.defaultt, () -> {
+//				unlockDatabaseContent();
+//				
+//				if(unlockContent != null) unlockContent.disabled(true);
+//			}).growX().fillX().height(54f).marginLeft(10).padRight(5f);
+//			unlockBlocks = t.button(ModWork.bungle("settings.unlock-blocks"), Icon.lockOpen, Styles.defaultt, () -> {
+//				unlockBlocksContent();
+//				if(unlockBlocks != null) unlockBlocks.disabled(true);
+//			}).growX().fillX().height(54f).marginLeft(10).padLeft(5f);
+//			
+		});
+//		unlockTable.expand().fill();
+		unlockTable.growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+		unlockTable.row();
+//		unlockTable = table.table(t -> {
+//			t.label(() -> UpdateInfo.currentName() + " v" + UpdateInfo.currentVersion() + " " + versionInfo).row();
+//
+//			t.button("weh", Icon.download, () -> {})
+//			.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
+//			
+//			unlockContent = t.button(ModWork.bungle("settings.unlock-content"), Icon.lockOpen, Styles.defaultt, () -> {
+//				unlockDatabaseContent();
+//				if(unlockContent != null) unlockContent.disabled(true);
+//			}).fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+//			t.row();
+//			
+//			unlockBlocks = t.button(ModWork.bungle("settings.unlock-blocks"), Icon.lockOpen, Styles.defaultt, () -> {
+//				unlockBlocksContent();
+//				if(unlockBlocks != null) unlockBlocks.disabled(true);
+//			}).fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+//			t.background(Styles.grayPanel);
+//			t.row();
+//
+//			addCategory(t, "unlock");
+//		});
+//		unlockTable.fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+//		unlockTable.row();
+		
 		
 //		unlockContent = table.button(ModWork.bungle("settings.unlock-content"), Icon.lockOpen, Styles.defaultt, () -> {
 //			unlockDatabaseContent();
@@ -119,11 +239,6 @@ public class ModSettingsDialog extends Table {
 	        table.add(ModWork.bungle("afk-err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
 		}
 		
-        settingsTable.add(table);
-        settingsTable.row();
-//
-		settingsTable.name = ModWork.bungle("settings.name");
-		settingsTable.visible = true;
 		
 		addCategory(table, "utils");
 //		addKeyBind(table, KeyBinds.openUtils);
@@ -137,20 +252,20 @@ public class ModSettingsDialog extends Table {
 		table.row();
 
 		addCategory(table, "report-bugs");
-		table.button(Iconc.github + " Github", Styles.defaultt, () -> {
-            if(!Core.app.openURI("https://github.com/Agzam4")){
-                Vars.ui.showErrorMessage("@linkfail");
-                Core.app.setClipboardText("https://github.com/Agzam4");
-            }
-		}).growX().pad(20).padBottom(4);
-		table.row();	
-		table.button(Iconc.play + " YouTube", Styles.defaultt, () -> {
-            if(!Core.app.openURI("https://www.youtube.com/@agzam4/")){
-            	Vars.ui.showErrorMessage("@linkfail");
-                Core.app.setClipboardText("https://www.youtube.com/@agzam4/");
-            }
-		}).growX().pad(20).padBottom(4);
-		table.row();
+		table.table(t -> {
+			t.button(Iconc.github + " Github", Styles.defaultt, () -> {
+	            if(!Core.app.openURI("https://github.com/Agzam4")){
+	                Vars.ui.showErrorMessage("@linkfail");
+	                Core.app.setClipboardText("https://github.com/Agzam4");
+	            }
+			}).growX().fillX().height(54f).marginLeft(10).padRight(5f);
+			t.button(Iconc.play + " YouTube", Styles.defaultt, () -> {
+	            if(!Core.app.openURI("https://www.youtube.com/@agzam4/")){
+	            	Vars.ui.showErrorMessage("@linkfail");
+	                Core.app.setClipboardText("https://www.youtube.com/@agzam4/");
+	            }
+			}).growX().fillX().height(54f).marginLeft(10).padLeft(5f);
+		}).growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 		
 //		table.table(Tex.button, t -> {
 //            t.margin(10f);
@@ -272,16 +387,66 @@ public class ModSettingsDialog extends Table {
 	    table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();
 	}
 	
-	private static void unlockDatabaseContent() {
-		Vars.content.units().each(u -> u.hidden = false);
-		Vars.content.items().each(i -> i.hidden = false);
-		Vars.content.liquids().each(l -> l.hidden = false);		
+	private static ObjectSet<UnlockableContent> hiddenContent = new ObjectSet<UnlockableContent>();
+
+	private static void hideHiddenContent() {
+		Vars.content.units().each(c -> c.hidden = hiddenContent.remove(c));
+		Vars.content.items().each(c -> c.hidden = hiddenContent.remove(c));
+		Vars.content.liquids().each(c -> c.hidden = hiddenContent.remove(c));
+	}
+	
+	private static void showHiddenContent() {
+		Vars.content.units().each(u -> {
+			if(u.hidden) hiddenContent.add(u);
+			u.hidden = false;
+		});
+		Vars.content.items().each(i -> {
+			if(i.hidden) hiddenContent.add(i);
+			i.hidden = false;
+		});
+		Vars.content.liquids().each(l -> {
+			if(l.hidden) hiddenContent.add(l);
+			l.hidden = false;
+		});		
+	}
+	
+
+	private static ObjectMap<Block, BuildVisibility> blocksBuildVisibility = new ObjectMap<>();
+	
+	private static void lockBlocksContent() {
+		Vars.content.blocks().each(b -> {
+			var v = blocksBuildVisibility.remove(b);
+			if(v == null) return;
+			b.buildVisibility = v;
+		});
 	}
 	
 	private static void unlockBlocksContent() {
 		Vars.content.blocks().each(b -> {
+			blocksBuildVisibility.put(b, b.buildVisibility);
 			b.buildVisibility = BuildVisibility.shown;
 		});
+	}
+
+	private static String lastCategoryName = null;
+	
+	public static void setCategory(String name) {
+		clearCategory();
+		Vars.ui.settings.addCategory(name, Icon.wrench, ModSettingsDialog::builder);		
+		lastCategoryName = name;
+	}
+
+	public static void clearCategory() {
+		if(lastCategoryName == null) return;
+		Vars.ui.settings.getCategories().remove(c -> c.name.equals(lastCategoryName));
+	}
+
+	public static void updateCategory() {
+		if(UpdateInfo.needUpdate()) {
+			ModSettingsDialog.setCategory(ModWork.bungle("settings.name") + " [red]" + Iconc.warning);
+		} else {
+			ModSettingsDialog.setCategory(ModWork.bungle("settings.name"));
+		}		
 	}
 	
 }

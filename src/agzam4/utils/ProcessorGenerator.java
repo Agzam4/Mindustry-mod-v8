@@ -17,6 +17,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Nullable;
+import arc.util.Time;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.game.EventType.BlockBuildEndEvent;
@@ -78,8 +79,8 @@ public class ProcessorGenerator {
 				Tile taped = Vars.world.tile(lastTap);
 				
 				float size = taped.block().size*Vars.tilesize/2f;
-				float size1 = size + Vars.tilesize*Mathf.cosDeg(AgzamMod.updates*2f)/2f;
-				float size2 = size - Vars.tilesize*Mathf.cosDeg(AgzamMod.updates*3f)/2f;
+				float size1 = size + Vars.tilesize*Mathf.cosDeg(Time.delta*2f)/2f;
+				float size2 = size - Vars.tilesize*Mathf.cosDeg(Time.delta*3f)/2f;
 				Lines.stroke(taped.block().size);
 				MyDraw.rotatingArcs(taped.build, size1, 1f);
 				MyDraw.rotatingArcs(taped.build, size2, -1f);

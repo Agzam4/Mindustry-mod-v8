@@ -2,8 +2,13 @@ package agzam4;
 
 import java.io.OutputStream;
 
+import agzam4.struct.Boolc2;
 import arc.Core;
 import arc.files.Fi;
+import arc.func.Boolc;
+import arc.func.Boolf2;
+import arc.func.Cons;
+import arc.func.Cons2;
 import arc.func.Floatc;
 import arc.util.ArcRuntimeException;
 import arc.util.Http;
@@ -22,9 +27,9 @@ public class UpdateInfo {
 	public static boolean isCurrentSessionChecked = false;
 	private static float modImportProgress;
 	
-	public static void check() {
+	public static void check(Boolc2 onCheck) {
 		Log.info("Checking mod updates");
-		Http.get(Vars.ghApi + "/repos/Agzam4/Mindustry-mod-v8/releases", res -> {
+		Http.get(Vars.ghApi + "/repos/" + AgzamMod.getRepo() + "/releases", res -> {
 			String version = Vars.mods.getMod("agzam4mod").meta.version;
 			if(version == null) version = "1.0";
 			
@@ -35,12 +40,22 @@ public class UpdateInfo {
 				String ver = latest.getString("tag_name");
 				ver = ver.replaceFirst("v", "");
 				Log.info("Version: @/@", version, ver);
+				boolean old = needUpdate();
 				ModWork.setting("needupdate", !version.equalsIgnoreCase(ver));
+				onCheck.get(old, needUpdate());
 			}
 			UpdateInfo.isCurrentSessionChecked = true;
 		}, t -> Core.app.post(() -> {}));
 	}
-	
+
+	public static String currentName() {
+		return AgzamMod.mod.meta.displayName;
+	}
+
+	public static String currentVersion() {
+		return AgzamMod.mod.meta.version;
+	}
+
 	public static boolean needUpdate() {
 		return ModWork.settingDef("needupdate", false);
 	}

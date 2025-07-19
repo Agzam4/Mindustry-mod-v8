@@ -23,11 +23,15 @@ public class Debug {
 	}
 	
 	public static void init() {
-		Vars.mods.getScripts().context.evaluateString(Vars.mods.getScripts().scope,
-				"var mod = Vars.mods.getMod(\"agzam4mod\");\n"
-				+ "var get = (pkg) => mod.loader.loadClass(pkg).newInstance();\n"
-				+ "const AgzamDebug = get(\"agzam4.debug.Debug\")\n"
-				+ "const AgzamUI = get(\"agzam4.MobileUI\")", "main.js", 0);
+		try {
+			Vars.mods.getScripts().context.evaluateString(Vars.mods.getScripts().scope,
+					"var mod = Vars.mods.getMod(\"agzam4mod\");\n"
+					+ "var get = (pkg) => mod.loader.loadClass(pkg).newInstance();\n"
+					+ "const AgzamDebug = get(\"agzam4.debug.Debug\")\n"
+					+ "const AgzamUI = get(\"agzam4.MobileUI\")", "main.js", 0);
+		} catch (Exception e) {
+			Vars.ui.showErrorMessage(e.getMessage());
+		}
 
 //		Team.sharded.rules().unitBuildSpeedMultiplier = .2f;
 //		Team.sharded.rules().unitCostMultiplier = 5f;

@@ -6,6 +6,7 @@ import arc.graphics.g2d.*;
 import arc.math.geom.Position;
 import arc.scene.ui.layout.Scl;
 import arc.util.Align;
+import arc.util.Time;
 import arc.util.pooling.Pools;
 import mindustry.graphics.Layer;
 import mindustry.ui.Fonts;
@@ -148,7 +149,7 @@ public class MyDraw {
 
 	public static void rotatingArcs(Position center, float rad, float speed) {
 		if(center == null) return;
-		float statAngle = AgzamMod.updates * speed;//*speed*.36f)%360;
+		float statAngle = Time.time * speed;//*speed*.36f)%360; // TODO: check
 		for (int angle = 0; angle < 360; angle+=90) {
 			Lines.arc(center.getX(), center.getY(), rad, .2f, statAngle+angle);
 		}		
