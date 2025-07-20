@@ -27,8 +27,8 @@ public class Debug {
 			Vars.mods.getScripts().context.evaluateString(Vars.mods.getScripts().scope,
 					"var mod = Vars.mods.getMod(\"agzam4mod\");\n"
 					+ "var get = (pkg) => mod.loader.loadClass(pkg).newInstance();\n"
-					+ "const AgzamDebug = get(\"agzam4.debug.Debug\")\n"
-					+ "const AgzamUI = get(\"agzam4.MobileUI\")", "main.js", 0);
+					+ "var AgzamDebug = get(\"agzam4.debug.Debug\")\n"
+					+ "var AgzamUI = get(\"agzam4.ui.MobileUI\")", "main.js", 0);
 		} catch (Exception e) {
 			Vars.ui.showErrorMessage(e.getMessage());
 		}

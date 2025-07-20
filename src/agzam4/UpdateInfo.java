@@ -5,10 +5,6 @@ import java.io.OutputStream;
 import agzam4.struct.Boolc2;
 import arc.Core;
 import arc.files.Fi;
-import arc.func.Boolc;
-import arc.func.Boolf2;
-import arc.func.Cons;
-import arc.func.Cons2;
 import arc.func.Floatc;
 import arc.util.ArcRuntimeException;
 import arc.util.Http;
@@ -24,8 +20,32 @@ import mindustry.mod.Mods.LoadedMod;
 
 public class UpdateInfo {
 	
+	public static enum CheckUpdatesInterval {
+		onServerConnect, onLoad;
+		
+		public static CheckUpdatesInterval of(@Nullable String name, CheckUpdatesInterval def) {
+			if(name == null) return def;
+			for (var v : values()) {
+				if(v.name().equals(name)) return v;
+			}
+			return def;
+		}
+	}
+	
+	private static CheckUpdatesInterval checkUpdatesInterval = CheckUpdatesInterval.of(ModWork.settingDef("check-updates-interval", null), CheckUpdatesInterval.onServerConnect);
+	
 	public static boolean isCurrentSessionChecked = false;
 	private static float modImportProgress;
+
+	public static CheckUpdatesInterval checkUpdatesInterval() {
+		return checkUpdatesInterval;
+	}
+	
+	public static void checkUpdatesInterval(CheckUpdatesInterval cui) {
+		checkUpdatesInterval = cui;
+		ModWork.setting("check-updates-interval", cui.name());
+	}
+	
 	
 	public static void check(Boolc2 onCheck) {
 		Log.info("Checking mod updates");

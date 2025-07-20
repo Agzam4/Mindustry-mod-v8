@@ -120,7 +120,7 @@ public class ModWork {
 			Core.settings.put("agzam4mod.settings.keybinds." + keybind, key.ordinal());
 		}
 
-		boolean isDown = false;
+		public boolean isDown = false;
 
 		boolean isDown() {
 			return isDown;
@@ -282,7 +282,11 @@ public class ModWork {
 
 	
 	public static boolean settingDef(String string, boolean def) {
-		return Core.settings.getBool("agzam4mod.settings." + string, def);
+		try {
+			return Core.settings.getBool("agzam4mod.settings." + string, def);
+		} catch (Exception e) {
+			return def;
+		}
 	}
 
 	public static void setting(String string, boolean value) {

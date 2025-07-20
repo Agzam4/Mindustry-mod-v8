@@ -5,7 +5,9 @@ import agzam4.AgzamMod;
 import agzam4.Awt;
 import agzam4.ModWork;
 import agzam4.UpdateInfo;
+import agzam4.UpdateInfo.CheckUpdatesInterval;
 import agzam4.debug.Debug;
+import agzam4.ui.editor.MobileUIEditor;
 import agzam4.uiOverride.CustomChatFragment;
 import agzam4.uiOverride.UiOverride;
 import arc.Core;
@@ -15,6 +17,7 @@ import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
 import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.ButtonGroup;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
@@ -26,6 +29,7 @@ import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
 import mindustry.gen.Icon;
 import mindustry.gen.Iconc;
+import mindustry.gen.Tex;
 import mindustry.graphics.Pal;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.Fonts;
@@ -87,7 +91,20 @@ public class ModSettingsDialog extends Table {
 				.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
 			}
 			// Vars.mods.getMod("agzam4mod").meta.version = 'as'
+
+            t.table(Tex.button, tg -> {
+                tg.margin(10f);
+                var group = new ButtonGroup<>();
+                var style = Styles.flatTogglet;
+                for (var cui : CheckUpdatesInterval.values()) {
+                    tg.button(cui.name(), style, () -> {
+                    	UpdateInfo.checkUpdatesInterval(cui);
+                    }).growX().fillX().group(group).height(35f);
+				}
+            }).fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+
 			if(Debug.debug) {
+				t.row();
 				t.button("Reload mod", Icon.refreshSmall, () -> {
 //					try {
 //						ClassLoaderCloser.close(AgzamMod.mod.loader);
@@ -110,15 +127,14 @@ public class ModSettingsDialog extends Table {
 			        Vars.mods.list().add(mod);
 			        mod.main.init();
 					Vars.ui.showInfo("Reloaded");
-				})
-				.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
+					settingsTable.visible = false;
+				}).fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
 			}
 		};
 		
 		updateTable = table.table(updateBuilder);
 		updateTable.fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 		updateTable.row();
-		
 		
 		addCategory(table, "unlock");
 		
@@ -240,13 +256,23 @@ public class ModSettingsDialog extends Table {
 		}
 		
 		
-		addCategory(table, "utils");
-//		addKeyBind(table, KeyBinds.openUtils);
+		/*
+		 * addCategory(table, "utils");
+		 * addKeyBind(table, KeyBinds.openUtils);
+		 */
 		
 		addCategory(table, "custom-ui");
+
+		if(MobileUI.enabled) {
+			table.button(ModWork.bungle("settings.edit-mobile-ui"), () -> {
+				MobileUIEditor.instance.show();
+			}).growX().fillX().pad(6).colspan(4).padTop(10).padBottom(10).row();
+		}
+		
 		addCheck(table, "custom-chat-fragment", b -> UiOverride.set());
 		addCheck(table, "outline-chat", b -> CustomChatFragment.font = b ? Fonts.outline : Fonts.def);
 
+		
 		
 		createMessagesGradientPicker(table);
 		table.row();
@@ -266,6 +292,9 @@ public class ModSettingsDialog extends Table {
 	            }
 			}).growX().fillX().height(54f).marginLeft(10).padLeft(5f);
 		}).growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+		
+		table.row();
+//		addCategory(table, "mobile-ui");
 		
 //		table.table(Tex.button, t -> {
 //            t.margin(10f);

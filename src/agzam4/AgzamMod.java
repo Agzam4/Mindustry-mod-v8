@@ -17,6 +17,7 @@ import mindustry.mod.Mods.LoadedMod;
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
 import agzam4.industry.IndustryCalculator;
+import agzam4.ui.MobileUI;
 import agzam4.ui.ModSettingsDialog;
 import agzam4.ui.mapeditor.MapEditorDialog;
 import agzam4.uiOverride.UiOverride;
@@ -158,10 +159,8 @@ public class AgzamMod extends Mod {
 
 		// mobile OK
 		
-		if(Vars.mobile) {
-			MobileUI.build();
-		} else {}
-
+		MobileUI.init();
+		
 		if(true) return;
 			
 		} catch (Throwable e) {
@@ -173,6 +172,9 @@ public class AgzamMod extends Mod {
 	public void dispose() {
 		ModSettingsDialog.clearCategory();
 		Vars.ui.settings.getCategories().removeAll(c -> c.name.equals("TEST EDITOR"));
+		MobileUI.remove();
+		Events.clear();
+		CursorTracker.dispose();
 	}
 
 	public static void hideUnits(boolean b) {

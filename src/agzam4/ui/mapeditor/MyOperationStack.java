@@ -1,7 +1,6 @@
 package agzam4.ui.mapeditor;
 
 import arc.struct.Seq;
-import mindustry.editor.DrawOperation;
 
 public class MyOperationStack {
 

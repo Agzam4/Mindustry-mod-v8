@@ -27,6 +27,7 @@ public class CursorTracker {
 	
 	public static void draw() {
 		if(!ModWork.setting("cursors-tracking")) return;
+		if(cursors == null) return;
 		for (int i = 0; i < Groups.player.size(); i++) {
 			Player p = Groups.player.index(i);
 			if(p == player) continue;
@@ -56,8 +57,7 @@ public class CursorTracker {
 		
 		updates++;
 	}
-
-
+	
 	private static class PlayerCursor {
 
 		int id;
@@ -114,5 +114,9 @@ public class CursorTracker {
 			MyDraw.normal(cursor, color, x, y, Layer.playerName);
 			MyDraw.text(p.coloredName(), x, y, .5f, true);
 		}
+	}
+
+	public static void dispose() {
+		cursors = null;
 	}
 }
