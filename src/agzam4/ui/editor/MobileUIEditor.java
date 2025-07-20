@@ -317,13 +317,13 @@ public class MobileUIEditor extends BaseDialog {
 	        if(!ScissorStack.push(rect.set(sx, sy, tilesize, tilesize))) return;
 	        
 	        int count = 4;
-	        float lstroke = tilesize/3f/count;
+	        float lstroke = tilesize*Mathf.sqrt2/4f/count;
 	        
 
 	        
 	        Lines.stroke(lstroke);
 	        for (int i = 0; i < count; i++) {
-				float t = (i + Time.time/Time.toSeconds)%count*tilesize/count;
+				float t = (i + Time.globalTime/Time.toSeconds)%count*tilesize/count;
 
 				Lines.line(sx, sy+t, sx+t, sy);
 				
