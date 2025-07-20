@@ -77,6 +77,50 @@ public class ObjectInspector extends BaseDialog {
         t.labelWrap("Class: " + object.getClass()).growX().wrapLabel(false).row();
 
 
+        if(object instanceof Class<?> cls) {
+            t.add("Static").color(Pal.accent).colspan(4).pad(10).padBottom(4).get().setAlignment(Align.left);
+            t.row();
+            t.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();
+            
+            for (var field : cls.getFields()) {
+        		if(!Modifier.isStatic(field.getModifiers())) continue;
+            	if(field.getType() == Sound.class) continue;
+        		if(field.getType() == Effect.class) continue;
+        		if(!field.getName().contains(searchText)) continue;
+        		try {
+        			field.setAccessible(true);
+        			Object obj = field.get(null);
+        			if(obj == null) {
+        				t.labelWrap("[white]" + field.getName() + ": [magenta]null").wrapLabel(false).growX().row();
+        				continue;
+        			}
+        			String str = "";
+        			str = "[lightgray]" + obj;
+        			if(obj instanceof Boolean) str = ((Boolean) obj) ? "[lime]true" : "[red]false";
+        			if(obj instanceof TextureRegion) {
+        				TextureRegion reg = (TextureRegion) obj;
+        				t.button(" " + field.getName(), new TextureRegionDrawable(reg), Styles.grayt, 25f, () -> {
+        					new ObjectInspector(obj).show();
+        				}).align(Align.left).wrapLabel(false).growX().get().getLabel().setAlignment(Align.left);
+        				t.row();
+        				continue;
+        			}
+        			if(obj instanceof Sound) continue;
+        			if(obj instanceof Color) str = "[#" + obj.toString() + "]" + obj;
+        			t.button(field.getName() + ": " + str, Styles.grayt, () -> {
+    					new ObjectInspector(obj).show();
+        			}).align(Align.left).wrapLabel(false).growX().get().getLabel().setAlignment(Align.left);
+        			t.row();
+        		} catch (Error | Exception e) {
+//    				t.labelWrap("[white]" + field.getName() + ": [red]" + e.getMessage()).wrapLabel(false).growX().row();
+        			continue;
+        		}
+			}
+            
+            
+        }
+        
+
         t.add("Declared Fields").color(Pal.accent).colspan(4).pad(10).padBottom(4).get().setAlignment(Align.left);
         t.row();
         t.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();
