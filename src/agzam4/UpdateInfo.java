@@ -30,6 +30,10 @@ public class UpdateInfo {
 			}
 			return def;
 		}
+		
+		public String kebab() {
+			return Strings.camelToKebab(name());
+		}
 	}
 	
 	private static CheckUpdatesInterval checkUpdatesInterval = CheckUpdatesInterval.of(ModWork.settingDef("check-updates-interval", null), CheckUpdatesInterval.onServerConnect);

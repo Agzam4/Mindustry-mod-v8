@@ -1,5 +1,7 @@
 package agzam4.ui;
 
+import static mindustry.Vars.ui;
+
 import agzam4.Afk;
 import agzam4.AgzamMod;
 import agzam4.Awt;
@@ -91,13 +93,12 @@ public class ModSettingsDialog extends Table {
 				.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
 			}
 			// Vars.mods.getMod("agzam4mod").meta.version = 'as'
-
             t.table(Tex.button, tg -> {
                 tg.margin(10f);
                 var group = new ButtonGroup<>();
                 var style = Styles.flatTogglet;
                 for (var cui : CheckUpdatesInterval.values()) {
-                    tg.button(cui.name(), style, () -> {
+                    tg.button(ModWork.bungle("settings.check-updates." + cui.kebab()), style, () -> {
                     	UpdateInfo.checkUpdatesInterval(cui);
                     }).growX().fillX().group(group).height(35f);
 				}
@@ -403,10 +404,17 @@ public class ModSettingsDialog extends Table {
 	}
 	
 	private static void addCheck(Table table, String settings, boolean def, Cons<Boolean> listener) {
-		table.check(ModWork.bungle("settings." + settings), ModWork.settingDef(settings, def), b -> {
+		String tooltip = ModWork.bungle("settings-tooltip." + settings);
+		var cell = table.check(ModWork.bungle("settings." + settings), ModWork.settingDef(settings, def), b -> {
 			ModWork.setting(settings, b);
 			if(listener != null) listener.get(b);
-		}).colspan(4).pad(10).padBottom(4).tooltip(ModWork.bungle("settings-tooltip." + settings)).left().row();
+		}).colspan(4).pad(10).padBottom(4).left();
+		cell.row();
+		if(Vars.mobile) {
+	        Vars.ui.addDescTooltip(cell.get(), tooltip);
+		} else {
+			cell.tooltip(tooltip);
+		}
 	}
 	
 	private static void addCategory(Table table, String category) {
