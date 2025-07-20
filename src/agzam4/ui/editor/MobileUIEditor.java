@@ -23,6 +23,8 @@ import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.util.Time;
+import mindustry.gen.Icon;
+import mindustry.gen.Iconc;
 import mindustry.graphics.Pal;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
@@ -83,18 +85,18 @@ public class MobileUIEditor extends BaseDialog {
 
         clearChildren();
         setFillParent(true);
-        
+        margin(0);
         table(cont -> {
+        	cont.margin(0);
             cont.left();
 
-            cont.table(t -> t.add(view).grow()).grow().row();
+            cont.table(t -> t.add(view).grow().margin(0)).margin(0).grow().row();
             
             cont.table(bottom -> {
 //			bottom.table(container -> {
 				Table container = new Table();
 				
 				ScrollPane pane = new ScrollPane(container);
-
 		        for (var button : MobileButtons.values()) {
 		        	var b = button.prop.button(false);
 		        	b.changed(() -> {
@@ -104,13 +106,25 @@ public class MobileUIEditor extends BaseDialog {
 		        	});
 		        	b.setStyle(Styles.defaultt);
 		        	b.setText(button.prop.text + " " + ModWork.bungle("mobile-ui.button." + button.prop.name));
-		        	container.add(b).height(bottomTable).wrapLabel(false);
+		        	container.add(b).height(bottomTable).wrapLabel(false).pad(3f);
 		        	b.row();
 				}
-		        container.background(Styles.grayPanel);
-//			}).growX().fillX();
 		        
-		        bottom.add(pane).growX().fillX(); 
+		        bottom.add(pane).margin(0).growX().fillX().row();
+		        final float resizeSize = 40f;
+		        bottom.table(t -> {
+		        	t.button("-", () -> {
+		        		MobileUI.tilesize(tilesize-1);
+		        	}).disabled(b -> tilesize <= 25).size(resizeSize);
+		        	t.label(() -> Integer.toString((int) tilesize)).pad(0, 10f, 0, 10f);
+		        	t.button("+", () -> {
+		        		MobileUI.tilesize(tilesize+1);
+		        	}).disabled(b -> tilesize >= 100).size(resizeSize);
+		        	
+		        }).margin(0).growX().fillX().height(resizeSize).row();
+		        
+		        bottom.background(Styles.grayPanel);
+		        
             }).margin(0).bottom().growX().row();
             
 //            cont.table(mid -> {
@@ -148,7 +162,7 @@ public class MobileUIEditor extends BaseDialog {
 
 
 
-        }).grow();		
+        }).grow().margin(0).pad(0);		
 		
         MobileUI.rebuild();
 		
@@ -223,6 +237,9 @@ public class MobileUIEditor extends BaseDialog {
 
 		
 		private void select(float x, float y) {
+			if(x < this.x || x > this.x + width) return;
+			if(y < this.y || y > this.y + height) return;
+			
 //			if(y-this.y <= bottomTable) return;
 	        float shiftX = shiftX();
 	        float shiftY = shiftY();
@@ -263,30 +280,18 @@ public class MobileUIEditor extends BaseDialog {
 
 	        Draw.color(Color.black, .9f);
 	        Fill.crect(x, y, width, height);
-			
-	        Draw.color(Pal.darkestGray, 1f);
 
-//	        float shiftX = (tiles.minX - tiles.width/2f) * tilesize + width/2f;
-//	        float shiftY = (tiles.minY - tiles.height/2f) * tilesize + height/2f;
 	        float shiftX = shiftX();
 	        float shiftY = shiftY();
 
-//	        shiftX = tilesize;
-//	        shiftY %= tilesize;
+	        Draw.color(Pal.darkestGray, 1f);
 	        
-//					float x = ;
-//					float y = (button.y()-tiles.minY - tiles.height/2f) * tilesize + height/2f;
-
-	        for(float x = shiftX%tilesize; x <= this.width; x += tilesize) Lines.line(x, y, x, height);
-	        for(float y = shiftY%tilesize; y <= this.width; y += tilesize) Lines.line(x, y, width, y);
+	        for(float x = shiftX%tilesize; x <= this.x+this.width; x += tilesize) Lines.line(x, y, x, y+height);
+	        for(float y = shiftY%tilesize; y <= this.y+this.height; y += tilesize) Lines.line(x, y, x+width, y);
 	        
 	        Draw.color(Pal.gray);
 
 	        final float border = 2f;
-	        
-//	        Fill.rect(selected.x * tilesize + tilesize/2f + shiftX, selected.y * tilesize + tilesize/2f + shiftY, tilesize + border*2f, tilesize + border*2f);
-
-//	        Fill.rect(width/2f, height/2f, tiles.width*tilesize + border*2f, tiles.height*tilesize + border*2f);
 
 	        for (var button : tiles) {
 	        	float x = this.x + (button.x()-tiles.minX - tiles.width/2f) * tilesize + width/2f + tilesize/2f;
@@ -309,7 +314,7 @@ public class MobileUIEditor extends BaseDialog {
 	        float sx = selected.x * tilesize + shiftX;
 	        float sy = selected.y * tilesize + shiftY;
 
-	        if(!ScissorStack.push(rect.set(sx, Math.max(sy, y+bottomTable), tilesize, tilesize))) return;
+	        if(!ScissorStack.push(rect.set(sx, sy, tilesize, tilesize))) return;
 	        
 	        int count = 4;
 	        float lstroke = tilesize/3f/count;
@@ -327,14 +332,16 @@ public class MobileUIEditor extends BaseDialog {
 			}
 	        ScissorStack.pop();
 
-	        if(!ScissorStack.push(rect.set(x, y+bottomTable, width, height-bottomTable))) return;
+	        if(!ScissorStack.push(rect.set(x, y, width, height))) return;
 	      
 	        Draw.color(Pal.accent);
 	        Lines.stroke(border);
 	        Lines.rect(sx-border, sy-border, tilesize+border*2f, tilesize+border*2f);
+
 	        
 	        ScissorStack.pop();
-	        
+
+//	        Lines.rect(x,y,width,height);
 
 //	        ScissorStack.pop();
 //	        for(int y = minY; y <= maxY; y++) Lines.line(minX * unitSize, progY + y * unitSize, maxX * unitSize, progY + y * unitSize);

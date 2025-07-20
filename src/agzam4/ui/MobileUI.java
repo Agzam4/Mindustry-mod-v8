@@ -21,17 +21,15 @@ import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.Cell;
-import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.scene.utils.Elem;
-import arc.struct.Seq;
-import arc.util.Log;
 import arc.util.Nullable;
 import mindustry.Vars;
 import mindustry.gen.Iconc;
 import mindustry.gen.Tex;
 import mindustry.ui.Styles;
 
+import static agzam4.ui.MobileUI.tilesize;
 import static mindustry.ui.Styles.*;
 
 public class MobileUI {
@@ -80,7 +78,7 @@ public class MobileUI {
 	
 	public static boolean enabled = ModWork.settingDef("mobile-ui", false) | Vars.mobile;
 
-    public final static float tilesize = Scl.scl(50f);
+    public static float tilesize = ModWork.settingFloat("mobile-ui-buttons-size", 50f);
 
 	public static void enable() {
 		if(!enabled) build();
@@ -177,13 +175,11 @@ public class MobileUI {
 				.width(1 * tilesize).height(1 * tilesize).get();
 		
 		
-		Log.info("mobile ui size: @x@", (tiles.width) * tilesize, (tiles.height) * tilesize);
 //		HudFragment;
 		
 //		container.labelWrap("").width(100).height(33).row();
 		
 		for (var button : tiles) {
-			Log.info("button [gold]@[]", button.name);
 			var cell = container.add(button.button(true));
 			
 	        cell.update(t -> {
@@ -285,6 +281,14 @@ public class MobileUI {
 					Mathf.clamp(y, parent.getPrefHeight()/2f, 
 							Core.scene.getHeight() - parent.getPrefHeight()/2f));
 		}
+	}
+
+
+	public static void tilesize(float size) {
+		if(size > 100) size = 100;	
+		if(size < 25) size = 25;		
+		tilesize = size;
+		ModWork.setting("mobile-ui-buttons-size", tilesize);
 	}
 
 
