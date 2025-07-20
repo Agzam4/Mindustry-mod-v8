@@ -8,28 +8,20 @@ import agzam4.ui.editor.ButtonProps;
 import agzam4.ui.editor.ButtonsPropsTable;
 import agzam4.utils.PlayerUtils;
 import arc.Core;
-import arc.func.Cons;
 import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
-import arc.scene.event.Touchable;
-import arc.scene.style.Drawable;
-import arc.scene.style.TextureRegionDrawable;
+import arc.scene.event.*;
+import arc.scene.style.*;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.TextButton.TextButtonStyle;
-import arc.scene.ui.layout.Cell;
-import arc.scene.ui.layout.Table;
-import arc.scene.utils.Elem;
+import arc.scene.ui.layout.*;
 import arc.util.Nullable;
 import mindustry.Vars;
-import mindustry.gen.Iconc;
-import mindustry.gen.Tex;
+import mindustry.gen.*;
 import mindustry.ui.Styles;
 
-import static agzam4.ui.MobileUI.tilesize;
 import static mindustry.ui.Styles.*;
 
 public class MobileUI {
@@ -214,20 +206,6 @@ public class MobileUI {
 		
 		mainTable.visible(() -> ModWork.acceptKey());
 	}
-
-	private static Cell<TextButton> applyStyle(Cell<TextButton> cell) {
-		cell.width(50).height(50).margin(0).pad(0);
-		return cell;
-	}
-	
-	private static Cell<TextButton> toggle(Table table, char icon, Cons<Boolean> listener) {
-        TextButton button = Elem.newButton(icon + "", toggleButtonsStyle, null);
-        button.changed(() -> {
-			listener.get(button.isChecked());
-        });
-		return applyStyle(table.add(button));
-	}
-
 
 	static class Dragg {
 		
