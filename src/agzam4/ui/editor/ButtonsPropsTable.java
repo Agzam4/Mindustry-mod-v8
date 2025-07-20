@@ -2,19 +2,12 @@ package agzam4.ui.editor;
 
 import java.util.Iterator;
 
-import agzam4.AgzamMod;
 import agzam4.ModWork;
-import agzam4.ModWork.KeyBinds;
-import agzam4.industry.IndustryCalculator;
 import agzam4.ui.MobileUI.MobileButtons;
-import agzam4.utils.PlayerUtils;
-import arc.func.Cons;
 import arc.func.Prov;
 import arc.math.geom.Point2;
 import arc.struct.Seq;
-import arc.util.Log;
-import arc.util.Strings;
-import mindustry.gen.Iconc;
+import arc.util.*;
 
 public class ButtonsPropsTable implements Iterable<ButtonProps> {
 
@@ -69,7 +62,6 @@ public class ButtonsPropsTable implements Iterable<ButtonProps> {
 		}
 		prop.position(pos.x, pos.y);
 		if(type == MobileButtons.empty) buttons.add(prop);
-		Log.info(buttons);
 	}
 
 	public static ButtonsPropsTable load(String name, Prov<ButtonsPropsTable> def) {

@@ -1,14 +1,11 @@
 package agzam4.ui.editor;
 
-import agzam4.ModWork;
 import agzam4.ui.MobileUI.MobileButtons;
 import arc.func.Boolc;
 import arc.math.geom.Point2;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Table;
-import arc.util.Log;
-import arc.util.Nullable;
-import arc.util.Strings;
+import arc.util.*;
 import mindustry.ui.Styles;
 
 import static agzam4.ui.MobileUI.tilesize;
@@ -66,32 +63,17 @@ public class ButtonProps {
 	}
 	
 	public void button2(Table table) {
-		
         TextButton button = new TextButton(text, isToggle() ? Styles.logicTogglet : Styles.grayt);
         button.changed(() -> {
         	if(onToggle != null) onToggle.get(button.isChecked());
         	if(onClick != null) onClick.run();
         });
-//        button.setPosition(position.x * tilesize, position.y * tilesize);
-//        button.setFillParent(true);
-//        button.setSize(tilesize, tilesize);
-        
-//        button.update(() -> {
-////            button.setFillParent(true);
-////            button.setSize(tilesize, tilesize);
-//            button.setBounds(position.x * tilesize, position.y * tilesize, tilesize, tilesize);
-//        });
         button.setDisabled(name.isEmpty());
-        
         var cell = table.add(button).margin(0).pad(0);
-//        cell.setBounds(position.x * tilesize, position.y * tilesize, tilesize, tilesize);
-
         cell.update(t -> {
         	t.setBounds(position.x * tilesize, -position.y * tilesize, tilesize, tilesize);
         	cell.setBounds(position.x * tilesize, -position.y * tilesize, tilesize, tilesize);
         });
-        
-		Log.info("button [gold]@[] (@,@)", name, position.x * tilesize, position.y * tilesize);
 	}
 
 	public int x() {
