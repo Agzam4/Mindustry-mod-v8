@@ -13,8 +13,8 @@ public class ButtonsPropsTable implements Iterable<ButtonProps> {
 
 	public Seq<ButtonProps> buttons;
 
-	public int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
-	public int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
+	private int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
+	private int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
 	public int width, height;
 
 	public ButtonsPropsTable(Seq<ButtonProps> buttons) {
@@ -43,6 +43,13 @@ public class ButtonsPropsTable implements Iterable<ButtonProps> {
 		}
 		width = maxX - minX + 1;
 		height = maxY - minY + 1;
+
+		for (var button : buttons) {
+			button.position.x -= minX;
+			button.position.y -= minY;
+		}
+		minX = 0;
+		minY = 0;
 	}
 	
 	public boolean has(int x, int y) {

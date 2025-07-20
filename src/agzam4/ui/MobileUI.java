@@ -10,6 +10,7 @@ import agzam4.utils.PlayerUtils;
 import arc.Core;
 import arc.input.KeyCode;
 import arc.math.Mathf;
+import arc.math.geom.Rect;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.*;
@@ -17,6 +18,7 @@ import arc.scene.style.*;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.*;
+import arc.util.Log;
 import arc.util.Nullable;
 import mindustry.Vars;
 import mindustry.gen.*;
@@ -27,6 +29,7 @@ import static mindustry.ui.Styles.*;
 public class MobileUI {
 	
 	public static boolean collapsed = false;
+	private static Rect box = new Rect();
 
 	/*
 	 * TODO: unlinked tiles to different panels 
@@ -37,7 +40,10 @@ public class MobileUI {
 		remove(new ButtonProps("remove", () -> {}).icon(Iconc.trash)), // editor only
 		empty(new ButtonProps("empty", () -> {}).icon(Iconc.move)), // editor only
 		utils(new ButtonProps("utils", PlayerUtils::show).icon(Iconc.wrench).position(0, 0)),
-		collapse(new ButtonProps("collapse", b -> MobileUI.collapsed = b).icon(Iconc.resize).position(1, 0).collapseable(false)),
+		collapse(new ButtonProps("collapse", b -> {
+			collapsed = b;
+			
+		}).icon(Iconc.resize).position(1, 0).collapseable(false)),
 		hideUnits(new ButtonProps("hide-units", b -> AgzamMod.hideUnits(b)).icon(Iconc.units).position(0, -1)),
 		lockUnit(new ButtonProps("lock-unit", b -> AgzamMod.lockUnit(b)).icon(Iconc.lock).position(1, -1)),
 		selection(new ButtonProps("selection", b -> KeyBinds.selection.isDown = b).icon(Iconc.book).position(0, -2)),
@@ -170,18 +176,24 @@ public class MobileUI {
 //		HudFragment;
 		
 //		container.labelWrap("").width(100).height(33).row();
+
+		tiles.update();
+		
 		
 		for (var button : tiles) {
 			var cell = container.add(button.button(true));
 			
 	        cell.update(t -> {
-	        	int x = button.x() - MobileButtons.collapse.prop.x();
-	        	int y = button.y() - MobileButtons.collapse.prop.y();
+	        	int x = button.x();//MobileButtons.collapse.prop.x();
+	        	int y = button.y();//MobileButtons.collapse.prop.y();
 	        	t.setBounds(x * tilesize, y * tilesize, tilesize, tilesize);
 	        	cell.setBounds(x * tilesize, y * tilesize, tilesize, tilesize);
 	        });
-	        if(button.collapseable) cell.visible(() -> !collapsed);
+	        if(button.collapseable) cell.visible(() -> !isCollapsed());
 		}
+		
+		
+		Log.info("box: @", box);
 		
 //		applyStyle(container.button(Iconc.wrench + "", buttonsStyle, PlayerUtils::show)).row();
 //
@@ -197,16 +209,36 @@ public class MobileUI {
 
 		Core.scene.add(mainTable);
 
-		new Dragg(mainTable, mainTable).setPosition(
-				ModWork.settingFloat("mobile-toolbar-x", 0), 
-				ModWork.settingFloat("mobile-toolbar-y", 0)
-				);
+		ElementDragg dragg = new ElementDragg(mainTable, "mobile-toolbar");
+//		.setPosition(
+//				ModWork.settingFloat("mobile-toolbar-x", 0), 
+//				ModWork.settingFloat("mobile-toolbar-y", 0)
+//				);
+		
+		dragg.box = box -> {
+			if(isCollapsed()) {
+				box.x = MobileButtons.collapse.prop.x()*tilesize;
+				box.y = MobileButtons.collapse.prop.y()*tilesize;
+				box.width = tilesize;
+				box.height = tilesize;
+				return;
+			}
+			box.x = 0;
+			box.y = 0;
+			box.width = tiles.width * tilesize;
+			box.height = tiles.height * tilesize;
+		};
 		
 //		new Dragg(container, container);
 		
 		mainTable.visible(() -> ModWork.acceptKey());
 	}
 
+	public static boolean isCollapsed() {
+		return collapsed && tiles.buttons.contains(MobileButtons.collapse.prop);
+	}
+	
+	@Deprecated
 	static class Dragg {
 		
 		Element dragger, parent;
@@ -252,12 +284,13 @@ public class MobileUI {
 							Core.scene.getHeight() - parent.getPrefHeight()/2f));
 		}
 
-		public void setPosition(float x, float y) {
+		public Dragg setPosition(float x, float y) {
 			parent.setPosition(
 					Mathf.clamp(x, parent.getPrefWidth()/2f, 
 							Core.scene.getWidth() - parent.getPrefWidth()/2f),
 					Mathf.clamp(y, parent.getPrefHeight()/2f, 
 							Core.scene.getHeight() - parent.getPrefHeight()/2f));
+			return this;
 		}
 	}
 

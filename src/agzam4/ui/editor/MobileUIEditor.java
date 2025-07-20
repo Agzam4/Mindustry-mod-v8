@@ -33,8 +33,10 @@ public class MobileUIEditor extends BaseDialog {
 	
     private MobileUIEditor() {
 		super("");
-		closeOnBack();
 		rebuld();
+		closeOnBack(() -> {
+			MobileUI.rebuild();
+		});
 	}
 	
 	Cell<TextButton> hover = null;
@@ -83,7 +85,6 @@ public class MobileUIEditor extends BaseDialog {
 		        
             }).margin(0).bottom().growX().row();
         }).grow().margin(0).pad(0);		
-        MobileUI.rebuild();
 	}
 	
 	private static class MobileUIEditorView extends Table {
@@ -137,8 +138,8 @@ public class MobileUIEditor extends BaseDialog {
 				var cell = add(button.button(false));
 				cell.get().touchable = Touchable.disabled;
 		        cell.update(t -> {
-					float x = this.x + (button.x()-tiles.minX - tiles.width/2f) * tilesize + width/2f;
-					float y = this.y + (button.y()-tiles.minY - tiles.height/2f) * tilesize + height/2f;
+					float x = this.x + (button.x() - tiles.width/2f) * tilesize + width/2f;
+					float y = this.y + (button.y() - tiles.height/2f) * tilesize + height/2f;
 		        	t.setBounds(x, y, tilesize, tilesize);
 		        	cell.setBounds(x, y, tilesize, tilesize);
 		        });
@@ -146,11 +147,11 @@ public class MobileUIEditor extends BaseDialog {
 		}
 
 		private float shiftX() {
-			return x + (-tiles.minX - tiles.width/2f) * tilesize + width/2f;
+			return x + ( - tiles.width/2f) * tilesize + width/2f;
 		}
 
 		private float shiftY() {
-			return y + (-tiles.minY - tiles.height/2f) * tilesize + height/2f;
+			return y + ( - tiles.height/2f) * tilesize + height/2f;
 		}
 		
 		@Override
@@ -173,8 +174,8 @@ public class MobileUIEditor extends BaseDialog {
 	        Draw.color(Pal.gray);
 	        final float border = 2f;
 	        for (var button : tiles) {
-	        	float x = this.x + (button.x()-tiles.minX - tiles.width/2f) * tilesize + width/2f + tilesize/2f;
-	        	float y = this.y + (button.y()-tiles.minY - tiles.height/2f) * tilesize + height/2f + tilesize/2f;
+	        	float x = this.x + (button.x() - tiles.width/2f) * tilesize + width/2f + tilesize/2f;
+	        	float y = this.y + (button.y() - tiles.height/2f) * tilesize + height/2f + tilesize/2f;
 		        Fill.rect(x, y, tilesize + border*2f, tilesize + border*2f);
 			}
 	        Draw.reset();
