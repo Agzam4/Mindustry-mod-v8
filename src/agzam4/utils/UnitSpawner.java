@@ -44,7 +44,6 @@ import mindustry.gen.Iconc;
 import mindustry.gen.Tex;
 import mindustry.gen.Unit;
 import mindustry.graphics.Layer;
-import mindustry.type.Item;
 import mindustry.type.UnitType;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
