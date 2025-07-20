@@ -1,17 +1,7 @@
 package agzam4.ui.mapeditor;
 
-import static mindustry.Vars.mobile;
-import static mindustry.Vars.ui;
-
-import java.awt.event.MouseAdapter;
-import java.util.Vector;
-
-import agzam4.MobileUI;
-import agzam4.ModWork;
 import agzam4.MyDraw;
-import agzam4.ui.ElementDragg;
 import arc.Core;
-import arc.graphics.Camera;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
@@ -19,34 +9,20 @@ import arc.graphics.g2d.Font;
 import arc.graphics.g2d.GlyphLayout;
 import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.ScissorStack;
-import arc.input.GestureDetector;
-import arc.input.GestureDetector.GestureListener;
 import arc.input.KeyCode;
-import arc.math.Mathf;
-import arc.math.geom.Bresenham2;
-import arc.math.geom.Geometry;
-import arc.math.geom.Point2;
 import arc.math.geom.Rect;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
-import arc.scene.ui.Label;
 import arc.scene.ui.layout.Scl;
-import arc.scene.ui.layout.Table;
 import arc.util.Align;
 import arc.util.Log;
 import arc.util.Strings;
-import arc.util.Time;
-import arc.util.Tmp;
 import mindustry.content.Blocks;
-import mindustry.editor.EditorTool;
-import mindustry.editor.MapEditor;
 import mindustry.graphics.Pal;
-import mindustry.input.Binding;
 import mindustry.ui.Fonts;
-import mindustry.ui.GridImage;
 
 public class MyMapView extends Element {
 	
