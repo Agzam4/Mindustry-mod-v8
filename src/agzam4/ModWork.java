@@ -295,10 +295,14 @@ public class ModWork {
 		Core.settings.put("agzam4mod.settings." + string, value);
 	}
 
+	public static void setting(String string, int value) {
+		Core.settings.put("agzam4mod.settings." + string, value);
+	}
 	
 	public static void setting(String string, float value) {
 		Core.settings.put("agzam4mod.settings." + string, value);
 	}
+	
 	public static float settingFloat(String string, float def) {
 		return Core.settings.getFloat("agzam4mod.settings." + string, def);
 	}
