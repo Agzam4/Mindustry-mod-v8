@@ -162,15 +162,15 @@ public class Debug {
 //		PixmapIO.writePng(Fi.get("pal.png"), pal);
 //		
 //	}
-	
-	private static class Counter {
-		
-		int count = 0;
-		
-		public void inc() {
-			count++;
-		}
-		
-	}
+//	
+//	private static class Counter {
+//		
+//		int count = 0;
+//		
+//		public void inc() {
+//			count++;
+//		}
+//		
+//	}
 	
 }

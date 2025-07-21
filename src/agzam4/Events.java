@@ -4,7 +4,6 @@ import arc.func.Cons;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Reflect;
-import mindustry.game.EventType.Trigger;
 
 public class Events {
 

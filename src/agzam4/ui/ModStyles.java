@@ -7,7 +7,6 @@ import arc.util.Reflect;
 import mindustry.gen.Tex;
 import mindustry.graphics.Pal;
 import mindustry.ui.Fonts;
-import mindustry.ui.Styles;
 
 public class ModStyles {
 

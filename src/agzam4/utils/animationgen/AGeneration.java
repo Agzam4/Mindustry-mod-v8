@@ -1,8 +1,6 @@
 package agzam4.utils.animationgen;
 
 import arc.graphics.Pixmap;
-import mindustry.game.Team;
-import mindustry.gen.Call;
 
 public class AGeneration {
 

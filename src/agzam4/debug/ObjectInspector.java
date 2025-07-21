@@ -2,24 +2,15 @@ package agzam4.debug;
 
 import static arc.Core.app;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.*;
 import java.util.Arrays;
 
 import agzam4.ui.MyScrollPane;
-import arc.Core;
 import arc.audio.Sound;
 import arc.func.*;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
-import arc.scene.Element;
-import arc.scene.event.ChangeListener;
-import arc.scene.event.FocusListener;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
-import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Collapser;
 import arc.scene.ui.layout.Table;
@@ -27,7 +18,6 @@ import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
 import arc.util.Strings;
-import arc.util.Time;
 import mindustry.entities.Effect;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
@@ -272,9 +262,9 @@ public class ObjectInspector extends BaseDialog {
 	private static class FieldTableProv {
 		
 		public Class<?> type;
-		public Prov<? extends FieldTableBuilder> prov;
+		public Prov<? extends FieldTableBuilder<?>> prov;
 		
-		public FieldTableProv(Class<?> type, Prov<? extends FieldTableBuilder> prov) {
+		public FieldTableProv(Class<?> type, Prov<? extends FieldTableBuilder<?>> prov) {
 			this.type = type;
 			this.prov = prov;
 		}

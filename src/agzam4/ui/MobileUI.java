@@ -8,11 +8,7 @@ import agzam4.ui.editor.ButtonProps;
 import agzam4.ui.editor.ButtonsPropsTable;
 import agzam4.utils.PlayerUtils;
 import arc.Core;
-import arc.input.KeyCode;
-import arc.math.Mathf;
 import arc.math.geom.Rect;
-import arc.math.geom.Vec2;
-import arc.scene.Element;
 import arc.scene.event.*;
 import arc.scene.style.*;
 import arc.scene.ui.TextButton;
@@ -23,8 +19,6 @@ import arc.util.Nullable;
 import mindustry.Vars;
 import mindustry.gen.*;
 import mindustry.ui.Styles;
-
-import static mindustry.ui.Styles.*;
 
 public class MobileUI {
 	
