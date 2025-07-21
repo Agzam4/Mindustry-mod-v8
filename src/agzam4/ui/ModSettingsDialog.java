@@ -388,7 +388,7 @@ public class ModSettingsDialog extends Table {
 	}
 	
 	private static void addCheck(Table table, String settings, boolean def, Cons<Boolean> listener) {
-		String tooltip = Bungle.settingsTooltip("settings-tooltip." + settings);
+		String tooltip = Bungle.settingsTooltip(settings);
 		var cell = table.check(Bungle.settings(settings), ModWork.settingDef(settings, def), b -> {
 			ModWork.setting(settings, b);
 			if(listener != null) listener.get(b);
