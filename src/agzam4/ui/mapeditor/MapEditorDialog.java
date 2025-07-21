@@ -51,7 +51,7 @@ public class MapEditorDialog extends Dialog implements Disposable {
 //        menu = new BaseDialog("@menu");
 //        menu.addCloseButton();
 
-        float swidth = 180f;
+//        float swidth = 180f;
 
 //        menu.cont.table(t -> {
 //            t.defaults().size(swidth, 60f).padBottom(5).padRight(5).padLeft(5);

@@ -1,6 +1,5 @@
 package agzam4.utils;
 
-import agzam4.ModWork;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.scene.ui.layout.Table;
@@ -22,7 +21,7 @@ public class DisplayGenerator {
 	
 	public static void show() {
 		Vars.platform.showMultiFileChooser(file -> {
-			BaseDialog dialog = new BaseDialog(ModWork.bungle("dialog.utils.select-display"));
+			BaseDialog dialog = new BaseDialog(Bungle.dialog("utils.select-display"));
 			dialog.title.setColor(Color.white);
 			dialog.titleTable.remove();
 			dialog.closeOnBack();

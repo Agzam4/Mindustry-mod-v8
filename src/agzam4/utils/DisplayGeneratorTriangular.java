@@ -3,7 +3,6 @@ package agzam4.utils;
 import java.awt.Polygon;
 import java.util.Comparator;
 
-import agzam4.ModWork;
 import arc.graphics.Pixmap;
 import arc.math.Mathf;
 import arc.scene.ui.layout.Table;
@@ -34,7 +33,7 @@ public class DisplayGeneratorTriangular {
 	
 	public static void show() {
 		Vars.platform.showMultiFileChooser(file -> {
-			BaseDialog dialog = new BaseDialog(ModWork.bungle("dialog.utils.select-display"));
+			BaseDialog dialog = new BaseDialog(Bungle.dialog("utils.select-display"));
 			dialog.titleTable.remove();
 			dialog.closeOnBack();
 

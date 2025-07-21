@@ -182,7 +182,7 @@ public class UnitSpawner {
 		})).get();
 		applyStyle(propTable.button(Iconc.players + "", toggleButtonsStyle, () -> {
 			setPlayer = !setPlayer;
-		}).tooltip(ModWork.bungle("dialog.utils.unit-spawn-in")));
+		}).tooltip(Bungle.dialog("utils.unit-spawn-in")));
 		applyStyle(propTable.button(Iconc.eraser + "", toggleButtonsStyle, () -> {
 			eraser = !eraser;
 		}));

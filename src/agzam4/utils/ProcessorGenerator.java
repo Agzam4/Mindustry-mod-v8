@@ -52,7 +52,7 @@ public class ProcessorGenerator {
 	
 	public static void draw() {
 		if(selectedType == DELIVERY) {
-			MyDraw.drawTooltip("[accent]" + ModWork.bungle("dialog.utils.processor-generator.delivery-tap"),
+			MyDraw.drawTooltip("[accent]" + Bungle.dialog("utils.processor-generator.delivery-tap"),
 					Core.input.mouseWorldX(), Core.input.mouseWorldY() - MyDraw.textHeight/2f);
 			
 			Building hover = Vars.world.buildWorld(Core.input.mouseWorldX(), Core.input.mouseWorldY());
@@ -123,7 +123,7 @@ public class ProcessorGenerator {
 	}
 	
 	public static void build() {
-		dialog = new BaseDialog(ModWork.bungle("dialog.utils.processor-generator"));
+		dialog = new BaseDialog(Bungle.dialog("utils.processor-generator"));
 		dialog.left();
 		dialog.title.setColor(Color.white);
 		dialog.closeOnBack();
@@ -147,7 +147,7 @@ public class ProcessorGenerator {
 				addUnitButton(t, u, () -> {
 					selectedType = MINING;
 //					hide();
-					BaseDialog oresDialog = new BaseDialog(ModWork.bungle("dialog.ores"));
+					BaseDialog oresDialog = new BaseDialog(Bungle.dialog("ores"));
 
 					oresDialog.title.setColor(Color.white);
 					oresDialog.closeOnBack();
@@ -217,7 +217,7 @@ public class ProcessorGenerator {
 			Table st = new Table();
 			st.defaults().pad(10).growX();
 			addCategory(st, "settings");
-			st.check(ModWork.bungle("dialog.utils.processor-generator.generate-comments"), true, b -> {
+			st.check(Bungle.dialog("utils.processor-generator.generate-comments"), true, b -> {
 				generateComment = b;
 			}).growX().row();
 			p.add(st).row();
@@ -287,7 +287,7 @@ public class ProcessorGenerator {
 								}
 							}
 							
-							BaseDialog deliveryItems = new BaseDialog(ModWork.bungle("dialog.delivery-items"));
+							BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("delivery-items"));
 
 							deliveryItems.title.setColor(Color.white);
 							deliveryItems.closeOnBack();
@@ -526,7 +526,7 @@ public class ProcessorGenerator {
 	}
 
 	private static void addCategory(Table table, String category) {
-        table.add(ModWork.bungle("dialog.category." + category)).color(Pal.accent).colspan(4).pad(10).padBottom(4).growX().row();
+        table.add(Bungle.dialog("category." + category)).color(Pal.accent).colspan(4).pad(10).padBottom(4).growX().row();
 		table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).growX().row();		
 	}
 

@@ -1,6 +1,5 @@
 package agzam4.utils;
 
-import agzam4.ModWork;
 import arc.graphics.Color;
 import arc.scene.ui.layout.Table;
 import mindustry.content.*;
@@ -15,7 +14,7 @@ public class PlayerUtils {
 		ProcessorGenerator.build();
 		UnitSpawner.build();
 		
-		utilsDialog = new BaseDialog(ModWork.bungle("dialog.utils"));
+		utilsDialog = new BaseDialog(Bungle.dialog("utils"));
 		utilsDialog.title.setColor(Color.white);
 		utilsDialog.titleTable.remove();
 		utilsDialog.closeOnBack();
@@ -30,11 +29,11 @@ public class PlayerUtils {
 			Table t = new Table();
 			p.add(t).row();
 
-            t.button(Blocks.microProcessor.emoji() + " " + ModWork.bungle("dialog.utils.processor-generator"), Styles.defaultt, () -> {
+            t.button(Blocks.microProcessor.emoji() + " " + Bungle.dialog("utils.processor-generator"), Styles.defaultt, () -> {
             			ProcessorGenerator.show();
             }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 
-            t.button(Blocks.logicDisplay.emoji() + " " + ModWork.bungle("dialog.utils.display-generator"), Styles.defaultt, () -> {
+            t.button(Blocks.logicDisplay.emoji() + " " + Bungle.dialog("utils.display-generator"), Styles.defaultt, () -> {
             	DisplayGenerator.show();
             }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 
@@ -42,11 +41,11 @@ public class PlayerUtils {
 //            	DisplayGeneratorTriangular.show();
 //            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
             
-            t.button(Blocks.payloadSource.emoji() + " " + ModWork.bungle("dialog.utils.unit-spawn"), Styles.defaultt, () -> {
+            t.button(Blocks.payloadSource.emoji() + " " + Bungle.dialog("utils.unit-spawn"), Styles.defaultt, () -> {
             	UnitSpawner.show();
             }).growX().pad(10).padBottom(4).wrapLabel(false).disabled(b -> !UnitSpawner.avaliable()).row();
             
-            t.check(UnitTypes.mono.emoji() + " " + ModWork.bungle("dialog.utils.player-ai"), PlayerAI.enabled, b -> PlayerAI.enabled = b)
+            t.check(UnitTypes.mono.emoji() + " " + Bungle.dialog("utils.player-ai"), PlayerAI.enabled, b -> PlayerAI.enabled = b)
             .growX().pad(10).padBottom(4).wrapLabel(false).row();
             
             	

@@ -1,8 +1,8 @@
 package agzam4.ui.editor;
 
-import agzam4.ModWork;
 import agzam4.ui.MobileUI;
 import agzam4.ui.MobileUI.MobileButtons;
+import agzam4.utils.Bungle;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.input.KeyCode;
@@ -62,7 +62,7 @@ public class MobileUIEditor extends BaseDialog {
 		        		tiles.save("mobile-ui-table");
 		        	});
 		        	b.setStyle(Styles.defaultt);
-		        	b.setText(button.prop.text + " " + ModWork.bungle("mobile-ui.button." + button.prop.name));
+		        	b.setText(button.prop.text + " " + Bungle.mobile("button." + button.prop.name));
 		        	container.add(b).height(bottomTable).wrapLabel(false).pad(3f);
 		        	b.row();
 				}
@@ -72,7 +72,7 @@ public class MobileUIEditor extends BaseDialog {
 
             	
 		        bottom.table(center -> {
-		        	center.add(ModWork.bungle("mobile.mobile-ui-editor.size")).left().marginRight(10f);
+		        	center.add(Bungle.mobile("ui-editor.size")).left().padRight(10f);
 		        	center.table(t -> {
 		        		t.button("-", () -> {
 		        			MobileUI.tilesize(tilesize-1);
@@ -84,7 +84,7 @@ public class MobileUIEditor extends BaseDialog {
 
 		        	});
 		        	center.row();
-		        	center.add(ModWork.bungle("mobile.mobile-ui-editor.opacity")).left().marginRight(10f);
+		        	center.add(Bungle.mobile("ui-editor.opacity")).left().padRight(10f);
 		        	center.table(t -> {
 		        		t.button("-", () -> {
 		        			MobileUI.opacity(opacity-10);
