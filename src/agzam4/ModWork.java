@@ -302,7 +302,11 @@ public class ModWork {
 	}
 
 	public static int settingInt(String string, int def) {
-		return Core.settings.getInt("agzam4mod.settings." + string, def);
+		try {
+			return Core.settings.getInt("agzam4mod.settings." + string, def);
+		} catch (Exception e) {
+			return def;
+		}
 	}
 
 	public static void setting(String string, String value) {
