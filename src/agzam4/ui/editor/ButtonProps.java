@@ -7,8 +7,6 @@ import arc.math.geom.Point2;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
-import mindustry.ui.Styles;
-
 import static agzam4.ui.MobileUI.tilesize;
 
 public class ButtonProps {

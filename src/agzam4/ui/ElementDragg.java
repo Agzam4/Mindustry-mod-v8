@@ -1,17 +1,13 @@
 package agzam4.ui;
 
 import agzam4.ModWork;
-import arc.Core;
-import arc.func.Cons;
-import arc.func.Floatc;
-import arc.input.KeyCode;
-import arc.math.Mathf;
-import arc.math.geom.Rect;
-import arc.math.geom.Vec2;
-import arc.scene.Element;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
-import arc.scene.ui.layout.Scl;
+import arc.*;
+import arc.func.*;
+import arc.input.*;
+import arc.math.*;
+import arc.math.geom.*;
+import arc.scene.*;
+import arc.scene.event.*;
 import arc.util.Nullable;
 
 public class ElementDragg {
@@ -21,12 +17,10 @@ public class ElementDragg {
 	protected Vec2 draggStart = null;
 
 	private Rect tmp = new Rect();
-//	public @Nullable Rect box = null;
 	public @Nullable Cons<Rect> box = null;
 
 	public ElementDragg(Element element, String name) {
 		this.element = element;
-
 		element.addListener(new InputListener() {
 
 			@Override
@@ -38,15 +32,17 @@ public class ElementDragg {
 			@Override
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
 				update(x, y);
+				element.touchable = Touchable.disabled;
 			}
 
 			@Override
 			public void touchUp(InputEvent e, float x, float y, int pointer, KeyCode button) {
 				update(x, y);
 				draggStart = null;
-
 				ModWork.setting(name + "-x", element.x);
 				ModWork.setting(name + "-y", element.y);
+				e.cancel();
+				element.touchable = Touchable.enabled;
 			}
 		});
 		setPosition(
