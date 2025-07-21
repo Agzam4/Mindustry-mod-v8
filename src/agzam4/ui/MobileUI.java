@@ -8,6 +8,7 @@ import agzam4.ui.editor.ButtonProps;
 import agzam4.ui.editor.ButtonsPropsTable;
 import agzam4.utils.PlayerUtils;
 import arc.Core;
+import arc.math.Mathf;
 import arc.math.geom.Rect;
 import arc.scene.event.*;
 import arc.scene.style.*;
@@ -16,6 +17,7 @@ import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.*;
 import arc.util.Log;
 import arc.util.Nullable;
+import arc.util.Time;
 import mindustry.Vars;
 import mindustry.gen.*;
 import mindustry.ui.Styles;
@@ -118,10 +120,28 @@ public class MobileUI {
 		mainTable.remove();
 		mainTable = null;
 	}
+
+	private static float onHideScaleDelta = 0;
+	private static float visualScale = 0;
 	
 	public static void build() {
 		
-		mainTable = new Table();
+		mainTable = new Table() {
+			
+			@Override
+			public void act(float delta) {
+				if(ModWork.acceptKey()) {
+					onHideScaleDelta = Mathf.clamp(onHideScaleDelta + delta*7.5f);
+				} else {
+					onHideScaleDelta = Mathf.clamp(onHideScaleDelta - delta*7.5f);
+				}
+				visualScale = onHideScaleDelta;
+				ModStyles.mobileAlpha(opacity/100f*visualScale);		
+				ModStyles.mobileFontAlpha(visualScale);	
+				super.act(delta);
+			}
+			
+		};
 		
 				
 //		mainTable = new Table().margin(10);
@@ -199,7 +219,8 @@ public class MobileUI {
 		
 //		new Dragg(container, container);
 		
-		mainTable.visible(() -> ModWork.acceptKey());
+		
+//		mainTable.visible(() -> ModWork.acceptKey());
 	}
 
 	public static boolean isCollapsed() {
@@ -218,7 +239,7 @@ public class MobileUI {
 		if(o < 0) o = 0;		
 		opacity = o;
 		ModStyles.mobileAlpha(o/100f);		
-		ModWork.setting("mobile-ui-buttons-opacity", o);
+		ModWork.setting("mobile-ui-buttons-opacity", opacity);
 	}
 
 

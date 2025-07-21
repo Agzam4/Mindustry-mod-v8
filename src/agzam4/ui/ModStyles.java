@@ -16,6 +16,9 @@ public class ModStyles {
 	public static Color mobileActive = new Color(1f, 1f, 1f);
 	public static Color mobileDisabled = new Color(1f, 1f, 1f);
 
+	public static Color mobileColor = new Color(1f, 1f, 1f);
+	public static Color mobileColorChecked = Pal.accent.cpy();
+
 	public static TextButtonStyle mobileToggle, mobileButton;
 	
 	public static void init() {
@@ -38,10 +41,11 @@ public class ModStyles {
 	        down = dMobileActive;
 	        checked = dMobileChecked;
 	        disabled = dMobileDisabled;
+
+	        fontColor = mobileColor;
+	        checkedFontColor = mobileColorChecked;
 	        
 	        font = Fonts.outline;
-	        fontColor = Color.white;
-	        checkedFontColor = Pal.accent;
 	        disabledFontColor = Color.gray;
 	    }};
 	    
@@ -50,9 +54,10 @@ public class ModStyles {
 	        over = dMobileHover;
 	        down = dMobileActive;
 	        disabled = dMobileDisabled;
-            
+
+	        fontColor = mobileColor;
+	        
             font = Fonts.def;
-            fontColor = Color.white;
             disabledFontColor = Color.gray;
 	    }};
 	}
@@ -63,5 +68,10 @@ public class ModStyles {
 		mobileHover.a(a);
 		mobileActive.a(a);
 		mobileDisabled.a(a);
+	}
+
+	public static void mobileFontAlpha(float a) {
+		mobileColor.a(a);
+		mobileColorChecked.a(a);
 	}
 }
