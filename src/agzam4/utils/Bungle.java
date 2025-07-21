@@ -1,6 +1,8 @@
 package agzam4.utils;
 
 import arc.Core;
+import arc.func.Cons;
+import arc.scene.ui.Button;
 
 public class Bungle {
 
@@ -15,5 +17,16 @@ public class Bungle {
 	public static String core(String string) {
 		return Core.bundle.get(string, "[red]??<core>." + string + "??[]");
 	}
+
+	public static String category(String string) {
+		return Core.bundle.get("agzam4mod.category" + string, "[red]??category." + string + "??[]");
+	}
 	
+	public static String settings(String string) {
+		return Core.bundle.get("agzam4mod.settings" + string, "[red]??settings." + string + "??[]");
+	}
+
+	public static String settingsTooltip(String string) {
+		return Core.bundle.get("agzam4mod.settings-tooltip" + string, "[red]??settings-tooltip." + string + "??[]");
+	}
 }

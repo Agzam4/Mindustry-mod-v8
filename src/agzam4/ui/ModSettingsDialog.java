@@ -5,6 +5,7 @@ import agzam4.UpdateInfo.CheckUpdatesInterval;
 import agzam4.debug.Debug;
 import agzam4.ui.editor.MobileUIEditor;
 import agzam4.uiOverride.*;
+import agzam4.utils.Bungle;
 import arc.Core;
 import arc.files.Fi;
 import arc.func.Cons;
@@ -46,20 +47,20 @@ public class ModSettingsDialog extends Table {
 		
         settingsTable.add(table);
         settingsTable.row();
-//
-		settingsTable.name = ModWork.bungle("settings.name");
+        
+		settingsTable.name = Bungle.settings("name");
 		settingsTable.visible = true;
 
 		addCategory(table, "updates");
 		
 		updateBuilder = t -> {
 			t.label(() -> UpdateInfo.currentName() + " v" + UpdateInfo.currentVersion() + " " + versionInfo).row();
-			t.label(() -> Strings.format(ModWork.bungle("settings.updates.latest-info"), UpdateInfo.latestVersion)).visible(() -> UpdateInfo.latestVersion != null).row();
+			t.label(() -> Strings.format(Bungle.settings("updates.latest-info"), UpdateInfo.latestVersion)).visible(() -> UpdateInfo.latestVersion != null).row();
 			
-			t.button(ModWork.bungle("settings.checkupdates.checkupdates"), Icon.refresh, Styles.defaultt, () -> {
+			t.button(Bungle.settings("checkupdates.checkupdates"), Icon.refresh, Styles.defaultt, () -> {
 				versionInfo = Core.bundle.get("loading");
 				UpdateInfo.check((old, now) -> {
-					versionInfo = (now ? "[red]" : "[lime]") + ModWork.bungle(now ? "settings.updates.outdated" : "settings.updates.latest");
+					versionInfo = (now ? "[red]" : "[lime]") + Bungle.settings(now ? "updates.outdated" : "updates.latest");
 					if(old != now) {
 						updateTable.get().clearChildren();
 						updateBuilder.get(updateTable.get());
@@ -72,7 +73,7 @@ public class ModSettingsDialog extends Table {
 			t.row();
 			
 			if(UpdateInfo.needUpdate()) {
-				t.add(ModWork.bungle("need-update")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
+				t.add(Bungle.settings("need-update")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
 				t.button("@mods.browser.reinstall", Icon.download, () -> UpdateInfo.githubImportMod(AgzamMod.getRepo(), null))
 				.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
 			}
@@ -82,7 +83,7 @@ public class ModSettingsDialog extends Table {
                 var group = new ButtonGroup<>();
                 var style = Styles.flatTogglet;
                 for (var cui : CheckUpdatesInterval.values()) {
-                    tg.button(ModWork.bungle("settings.check-updates." + cui.kebab()), style, () -> {
+                    tg.button(Bungle.settings("check-updates." + cui.kebab()), style, () -> {
                     	UpdateInfo.checkUpdatesInterval(cui);
                     }).growX().fillX().group(group).height(35f);
 				}
@@ -135,12 +136,12 @@ public class ModSettingsDialog extends Table {
 //	        t.button("@delete", Icon.trash, () -> {
 //	        }).growX().fillX().height(54f).marginLeft(10).padLeft(5f);
 
-			table.check(ModWork.bungle("settings.unlock-content"), false, b -> {
+			table.check(Bungle.settings("unlock-content"), false, b -> {
 				if(b) showHiddenContent();
 				else hideHiddenContent();
 			}).colspan(4).pad(10).padBottom(4).left().row();
 
-			table.check(ModWork.bungle("settings.unlock-blocks"), false, b -> {
+			table.check(Bungle.settings("unlock-blocks"), false, b -> {
 				if(b) unlockBlocksContent();
 				else lockBlocksContent();
 			}).colspan(4).pad(10).padBottom(4).left().row();
@@ -222,24 +223,23 @@ public class ModSettingsDialog extends Table {
 			if(Awt.avalible && !Vars.mobile) {
 				table.field(Afk.getCustomAfk(), t -> {
 					Core.settings.put("agzam4mod.afk-start", t);
-				}).tooltip(ModWork.bungle("afk.automessage-start-tooltip")).width(Core.scene.getWidth()/2f).row();
+				}).tooltip(Bungle.afk("automessage-start-tooltip")).width(Core.scene.getWidth()/2f).row();
 				addCheck(table, "afk.afk-ping");
 				addCheck(table, "afk.auto-afk-mode", b -> Afk.autoAI = b);
-				table.labelWrap(() -> Strings.format(ModWork.bungle("afk.default-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
+				table.labelWrap(() -> Strings.format(Bungle.afk("default-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
 
-				table.labelWrap(() -> Strings.format(ModWork.bungle("afk.custom-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
+				table.labelWrap(() -> Strings.format(Bungle.afk("custom-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
 		        table.area(Afk.names(), s -> Afk.names(s)).growX().colspan(4).pad(10).padBottom(4).minHeight(250f).row();
 //				.tooltip(ModWork.bungle("afk.automessage-start-tooltip")).width(Core.scene.getWidth()/2f)
 				
 			} else {
 				Afk.afkAvalible = false;
-		        table.add(ModWork.bungle("afk-err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
+		        table.add(Bungle.afk("err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
 			}
 		} catch (Throwable e) {
 			Afk.afkAvalible = false;
-	        table.add(ModWork.bungle("afk-err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
+	        table.add(Bungle.afk("err")).color(Color.red).colspan(4).pad(10).padBottom(4).row();
 		}
-		
 		
 		/*
 		 * addCategory(table, "utils");
@@ -249,7 +249,7 @@ public class ModSettingsDialog extends Table {
 		addCategory(table, "custom-ui");
 
 		if(MobileUI.enabled) {
-			table.button(ModWork.bungle("settings.edit-mobile-ui"), () -> {
+			table.button(Bungle.settings("edit-mobile-ui"), () -> {
 				MobileUIEditor.instance.show();
 			}).growX().fillX().pad(6).colspan(4).padTop(10).padBottom(10).row();
 		}
@@ -346,7 +346,7 @@ public class ModSettingsDialog extends Table {
 	}
 	
 	private static void createMessagesGradientPicker(Table mainTable) {
-		mainTable.label(() -> ModWork.bungle("settings.ui.messages-gradient")).growX().colspan(4).pad(10).padBottom(10).row();
+		mainTable.label(() -> Bungle.settings("ui.messages-gradient")).growX().colspan(4).pad(10).padBottom(10).row();
 		
 		Table colorsTable = mainTable.table().get();
 		
@@ -362,7 +362,7 @@ public class ModSettingsDialog extends Table {
 		
 		mainTable.row();
 
-		mainTable.label(() -> ModWork.bungle("settings.ui.messages-gradient-trigger")).growX().colspan(4).pad(10).padBottom(10).row();
+		mainTable.label(() -> Bungle.settings("ui.messages-gradient-trigger")).growX().colspan(4).pad(10).padBottom(10).row();
 		mainTable.field(CustomChatFragment.colorTrigger, t -> {
 			CustomChatFragment.colorTrigger = t;
 			ModWork.setting("messages-gradient-trigger", t);
@@ -388,8 +388,8 @@ public class ModSettingsDialog extends Table {
 	}
 	
 	private static void addCheck(Table table, String settings, boolean def, Cons<Boolean> listener) {
-		String tooltip = ModWork.bungle("settings-tooltip." + settings);
-		var cell = table.check(ModWork.bungle("settings." + settings), ModWork.settingDef(settings, def), b -> {
+		String tooltip = Bungle.settingsTooltip("settings-tooltip." + settings);
+		var cell = table.check(Bungle.settings(settings), ModWork.settingDef(settings, def), b -> {
 			ModWork.setting(settings, b);
 			if(listener != null) listener.get(b);
 		}).colspan(4).pad(10).padBottom(4).left();
@@ -402,9 +402,7 @@ public class ModSettingsDialog extends Table {
 	}
 	
 	private static void addCategory(Table table, String category) {
-//        table.add(ModWork.bungle("category." + category)).color(Color.gray).colspan(4).pad(10).padBottom(4).row();
-//		table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();		
-		table.add(ModWork.bungle("category." + category)).color(Pal.accent).colspan(4).pad(10).padBottom(4).row();
+		table.add(Bungle.category(category)).color(Pal.accent).colspan(4).pad(10).padBottom(4).row();
 	    table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();
 	}
 	
@@ -464,9 +462,9 @@ public class ModSettingsDialog extends Table {
 
 	public static void updateCategory() {
 		if(UpdateInfo.needUpdate()) {
-			ModSettingsDialog.setCategory(ModWork.bungle("settings.name") + " [red]" + Iconc.warning);
+			ModSettingsDialog.setCategory(Bungle.settings("name") + " [red]" + Iconc.warning);
 		} else {
-			ModSettingsDialog.setCategory(ModWork.bungle("settings.name"));
+			ModSettingsDialog.setCategory(Bungle.settings("name"));
 		}		
 	}
 	
