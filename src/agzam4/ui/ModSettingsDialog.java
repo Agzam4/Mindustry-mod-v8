@@ -1,41 +1,26 @@
 package agzam4.ui;
 
-import static mindustry.Vars.ui;
-
-import agzam4.Afk;
-import agzam4.AgzamMod;
-import agzam4.Awt;
-import agzam4.ModWork;
-import agzam4.UpdateInfo;
+import agzam4.*;
 import agzam4.UpdateInfo.CheckUpdatesInterval;
 import agzam4.debug.Debug;
 import agzam4.ui.editor.MobileUIEditor;
-import agzam4.uiOverride.CustomChatFragment;
-import agzam4.uiOverride.UiOverride;
+import agzam4.uiOverride.*;
 import arc.Core;
 import arc.files.Fi;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
-import arc.math.Mathf;
 import arc.scene.style.TextureRegionDrawable;
-import arc.scene.ui.ButtonGroup;
-import arc.scene.ui.TextButton;
-import arc.scene.ui.layout.Cell;
-import arc.scene.ui.layout.Table;
-import arc.struct.ObjectMap;
-import arc.struct.ObjectSet;
-import arc.util.Reflect;
-import arc.util.Strings;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.*;
+import arc.struct.*;
+import arc.util.*;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
-import mindustry.gen.Icon;
-import mindustry.gen.Iconc;
-import mindustry.gen.Tex;
+import mindustry.gen.*;
 import mindustry.graphics.Pal;
 import mindustry.mod.Mods.LoadedMod;
-import mindustry.ui.Fonts;
-import mindustry.ui.Styles;
+import mindustry.ui.*;
 import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable;
 import mindustry.world.Block;
 import mindustry.world.meta.BuildVisibility;
@@ -55,8 +40,6 @@ public class ModSettingsDialog extends Table {
 
 	static Cell<Table> unlockTable = null;
 	
-	static String random = "" + Mathf.random(100000, 999999);
-	
 	public static void builder(SettingsTable settingsTable) {
 		settingsTable.defaults().left();
 		Table table = new Table();
@@ -71,7 +54,8 @@ public class ModSettingsDialog extends Table {
 		
 		updateBuilder = t -> {
 			t.label(() -> UpdateInfo.currentName() + " v" + UpdateInfo.currentVersion() + " " + versionInfo).row();
-			if(Debug.debug) t.label(() -> "random: " + random).row();
+			t.label(() -> Strings.format(ModWork.bungle("settings.updates.latest-info"), UpdateInfo.latestVersion)).visible(() -> UpdateInfo.latestVersion != null).row();
+			
 			t.button(ModWork.bungle("settings.checkupdates.checkupdates"), Icon.refresh, Styles.defaultt, () -> {
 				versionInfo = Core.bundle.get("loading");
 				UpdateInfo.check((old, now) -> {
