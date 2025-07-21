@@ -6,6 +6,7 @@ import agzam4.ModWork.KeyBinds;
 import agzam4.industry.IndustryCalculator;
 import agzam4.ui.editor.ButtonProps;
 import agzam4.ui.editor.ButtonsPropsTable;
+import agzam4.ui.editor.MobileUIEditor;
 import agzam4.utils.PlayerUtils;
 import arc.Core;
 import arc.math.Mathf;
@@ -15,9 +16,7 @@ import arc.scene.style.*;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.*;
-import arc.util.Log;
 import arc.util.Nullable;
-import arc.util.Time;
 import mindustry.Vars;
 import mindustry.gen.*;
 import mindustry.ui.Styles;
@@ -122,7 +121,6 @@ public class MobileUI {
 	}
 
 	private static float onHideScaleDelta = 0;
-	private static float visualScale = 0;
 	
 	public static void build() {
 		
@@ -130,18 +128,25 @@ public class MobileUI {
 			
 			@Override
 			public void act(float delta) {
+				super.act(delta);
+				
 				if(ModWork.acceptKey()) {
 					onHideScaleDelta = Mathf.clamp(onHideScaleDelta + delta*7.5f);
 				} else {
 					onHideScaleDelta = Mathf.clamp(onHideScaleDelta - delta*7.5f);
 				}
-				visualScale = onHideScaleDelta;
+				float visualScale = onHideScaleDelta;
+				
+				if(MobileUIEditor.instance.isShown()) return;
+				
 				ModStyles.mobileAlpha(opacity/100f*visualScale);		
 				ModStyles.mobileFontAlpha(visualScale);	
-				super.act(delta);
 			}
 			
 		};
+
+//		mainTable.visible(() -> !MobileUIEditor.instance.isShown()); 
+//		mainTable.touchable(() -> ModWork.acceptKey() ? Touchable.enabled : Touchable.disabled);
 		
 				
 //		mainTable = new Table().margin(10);
@@ -180,8 +185,6 @@ public class MobileUI {
 	        if(button.collapseable) cell.visible(() -> !isCollapsed());
 		}
 		
-		
-		Log.info("box: @", box);
 		
 //		applyStyle(container.button(Iconc.wrench + "", buttonsStyle, PlayerUtils::show)).row();
 //

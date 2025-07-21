@@ -1,6 +1,7 @@
 package agzam4.ui.editor;
 
 import agzam4.ui.MobileUI;
+import agzam4.ui.ModStyles;
 import agzam4.ui.MobileUI.MobileButtons;
 import agzam4.utils.Bungle;
 import arc.graphics.Color;
@@ -12,6 +13,7 @@ import arc.scene.Element;
 import arc.scene.event.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
+import arc.util.Log;
 import arc.util.Time;
 import mindustry.graphics.Pal;
 import mindustry.ui.Styles;
@@ -150,6 +152,7 @@ public class MobileUIEditor extends BaseDialog {
 		private void rebuld() {
 			clearChildren();
 			tiles.update();
+        	Log.info("tiles: @", tiles.buttons.size);
 			for (var button : tiles) {
 				var cell = add(button.button(false));
 				cell.get().touchable = Touchable.disabled;
@@ -157,6 +160,7 @@ public class MobileUIEditor extends BaseDialog {
 					float x = this.x + (button.x() - tiles.width/2f) * tilesize + width/2f;
 					float y = this.y + (button.y() - tiles.height/2f) * tilesize + height/2f;
 		        	t.setBounds(x, y, tilesize, tilesize);
+		        	Log.info("tilesize: @", tilesize);
 		        	cell.setBounds(x, y, tilesize, tilesize);
 		        });
 			}
@@ -168,6 +172,13 @@ public class MobileUIEditor extends BaseDialog {
 
 		private float shiftY() {
 			return y + ( - tiles.height/2f) * tilesize + height/2f;
+		}
+		
+		@Override
+		public void act(float delta) {
+			ModStyles.mobileAlpha(opacity);		
+			ModStyles.mobileFontAlpha(1f);	
+			super.act(delta);
 		}
 		
 		@Override
