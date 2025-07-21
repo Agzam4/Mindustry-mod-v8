@@ -2,6 +2,7 @@ package agzam4;
 
 import java.lang.reflect.Field;
 
+import agzam4.utils.Bungle;
 import arc.Core;
 import arc.Events;
 import arc.func.Cons;
@@ -268,8 +269,9 @@ public class ModWork {
 		return false;
 	}
 
+	@Deprecated
 	public static String bungle(String string) {
-		return Core.bundle.get("agzam4mod." + string, "[red]??" + string + "??[]");
+		return Bungle.get(string);//Core.bundle.get("agzam4mod." + string, "[red]??" + string + "??[]");
 	}
 
 	public static String settingName(String string) {

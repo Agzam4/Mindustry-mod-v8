@@ -1,5 +1,6 @@
 package agzam4;
 
+import agzam4.utils.Bungle;
 import arc.ApplicationListener;
 import arc.Core;
 import arc.Events;
@@ -14,7 +15,7 @@ import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.gen.Call;
 
 public class Afk {
-
+	
 	public static boolean autoAI = false;
 	
 	private static boolean isPaused = false;
@@ -48,24 +49,22 @@ public class Afk {
 				if(msg.startsWith(pingText)) {
 					createPingText(stripName);
 					if(Awt.message(Strings.stripColors(e.player.name()) + ": " + msg.substring(pingText.length()))) {
-				        Call.sendChatMessage("[lightgray]" + ModWork.bungle("afk.message-send"));
+				        Call.sendChatMessage("[lightgray]" + Bungle.afk("message-send"));
 					} else {
-				        Call.sendChatMessage("[lightgray]" + ModWork.bungle("afk.message-not-send"));
+				        Call.sendChatMessage("[lightgray]" + Bungle.afk("afk.message-not-send"));
 					}
 					return;
 				}
 				if(msg.contains(ruName) || msg.contains(stripName.toLowerCase()) || names.contains(s -> msg.contains(s.toLowerCase()))) {
 					createPingText(stripName);
 					Awt.beep();
-					String time = Mathf.floor(afk/60) + " " + ModWork.bungle("afk.min");
-					if(afk < 60) {
-						time = afk + " " + ModWork.bungle("afk.sec");
-					}
+					String time = Mathf.floor(afk/60) + " " + Bungle.core("unit.minutes");
+					if(afk < 60) time = afk + " " + Bungle.core("unit.seconds");
 					String text = "[lightgray]" + Afk.getCustomAfk()
 							.replaceAll("@name", Strings.stripColors(stripName))
 							.replaceAll("@time", time + "");
 					if(text.indexOf("@pingText") == -1) {
-						text += ModWork.bungle("afk.automessage-end").replaceFirst("@pingText", pingText);
+						text += Bungle.afk("automessage-end").replaceFirst("@pingText", pingText);
 					} else {
 						text = text.replaceAll("@pingText", pingText);
 					}
@@ -103,7 +102,7 @@ public class Afk {
 	}
 	
 	public static String getCustomAfk() {
-		String def = ModWork.bungle("afk.automessage");
+		String def = Bungle.afk("automessage");
 		String str = Core.settings.getString("agzam4mod.afk-start", def);
 		if(str.isEmpty()) return def;
 		return str;
