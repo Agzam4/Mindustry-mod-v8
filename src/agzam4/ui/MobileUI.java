@@ -35,6 +35,7 @@ public class MobileUI {
 	 * TODO: unlinked tiles to different panels 
 	 */
 	
+
 	public static enum MobileButtons {
 
 		remove(new ButtonProps("remove", () -> {}).icon(Iconc.trash)), // editor only
@@ -77,7 +78,8 @@ public class MobileUI {
 	public static boolean enabled = ModWork.settingDef("mobile-ui", false) | Vars.mobile;
 
     public static float tilesize = ModWork.settingFloat("mobile-ui-buttons-size", 50f);
-
+    public static int opacity = ModWork.settingInt("mobile-ui-buttons-opacity", 100);
+    
 	public static void enable() {
 		if(!enabled) build();
 		enabled = true;
@@ -300,6 +302,14 @@ public class MobileUI {
 		if(size < 25) size = 25;		
 		tilesize = size;
 		ModWork.setting("mobile-ui-buttons-size", tilesize);
+	}
+
+	public static void opacity(int o) {
+		if(o > 100) o = 100;	
+		if(o < 0) o = 0;		
+		opacity = o;
+		ModStyles.mobileAlpha(o/100f);		
+		ModWork.setting("mobile-ui-buttons-opacity", o);
 	}
 
 

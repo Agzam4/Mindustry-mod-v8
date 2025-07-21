@@ -300,7 +300,10 @@ public class ModWork {
 	public static float settingFloat(String string, float def) {
 		return Core.settings.getFloat("agzam4mod.settings." + string, def);
 	}
-	
+
+	public static int settingInt(String string, int def) {
+		return Core.settings.getInt("agzam4mod.settings." + string, def);
+	}
 
 	public static void setting(String string, String value) {
 		Core.settings.put("agzam4mod.settings." + string, value);

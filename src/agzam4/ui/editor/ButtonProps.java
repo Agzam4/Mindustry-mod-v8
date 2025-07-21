@@ -1,6 +1,7 @@
 package agzam4.ui.editor;
 
 import agzam4.ui.MobileUI.MobileButtons;
+import agzam4.ui.ModStyles;
 import arc.func.Boolc;
 import arc.math.geom.Point2;
 import arc.scene.ui.TextButton;
@@ -53,7 +54,7 @@ public class ButtonProps {
 
 	public TextButton button(boolean listener) {
 		boolean empty = name.isEmpty() || name.equals(MobileButtons.empty.name());
-        TextButton button = new TextButton(text, isToggle() ? Styles.logicTogglet : Styles.grayt);
+        TextButton button = new TextButton(text, isToggle() ? ModStyles.mobileToggle : ModStyles.mobileButton); // Styles.logicTogglet Styles.grayt
         if(listener) button.changed(() -> {
         	if(onToggle != null) onToggle.get(button.isChecked());
         	if(onClick != null) onClick.run();
@@ -63,7 +64,7 @@ public class ButtonProps {
 	}
 	
 	public void button2(Table table) {
-        TextButton button = new TextButton(text, isToggle() ? Styles.logicTogglet : Styles.grayt);
+        TextButton button = new TextButton(text, isToggle() ? ModStyles.mobileToggle : ModStyles.mobileButton);
         button.changed(() -> {
         	if(onToggle != null) onToggle.get(button.isChecked());
         	if(onClick != null) onClick.run();

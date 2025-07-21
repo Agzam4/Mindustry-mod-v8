@@ -17,8 +17,7 @@ import mindustry.graphics.Pal;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
-import static agzam4.ui.MobileUI.tilesize;
-import static agzam4.ui.MobileUI.tiles;
+import static agzam4.ui.MobileUI.*;
 
 public class MobileUIEditor extends BaseDialog {
 
@@ -70,17 +69,34 @@ public class MobileUIEditor extends BaseDialog {
 		        
 		        bottom.add(pane).margin(0).growX().fillX().row();
 		        final float resizeSize = 40f;
-		        bottom.table(t -> {
-		        	t.button("-", () -> {
-		        		MobileUI.tilesize(tilesize-1);
-		        	}).disabled(b -> tilesize <= 25).size(resizeSize);
-		        	t.label(() -> Integer.toString((int) tilesize)).pad(0, 10f, 0, 10f);
-		        	t.button("+", () -> {
-		        		MobileUI.tilesize(tilesize+1);
-		        	}).disabled(b -> tilesize >= 100).size(resizeSize);
-		        	
-		        }).margin(0).growX().fillX().height(resizeSize).row();
+
+            	
+		        bottom.table(center -> {
+		        	center.add(ModWork.bungle("mobile.mobile-ui-editor.size")).left().marginRight(10f);
+		        	center.table(t -> {
+		        		t.button("-", () -> {
+		        			MobileUI.tilesize(tilesize-1);
+		        		}).disabled(b -> tilesize <= 25).size(resizeSize);
+		        		t.label(() -> Integer.toString((int) tilesize)).pad(0, 10f, 0, 10f);
+		        		t.button("+", () -> {
+		        			MobileUI.tilesize(tilesize+1);
+		        		}).disabled(b -> tilesize >= 100).size(resizeSize);
+
+		        	});
+		        	center.row();
+		        	center.add(ModWork.bungle("mobile.mobile-ui-editor.opacity")).left().marginRight(10f);
+		        	center.table(t -> {
+		        		t.button("-", () -> {
+		        			MobileUI.opacity(opacity-10);
+		        		}).disabled(b -> opacity <= 0).size(resizeSize);
+		        		t.label(() -> Integer.toString((int) opacity)).pad(0, 10f, 0, 10f);
+		        		t.button("+", () -> {
+		        			MobileUI.opacity(opacity+10);
+		        		}).disabled(b -> opacity >= 100).size(resizeSize);
+		        	});
+		        }).grow().fill().pad(0).margin(0);
 		        
+		        row();
 		        bottom.background(Styles.grayPanel);
 		        
             }).margin(0).bottom().growX().row();

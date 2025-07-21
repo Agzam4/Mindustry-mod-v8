@@ -19,6 +19,7 @@ import agzam4.debug.Debug;
 import agzam4.industry.IndustryCalculator;
 import agzam4.ui.MobileUI;
 import agzam4.ui.ModSettingsDialog;
+import agzam4.ui.ModStyles;
 import agzam4.ui.mapeditor.MapEditorDialog;
 import agzam4.uiOverride.UiOverride;
 import agzam4.utils.*;
@@ -49,6 +50,8 @@ public class AgzamMod extends Mod {
 		Afk.init();
 		MyFonts.load();
 		MyIndexer.init();
+		
+		ModStyles.init();
 		
 		try {
 			UiOverride.init();
