@@ -50,6 +50,7 @@ public class UpdateInfo {
 		ModWork.setting("check-updates-interval", cui.name());
 	}
 	
+	public static @Nullable String latestVersion = null;
 	
 	public static void check(Boolc2 onCheck) {
 		Log.info("Checking mod updates");
@@ -64,6 +65,7 @@ public class UpdateInfo {
 				String ver = latest.getString("tag_name");
 				ver = ver.replaceFirst("v", "");
 				Log.info("Version: @/@", version, ver);
+				latestVersion = ver;
 				boolean old = needUpdate();
 				ModWork.setting("needupdate", !version.equalsIgnoreCase(ver));
 				onCheck.get(old, needUpdate());
