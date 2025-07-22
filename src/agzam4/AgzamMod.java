@@ -145,10 +145,10 @@ public class AgzamMod extends Mod {
 
 		Events.run(Trigger.uiDrawBegin, () -> {
 			DamageNumbers.draw();
+			CursorTracker.draw();
 		});
 		
 		Events.run(Trigger.drawOver, () -> {
-			CursorTracker.draw();
 			FireRange.draw();
 			IndustryCalculator.draw();
 			ProcessorGenerator.draw();

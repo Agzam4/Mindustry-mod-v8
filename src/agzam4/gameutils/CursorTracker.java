@@ -5,13 +5,18 @@ import static mindustry.Vars.player;
 import agzam4.AgzamMod;
 import agzam4.ModWork;
 import agzam4.MyDraw;
+import agzam4.render.Text;
+import agzam4.utils.Prefs;
 import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
 import arc.struct.Seq;
+import arc.util.Align;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.graphics.Layer;
+import mindustry.ui.Fonts;
 
 public class CursorTracker {
 
@@ -29,8 +34,12 @@ public class CursorTracker {
 	private static int updates = 0;
 	
 	public static void draw() {
-		if(!ModWork.setting("cursors-tracking")) return;
+		if(!Prefs.settings.bool("cursors-tracking")) return;
 		if(cursors == null) return;
+
+		Text.font(Fonts.outline);
+		Draw.z(Layer.playerName);
+		
 		for (int i = 0; i < Groups.player.size(); i++) {
 			Player p = Groups.player.index(i);
 			if(p == player) continue;
@@ -50,6 +59,8 @@ public class CursorTracker {
 				cursors.add(new PlayerCursor(p.id));
 			}
 		}
+		Text.size();
+		Draw.color();
 		
 		for (int i = 0; i < cursors.size; i++) {
 			if(cursors.get(i).lastUpdate != updates) {
@@ -77,7 +88,6 @@ public class CursorTracker {
 			lastUpdate = updates;
 			float nx = p.mouseX;
 			float ny = p.mouseY;
-			
 
 			TextureRegion cursor = pointer;
 			if(p.shooting) {
@@ -112,10 +122,13 @@ public class CursorTracker {
 				y += dy;
 			}
 
-			Color color = p.team() == null ? Color.white : p.team().color;
 
-			MyDraw.normal(cursor, color, x, y, Layer.playerName);
-			MyDraw.text(p.coloredName(), x, y, .5f, true);
+			Text.size(1f);
+			MyDraw.normal(cursor, p.team() == null ? Color.white : p.team().color, x, y, Layer.playerName);
+			Text.rect = true;
+			Draw.color();
+			Text.at(p.coloredName(), x, y + 1f, Align.top | Align.center);
+			Text.rect = false;
 		}
 	}
 

@@ -3,7 +3,6 @@ package agzam4.gameutils;
 import static agzam4.ModWork.*;
 
 import agzam4.AgzamMod;
-import agzam4.ModWork;
 import agzam4.render.Text;
 import agzam4.utils.Prefs;
 import arc.Core;
