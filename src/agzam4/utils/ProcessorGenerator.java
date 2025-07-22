@@ -147,8 +147,6 @@ public class ProcessorGenerator {
 			Table t = new Table();
 			t.defaults().pad(10);
 			
-			if(Debug.debug) _p.add("" + AgzamMod.modRandom);
-			
 			addCategory(t, "mining");
 			buttonsPerRow = 0;
 			Vars.content.units().each(u -> {
@@ -300,7 +298,7 @@ public class ProcessorGenerator {
 				}
 			}
 
-			BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("delivery-items"));
+			BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("utils.processor-generator.delivery-items"));
 
 			deliveryItems.title.setColor(Color.white);
 			deliveryItems.closeOnBack();

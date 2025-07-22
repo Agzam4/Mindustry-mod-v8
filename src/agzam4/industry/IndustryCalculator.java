@@ -135,9 +135,9 @@ public class IndustryCalculator {
 //				StringBuilder info = new StringBuilder(block.emoji() + " " + block.localizedName.toUpperCase());
 				buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
 				
-				if(Debug.debug) {
-					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed);
-				}
+//				if(Debug.debug) {
+//					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed);
+//				}
 //				buildTooltip.color(Pal.accent);
 
 				if(craftSpeed > 0) {

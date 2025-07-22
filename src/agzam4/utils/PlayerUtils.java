@@ -24,7 +24,6 @@ public class PlayerUtils {
 //		PlayerListFragment
 		
 		utilsDialog.cont.pane(p -> {
-			if(Debug.debug) p.add("" + AgzamMod.modRandom);
 //            t.defaults().left().pad(3f);
 
 			p.defaults().left();
