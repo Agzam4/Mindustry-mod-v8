@@ -3,6 +3,7 @@ package agzam4.ui;
 import agzam4.*;
 import agzam4.UpdateInfo.CheckUpdatesInterval;
 import agzam4.debug.Debug;
+import agzam4.gameutils.Afk;
 import agzam4.ui.editor.MobileUIEditor;
 import agzam4.uiOverride.*;
 import agzam4.utils.Bungle;

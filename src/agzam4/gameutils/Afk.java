@@ -1,5 +1,7 @@
-package agzam4;
+package agzam4.gameutils;
 
+import agzam4.Awt;
+import agzam4.ModWork;
 import agzam4.utils.Bungle;
 import arc.ApplicationListener;
 import arc.Core;
