@@ -719,6 +719,41 @@ public class ModWork {
 		}
 		return items;
 	}
+	public static Seq<ItemStack> getMaximumAcceptedConsumers(Building build) {
+		Block block = build.block;
+		Seq<ItemStack> items = new Seq<ItemStack>();
+		
+		if(build instanceof StorageBuild) {
+			if(Vars.state.getPlanet() == Planets.serpulo) {
+				Items.serpuloItems.each(i -> items.add(new ItemStack(i, build.getMaximumAccepted(i))));
+			}
+			if(Vars.state.getPlanet() == Planets.erekir) {
+				Items.serpuloItems.each(i -> items.add(new ItemStack(i, build.getMaximumAccepted(i))));
+			}
+			if(Vars.state.getPlanet() == Planets.sun) {
+				Vars.content.items().each(i -> items.add(new ItemStack(i, build.getMaximumAccepted(i))));
+			}
+			return items;
+		}
+		
+		if(block instanceof ItemTurret iTurret && build instanceof ItemTurretBuild turret) {
+			for (int item = Vars.content.items().size-1; item >= 0; item--) {
+				int maximumAccepted = turret.acceptStack(Vars.content.item(item), Integer.MAX_VALUE, null);
+				if(maximumAccepted > 0) items.add(
+						new ItemStack(Vars.content.item(item), maximumAccepted));
+			}
+			items.sort(s -> iTurret.ammoTypes.get(s.item).estimateDPS());
+			return items;
+		}
+		if(block.consumers != null) {
+			for (int c = 0; c < block.consumers.length; c++) {
+				consumeItems(block.consumers[c], build, 1f, (item, ips) -> {
+					items.add(new ItemStack(item, build.getMaximumAccepted(item)));
+				});
+			}
+		}
+		return items;
+	}
 
 	public static boolean hasKeyBoard() {
 		if(Vars.mobile) return Core.input.useKeyboard();

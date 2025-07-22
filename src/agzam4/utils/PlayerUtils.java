@@ -1,5 +1,7 @@
 package agzam4.utils;
 
+import agzam4.AgzamMod;
+import agzam4.debug.Debug;
 import arc.graphics.Color;
 import arc.scene.ui.layout.Table;
 import mindustry.content.*;
@@ -22,6 +24,7 @@ public class PlayerUtils {
 //		PlayerListFragment
 		
 		utilsDialog.cont.pane(p -> {
+			if(Debug.debug) p.add("" + AgzamMod.modRandom);
 //            t.defaults().left().pad(3f);
 
 			p.defaults().left();

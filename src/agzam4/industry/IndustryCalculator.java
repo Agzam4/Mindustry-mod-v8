@@ -319,8 +319,12 @@ public class IndustryCalculator {
 			return;
 		}
 	}
+	
+	public static Seq<Tile> selected() {
+		return selected;
+	}
 
-	private static float itemsBalance[] = new float[Vars.content.items().size];
+	public static float itemsBalance[] = new float[Vars.content.items().size];
 	private static float liquidBalance[] = new float[Vars.content.liquids().size];
 
 	private static float itemsBalanceTotal[] = new float[Vars.content.items().size];

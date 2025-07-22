@@ -13,14 +13,14 @@ import arc.util.Log;
 import mindustry.Vars;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
+import mindustry.input.Binding;
 import mindustry.mod.Mod;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.Fonts;
-
-import java.util.Random;
-
+import mindustry.world.Tile;
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
+import agzam4.events.SceneTileTap;
 import agzam4.gameutils.Afk;
 import agzam4.gameutils.CursorTracker;
 import agzam4.gameutils.DamageNumbers;
@@ -43,7 +43,7 @@ public class AgzamMod extends Mod {
 	
 	/**
 	 * TODO:
-	 * Pixelisation fix
+	 * [V] Pixelisation fix
 	 * Messge limit
 	 */
 
@@ -53,12 +53,13 @@ public class AgzamMod extends Mod {
 	
 	int pauseRandomNum = 0;
 	
-	private static int modRandom = Mathf.random(10000, 99999);
+	public static final int modRandom = Mathf.random(100, 999);
 	
 	public static LoadedMod mod;
 	
 	@Override
 	public void init() {
+		Log.info("Mod loaded rid: @", modRandom);
 		mod = Vars.mods.getMod("agzam4mod");
 		Afk.init();
 		MyFonts.load();
@@ -97,7 +98,7 @@ public class AgzamMod extends Mod {
 			unitTextures[i] = new UnitTextures(Vars.content.unit(i));
 		}
 		
-		Core.scene.addListener(new InputListener() {
+		Events.scene(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, KeyCode keyCode) {
                 if (ModWork.acceptKey()) {
@@ -132,6 +133,13 @@ public class AgzamMod extends Mod {
 		});
 		
 		Events.run(Trigger.update, () -> {
+			if(Vars.world != null && Core.input.keyTap(Binding.select) && !Core.scene.hasMouse()){
+				Tile selected = Vars.world.tileWorld(Core.input.mouseWorldX(), Core.input.mouseWorldY());
+				if(selected != null){
+					arc.Events.fire(new SceneTileTap(selected));
+				}
+			}
+			
 			IndustryCalculator.update();
 			PlayerAI.updatePlayer();
 			UnitSpawner.update();
@@ -145,6 +153,8 @@ public class AgzamMod extends Mod {
 					Vars.player.unit().vel.scl(0);
 				}
 			}
+			
+			
 //			Log.info("update: @", modRandom);
 		});
 		Events.run(Trigger.preDraw, () -> {

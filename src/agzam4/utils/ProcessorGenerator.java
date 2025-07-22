@@ -2,11 +2,18 @@ package agzam4.utils;
 
 import agzam4.*;
 import agzam4.Events;
+import agzam4.debug.Debug;
+import agzam4.events.SceneTileTap;
+import agzam4.industry.IndustryCalculator;
 import agzam4.render.MyDraw;
 import arc.*;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
+import arc.input.KeyCode;
 import arc.math.Mathf;
+import arc.scene.event.ClickListener;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
@@ -14,7 +21,6 @@ import arc.struct.Seq;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.content.Blocks;
-import mindustry.content.UnitTypes;
 import mindustry.game.EventType.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -133,12 +139,15 @@ public class ProcessorGenerator {
 //		Blocks.payloadSource;
 //		ItemSelection
 		dialog.cont.pane(Styles.defaultPane,  _p -> {
+			Log.info("Build: @", AgzamMod.modRandom);
 			_p.defaults().left().pad(15);
 			Table p = new Table();
 			p.defaults().left().pad(15);
 			
 			Table t = new Table();
 			t.defaults().pad(10);
+			
+			if(Debug.debug) _p.add("" + AgzamMod.modRandom);
 			
 			addCategory(t, "mining");
 			buttonsPerRow = 0;
@@ -261,80 +270,150 @@ public class ProcessorGenerator {
 			}
 		});
 		
-		Events.on(TapEvent.class, e -> {
-			if(e.player != Vars.player) return;
-//			Log.info("TAP! @", selectedType);
-			if(selectedType == DELIVERY) {
-				if(!isDeliveryBuild(e.tile.build)) return;
-				
-				if(lastTap != null) {
-					if(lastTap.intValue() == e.tile.pos()) {
-						if(to != e.tile) {
-							to = e.tile;
-							selectedType = NONE;
-//							if(from.build == null) return;
-							if(to.build == null) return;
-							if(carrier == null) return;
-							link = new LogicLink(to.centerX(), to.centerY(),
-									"agzamMod-delivery-autolink", false);
-							Seq<ItemStack> items = ModWork.getMaximumAcceptedConsumers(to.block());
-							if(items.size == 0) return;
-							boolean[] selected = new boolean[Vars.content.items().size];
-							for (int i = 0; i < selected.length; i++) {
-								for (int j = 0; j < items.size; j++) {
-									if(items.get(j).item.id == i) {
-										selected[i] = true;
-										break;
-									}
-								}
-							}
-							
-							BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("delivery-items"));
+		Events.on(SceneTileTap.class, e -> {
+			
+			@Nullable Tile tile = e.tile;
 
-							deliveryItems.title.setColor(Color.white);
-							deliveryItems.closeOnBack();
-							deliveryItems.cont.pane(op -> {
-								op.defaults().left().pad(5);
-//								UnitTypes.mono.lightColor
-								items.each(i -> {
-									op.check(i.item.emoji() + " " + i.item.localizedName, true, b -> {
-										selected[i.item.id] = b;
-									}).row();
-								});
-								
-								op.button("@ok", () -> {
-									boolean hasSelected = false;
-									for (int i = 0; i < selected.length; i++) {
-										if(selected[i]) {
-											hasSelected = true;
-											break;
-										}
-									}
-									if(hasSelected) {
-										Seq<ItemStack> selectedItems = new Seq<>();
-										for (int i = 0; i < items.size; i++) {
-											if(selected[items.get(i).item.id]) {
-												selectedItems.add(items.get(i));
-											}
-										}
-										commentMessage = new StringBuilder();
-										addCode(createDeliveryCode(carrier, to.build, selectedItems), 
-												commentMessage.toString(), new Seq<>(new LogicLink[]{link}));
-										hide();
-										deliveryItems.hide();
-									}
-								});
-							});
-							deliveryItems.show();
-						}
-					}
-				}
-				lastTap = e.tile.pos();
+			if(tile == null || carrier == null || !isDeliveryBuild(tile.build) || to == tile) return;
+
+			if(lastTap == null || lastTap.intValue() != tile.pos()) {
+				lastTap = tile.pos();
 				return;
 			}
-			lastTap = null;
+			Log.info("Selected: @", lastTap);
+
+			to = tile;
+			selectedType = NONE;
+
+			link = new LogicLink(to.centerX(), to.centerY(), "agzamMod-delivery-autolink", false);
+			if(to.build == null) return;
+			Seq<ItemStack> items = ModWork.getMaximumAcceptedConsumers(to.build);
+			Log.info("items: @ @", items, to.block());
+			if(items.size == 0) return;
+			boolean[] selected = new boolean[Vars.content.items().size];
+			for (int i = 0; i < selected.length; i++) {
+				for (int j = 0; j < items.size; j++) {
+					if(items.get(j).item.id == i) {
+						selected[i] = true;
+						break;
+					}
+				}
+			}
+
+			BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("delivery-items"));
+
+			deliveryItems.title.setColor(Color.white);
+			deliveryItems.closeOnBack();
+			deliveryItems.cont.pane(op -> {
+				op.defaults().left().pad(5);
+
+				items.each(i -> {
+					selected[i.item.id] = IndustryCalculator.selected().size == 0 || IndustryCalculator.itemsBalance[i.item.id] < 0;
+					op.check(i.item.emoji() + " " + i.item.localizedName, selected[i.item.id], b -> {
+						selected[i.item.id] = b;
+					}).row();
+				});
+
+				op.button("@ok", () -> {
+					boolean hasSelected = false;
+					for (int i = 0; i < selected.length; i++) {
+						if(selected[i]) {
+							hasSelected = true;
+							break;
+						}
+					}
+					if(hasSelected) {
+						Seq<ItemStack> selectedItems = new Seq<>();
+						for (int i = 0; i < items.size; i++) {
+							if(selected[items.get(i).item.id]) {
+								selectedItems.add(items.get(i));
+							}
+						}
+						commentMessage = new StringBuilder();
+						addCode(createDeliveryCode(carrier, to.build, selectedItems), commentMessage.toString(), new Seq<>(new LogicLink[]{link}));
+						hide();
+						deliveryItems.hide();
+					}
+				});
+			});
+			deliveryItems.show();
 			return;
 		});
+		
+//		Events.on(TapEvent.class, e -> {
+//			if(e.player != Vars.player) return;
+////			Log.info("TAP! @", selectedType);
+//			if(selectedType == DELIVERY) {
+//				if(!isDeliveryBuild(e.tile.build)) return;
+//				
+//				if(lastTap != null) {
+//					if(lastTap.intValue() == e.tile.pos()) {
+//						if(to != e.tile) {
+//							to = e.tile;
+//							selectedType = NONE;
+////							if(from.build == null) return;
+//							if(to.build == null) return;
+//							if(carrier == null) return;
+//							link = new LogicLink(to.centerX(), to.centerY(),
+//									"agzamMod-delivery-autolink", false);
+//							Seq<ItemStack> items = ModWork.getMaximumAcceptedConsumers(to.block());
+//							if(items.size == 0) return;
+//							boolean[] selected = new boolean[Vars.content.items().size];
+//							for (int i = 0; i < selected.length; i++) {
+//								for (int j = 0; j < items.size; j++) {
+//									if(items.get(j).item.id == i) {
+//										selected[i] = true;
+//										break;
+//									}
+//								}
+//							}
+//							
+//							BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("delivery-items"));
+//
+//							deliveryItems.title.setColor(Color.white);
+//							deliveryItems.closeOnBack();
+//							deliveryItems.cont.pane(op -> {
+//								op.defaults().left().pad(5);
+////								UnitTypes.mono.lightColor
+//								items.each(i -> {
+//									op.check(i.item.emoji() + " " + i.item.localizedName, true, b -> {
+//										selected[i.item.id] = b;
+//									}).row();
+//								});
+//								
+//								op.button("@ok", () -> {
+//									boolean hasSelected = false;
+//									for (int i = 0; i < selected.length; i++) {
+//										if(selected[i]) {
+//											hasSelected = true;
+//											break;
+//										}
+//									}
+//									if(hasSelected) {
+//										Seq<ItemStack> selectedItems = new Seq<>();
+//										for (int i = 0; i < items.size; i++) {
+//											if(selected[items.get(i).item.id]) {
+//												selectedItems.add(items.get(i));
+//											}
+//										}
+//										commentMessage = new StringBuilder();
+//										addCode(createDeliveryCode(carrier, to.build, selectedItems), 
+//												commentMessage.toString(), new Seq<>(new LogicLink[]{link}));
+//										hide();
+//										deliveryItems.hide();
+//									}
+//								});
+//							});
+//							deliveryItems.show();
+//						}
+//					}
+//				}
+//				lastTap = e.tile.pos();
+//				return;
+//			}
+//			lastTap = null;
+//			return;
+//		});
 	}
 	private static LogicLink link;
 	
@@ -444,9 +523,6 @@ public class ProcessorGenerator {
 			
 			code.jump("always 0 0", "mark-start");
 			
-			
-//		}
-
 			commentMessage.append("[gold]Auto generated delivery processor[]\n");
 			commentMessage.append("[accent]Unit: []" + carrier.emoji() + " " + carrier.localizedName);
 			commentMessage.append("\n[accent]Items: []");

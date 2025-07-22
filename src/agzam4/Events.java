@@ -1,6 +1,8 @@
 package agzam4;
 
+import arc.Core;
 import arc.func.Cons;
+import arc.scene.event.EventListener;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Log;
@@ -10,6 +12,7 @@ import mindustry.game.EventType.Trigger;
 public class Events {
 
     private static final ObjectMap<Object, Seq<Cons<?>>> events = new ObjectMap<>();
+    private static final Seq<EventListener> sceneListeners = new Seq<>();
 
     public static <T> void on(Class<T> type, Cons<T> listener){
     	arc.Events.on(type, listener);
@@ -37,6 +40,12 @@ public class Events {
     		Log.info("Removing: @ (@)", type, type.hashCode());
     		list.each(event -> all.get(type).remove(event));
     	});
+    	sceneListeners.each(l -> Core.scene.removeListener(l));
+	}
+
+	public static void scene(EventListener listener) {
+		sceneListeners.add(listener);
+		Core.scene.addListener(listener);
 	}
 
 }
