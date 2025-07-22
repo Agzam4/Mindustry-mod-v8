@@ -12,7 +12,7 @@ import mindustry.ui.Fonts;
 public class Text {
 
 	private static Font font = Fonts.outline;
-	public static boolean rect = false;
+	public static boolean background = false;
 
 	public static void at(String text, float x, float y) {
 		at(text, x, y, Align.center);
@@ -21,13 +21,15 @@ public class Text {
 	public static void at(String text, float x, float y, int align) {
 		font.setColor(Draw.getColor());
 		Draw.color();
-		y += font.getLineHeight()/2f;
-		if(Align.isTop(align)) y += font.getLineHeight()/2f;
-		if(Align.isBottom(align)) y -= font.getLineHeight()/2f;
 
-		if(rect) {
-			GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
-			layout.setText(font, text);
+		GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+		layout.setText(font, text);
+		
+		y += layout.height/2f;//font.getLineHeight()/2f;
+		if(Align.isTop(align)) y += layout.height/2f;//font.getLineHeight()/2f;
+		if(Align.isBottom(align)) y -= layout.height/2f;//font.getLineHeight()/2f;
+
+		if(background) {
 			
 			Draw.z(Draw.z() - .1f);
 			Draw.color(0f, 0f, 0f, 0.3f);

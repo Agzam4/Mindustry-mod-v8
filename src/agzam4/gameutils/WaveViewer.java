@@ -1,21 +1,27 @@
 package agzam4.gameutils;
 
+import agzam4.Events;
 import agzam4.ModWork;
 import agzam4.MyDraw;
+import agzam4.render.Text;
+import agzam4.utils.Bungle;
+import agzam4.utils.Prefs;
 import arc.Core;
-import arc.Events;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
+import arc.util.Align;
+import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.World;
 import mindustry.game.EventType.TapEvent;
 import mindustry.game.EventType.Trigger;
 import mindustry.game.EventType.WaveEvent;
+import mindustry.game.EventType.WorldLoadEndEvent;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.game.SpawnGroup;
@@ -25,7 +31,11 @@ import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Tile;
 
 public class WaveViewer {
-
+	
+	/**
+	 * TODO: better UI
+	 */
+	
 	public static Seq<SpawnInfo> spawns = new Seq<>();
 	static int wave = -1;
 	
@@ -36,7 +46,7 @@ public class WaveViewer {
 			final int pos = e.tile.pos();
 			for (int ti = 0; ti < spawns.size; ti++) {
 				if(e.tile == spawns.get(ti).tile) {
-					BaseDialog waveDialog = new BaseDialog("Total Waves");
+					BaseDialog waveDialog = new BaseDialog(Bungle.dialog("wave-viewer")); // TODO: to bungle
 					waveDialog.title.setColor(Color.white);
 					waveDialog.closeOnBack();
 					waveDialog.cont.pane(op -> {
@@ -61,14 +71,13 @@ public class WaveViewer {
 								all.addInfo(group, wave);
 							}
 
-					        t.add("Wave "  + (wave+1)).color(Pal.accent).colspan(4).pad(10).padBottom(4).growX().row();
+					        t.add(Strings.format(Bungle.dialog("wave-viewer.wave"), (wave+1))).color(Pal.accent).colspan(4).pad(10).padBottom(4).growX().row();
 							t.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).growX().row();		
-//							t.labelWrap("Wave " + wave).growX().pad(10).padBottom(4).fillX().row();		
 							if(spawnsCount == 1) {
 								t.add(current.toString()).growX().pad(10).padBottom(4).fillX().wrapLabel(false).row();		
 							} else {
-								t.add("[tan]Selected:[]\n" + current.toString()).growX().pad(10).padBottom(4).fillX().wrapLabel(false).row();		
-								t.add("[tan]All:[]\n" + all.toString()).growX().pad(10).padBottom(4).fillX().wrapLabel(false).row();
+								t.add(Strings.format(Bungle.dialog("wave-viewer.selected-point"), current.toString())).growX().pad(10).padBottom(4).fillX().wrapLabel(false).row();		
+								t.add(Strings.format(Bungle.dialog("wave-viewer.all-points"), all.toString())).growX().pad(10).padBottom(4).fillX().wrapLabel(false).row();
 							}
 							t.row();
 						}
@@ -82,17 +91,23 @@ public class WaveViewer {
 //		Vars.spawner;
 
 		Events.run(Trigger.update, () -> { // Changed by rules
-			if(!ModWork.setting("wave-viewer")) return;
-			Vars.spawner.isSpawning(); //asdasdiasfd
+			if(!Prefs.settings.bool("wave-viewer")) return;
+//			Vars.spawner.isSpawning(); //asdasdiasfd
 			if(spawnsCount != Vars.spawner.getSpawns().size || (updateSpawns && updates%60 == 0)) {
 				updateSpawns = false;
 				createSpawns();
 				return;
 			}
+			createSpawns();
+			
 			updates++;
 			if(Vars.state.wave-1 != wave) update(Vars.state.wave-1);
 		});
 		
+		Events.on(WorldLoadEndEvent.class, e -> {
+			createSpawns();
+			updateSpawns = true;
+		});
 		Events.on(WaveEvent.class, e -> {
 			createSpawns();
 		});
@@ -142,8 +157,11 @@ public class WaveViewer {
 		
 		for (int s = 0; s < spawns.size; s++) {
 			SpawnInfo info = spawns.get(s);
+
+//			Draw.color();
+//			Text.at(info.toString() + "\n[gray]Tap for more waves", info.tile.worldx(), info.tile.worldy() + Vars.tilesize, Align.top | Align.center);
 			
-			MyDraw.text(info.toString() + "\n[gray]Tap for more waves", info.tile.worldx(), info.tile.worldy() + MyDraw.textHeight*1, true);
+//			MyDraw.text(info.toString() + "\n[gray]Tap for more waves", info.tile.worldx(), info.tile.worldy() + MyDraw.textHeight*1, true);
 
 			Draw.z(Layer.effect);
 			Draw.color(Vars.state.rules.waveTeam.color);
@@ -160,10 +178,24 @@ public class WaveViewer {
 				} else {
 					size = (size-.7f)*0.9f+.7f;
 				}
-				
 				MyDraw.rotatingArcs(info.tile, Vars.tilesize * size, 1f);
 			}
 		}
+	}
+
+	public static void drawUi() {
+		if(spawns == null) return;
+		if(!Prefs.settings.bool("wave-viewer")) return;
+		
+		Text.background = true;
+		Text.size(1f);
+		for (int s = 0; s < spawns.size; s++) {
+			SpawnInfo info = spawns.get(s);
+			Draw.color();
+			Text.at(Strings.format(Bungle.dialog("wave-viewer.point-info"), info.toString()), info.tile.worldx(), info.tile.worldy() + Vars.tilesize + 3f, Align.top | Align.center);
+		}
+		Text.background = false;
+		Text.size();
 	}
 
 	private static class SpawnInfo {

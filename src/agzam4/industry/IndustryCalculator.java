@@ -4,10 +4,12 @@ import static agzam4.ModWork.*;
 
 import agzam4.Events;
 import agzam4.ModWork;
-import agzam4.MyDraw;
 import agzam4.debug.Debug;
 import agzam4.debug.ObjectInspector;
+import agzam4.render.Text;
+import agzam4.utils.Prefs;
 import agzam4.ModWork.KeyBinds;
+import agzam4.MyDraw;
 import arc.Core;
 import arc.func.Cons;
 import arc.graphics.Color;
@@ -99,10 +101,10 @@ public class IndustryCalculator {
 		
 		int index = ModWork.getGradientIndex(health, maxHealth);
 		
-		if(ModWork.setting("show-units-health")) {
-			MyDraw.textColor(ModWork.roundSimple(health), 
-					building.getX(), building.getY()+building.block.size*Vars.tilesize/2-MyDraw.textHeight/2f,
-					rs[index], gs[index], bs[index], 1, Align.center);
+		if(Prefs.settings.bool("show-units-health")) {
+			Text.size(1f);
+			Draw.color(rs[index], gs[index], bs[index]);
+			Text.at(ModWork.roundSimple(health), building.x, building.y + (building.block.size+1)*Vars.tilesize/2f, Align.center);
 		}
 		
 
@@ -111,7 +113,7 @@ public class IndustryCalculator {
 			new ObjectInspector(building).show();
 		}
 		
-		if(building.team == Vars.player.team() && ModWork.setting("show-blocks-tooltip")) {
+		if(building.team == Vars.player.team() && Prefs.settings.bool("show-blocks-tooltip")) {
 			Block block = building.block;
 			if(building instanceof ConstructBuild) {
 				ConstructBuild cb = (ConstructBuild) building;
@@ -160,23 +162,18 @@ public class IndustryCalculator {
 				Draw.z(Layer.playerName);
 				buildTooltip.draw(mouseX, mouseY);
 			});
-
-			
-//			MyDraw.drawTooltip(info.toString(), mouseX, mouseY);
 		}
 	}
 	
 	private static void drawSelect() {
-		if(!ModWork.setting("selection-calculations")) return;
+		if(!Prefs.settings.bool("selection-calculations")) return;
         final float ts = Vars.tilesize/2f;
 		if(selectStart.x != -1 && selectEnd.x != -1) {
 			int minX = Math.min(selectStart.x, selectEnd.x);
 			int maxX = Math.max(selectStart.x, selectEnd.x)+1;
 			int minY = Math.min(selectStart.y, selectEnd.y);
 			int maxY = Math.max(selectStart.y, selectEnd.y);
-//			debug = "X: " + minX + " -> " + maxX + " | Y: " + minY + " -> " + maxY;
 
-//			MyDraw.textColor("Start", minX*Vars.tilesize, mouseY, 0, 0, 1f, 1, Align.center);
 			Draw.z(Layer.plans);
 	        Lines.stroke(2f);
 	        Draw.color(selectBack);
@@ -249,7 +246,7 @@ public class IndustryCalculator {
 	static String debug = "none";
 	
 	public static void update() {
-		if(!ModWork.setting("selection-calculations")) return;
+		if(!Prefs.settings.bool("selection-calculations")) return;
 		int tileX = World.toTile(Core.input.mouseWorldX());
 		int tileY = World.toTile(Core.input.mouseWorldY());
 		if(tileX < 0) return;
@@ -375,7 +372,7 @@ public class IndustryCalculator {
 		Cons<Float> powerConsume = pps -> power -= pps;
 
 		boolean buildPlans = false;
-		if(ModWork.setting("buildplans-calculations")) {
+		if(Prefs.settings.bool("buildplans-calculations")) {
 			if(Vars.player.unit() != null) {
 				if(Vars.player.unit().plans != null) {
 					if(Vars.player.unit().plans().size > 0) {
@@ -871,7 +868,7 @@ public class IndustryCalculator {
 	    
 		@Override
 		public void draw() {
-			if(!ModWork.setting("selection-calculations")) return;
+			if(!Prefs.settings.bool("selection-calculations")) return;
 			if(element.isEmpty()) return;
 			if(Vars.state.isMenu()) return;
 			if(Vars.ui.schematics.isShown()) return;
@@ -892,29 +889,10 @@ public class IndustryCalculator {
 			float x = Core.scene.getWidth() - width;
 			float y = Core.scene.getHeight();
 			
-//			Log.info(element.lines.size);
 			element.padX = Fonts.outline.getLineHeight();
 			element.padY = Fonts.outline.getLineHeight();
 
 			element.draw(x, y-element.height()-Fonts.outline.getLineHeight()*2, width);
-
-//			final float mouseX = Core.input.mouseWorldX();
-//			final float mouseY = Core.input.mouseWorldY();
-
-//			element.draw(mouseX, mouseY);
-			
-			
-//			layout.setText(Fonts.outline, "" + element.lines.size);
-//			Draw.color(0f, 0f, 0f, 0.75f);
-//			Fill.rect(x + width/2 - MyDraw.textHeight, y + MyDraw.textHeight - layout.height/2,
-//					width + MyDraw.textHeight*3, layout.height + MyDraw.textHeight*5);
-//			
-//			Draw.color();
-//			Draw.alpha(1f);
-//			font.setColor(1, 1, 1, 1);
-//			font.draw(text, mouseX, mouseY, 0, Align.left, false);
-//			Draw.color();
-			
 		} 
 		
 		protected void rect(float x, float y, float w, float h){

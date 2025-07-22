@@ -125,10 +125,10 @@ public class CursorTracker {
 
 			Text.size(1f);
 			MyDraw.normal(cursor, p.team() == null ? Color.white : p.team().color, x, y, Layer.playerName);
-			Text.rect = true;
+			Text.background = true;
 			Draw.color();
-			Text.at(p.coloredName(), x, y + 1f, Align.top | Align.center);
-			Text.rect = false;
+			Text.at(p.coloredName(), x, y + 3f, Align.top | Align.center);
+			Text.background = false;
 		}
 	}
 

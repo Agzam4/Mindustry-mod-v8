@@ -277,7 +277,8 @@ public class ModWork {
 	public static String settingName(String string) {
 		return "agzam4mod.settings." + string;
 	}
-
+	
+	@Deprecated
 	public static boolean setting(String string) {
 		return Core.settings.getBool("agzam4mod.settings." + string, true);
 	}

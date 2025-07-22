@@ -6,6 +6,7 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureAtlas.AtlasRegion;
 import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
+import arc.math.Mathf;
 import arc.scene.event.*;
 import arc.scene.ui.*;
 import arc.util.Log;
@@ -14,6 +15,10 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.mod.Mod;
 import mindustry.mod.Mods.LoadedMod;
+import mindustry.ui.Fonts;
+
+import java.util.Random;
+
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
 import agzam4.gameutils.Afk;
@@ -22,6 +27,7 @@ import agzam4.gameutils.DamageNumbers;
 import agzam4.gameutils.FireRange;
 import agzam4.gameutils.WaveViewer;
 import agzam4.industry.IndustryCalculator;
+import agzam4.render.Text;
 import agzam4.ui.MobileUI;
 import agzam4.ui.ModSettingsDialog;
 import agzam4.ui.ModStyles;
@@ -47,6 +53,7 @@ public class AgzamMod extends Mod {
 	
 	int pauseRandomNum = 0;
 	
+	private static int modRandom = Mathf.random(10000, 99999);
 	
 	public static LoadedMod mod;
 	
@@ -138,22 +145,31 @@ public class AgzamMod extends Mod {
 					Vars.player.unit().vel.scl(0);
 				}
 			}
+//			Log.info("update: @", modRandom);
 		});
 		Events.run(Trigger.preDraw, () -> {
 			PlayerAI.preDraw();
 		});
 
 		Events.run(Trigger.uiDrawBegin, () -> {
-			DamageNumbers.draw();
+			DamageNumbers.drawUi();
 			CursorTracker.draw();
+			WaveViewer.drawUi();
+			IndustryCalculator.draw();
+			Text.font(Fonts.outline);
+			Text.size();
+			Text.font(Fonts.def);
+			Text.size();
 		});
 		
 		Events.run(Trigger.drawOver, () -> {
+//			Log.info("rand: @", modRandom);
 			FireRange.draw();
-			IndustryCalculator.draw();
 			ProcessorGenerator.draw();
 			UnitSpawner.draw();
-			WaveViewer.draw();
+			DamageNumbers.draw();
+			
+			WaveViewer.draw(); // FIXME
 //			EnemiesPaths.draw();
 			Draw.reset();
 		});
@@ -187,9 +203,10 @@ public class AgzamMod extends Mod {
 		ModSettingsDialog.clearCategory();
 		Vars.ui.settings.getCategories().removeAll(c -> c.name.equals("TEST EDITOR"));
 		MobileUI.remove();
-		Events.clear();
 		CursorTracker.dispose();
 		DamageNumbers.dispose();
+
+		Events.clear();
 	}
 
 	public static void hideUnits(boolean b) {

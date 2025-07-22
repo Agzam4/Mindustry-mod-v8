@@ -3,7 +3,9 @@ package agzam4;
 import arc.func.Cons;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
+import arc.util.Log;
 import arc.util.Reflect;
+import mindustry.game.EventType.Trigger;
 
 public class Events {
 
@@ -14,9 +16,15 @@ public class Events {
         events.get(type, () -> new Seq<>(Cons.class)).add(listener);
     }
 
-	public static void run(Object type, Runnable listener) {
-		arc.Events.run(type, listener);
-        events.get(type, () -> new Seq<>(Cons.class)).add(e -> listener.run());
+	public static void run(Trigger type, Runnable listener) {
+		Log.info("added: @ (@)", type, type.hashCode());
+
+        ObjectMap<Object, Seq<Cons<?>>> superEvents = Reflect.get(arc.Events.class, null, "events");
+
+		Cons<?> cons = e -> listener.run();
+		
+		superEvents.get(type, () -> new Seq<>(Cons.class)).add(cons);
+        events.get(type, () -> new Seq<>(Cons.class)).add(cons);
 	}
     
     /**
@@ -24,7 +32,11 @@ public class Events {
      */
     public static void clear() {
         ObjectMap<Object, Seq<Cons<?>>> all = Reflect.get(arc.Events.class, null, "events");
-    	events.each((type, list) -> list.each(event -> all.get(type).remove(event)));
+//    	events.each((type, list) -> list.each(event -> all.get(type).remove(event)));
+    	events.each((type, list) -> {
+    		Log.info("Removing: @ (@)", type, type.hashCode());
+    		list.each(event -> all.get(type).remove(event));
+    	});
 	}
 
 }

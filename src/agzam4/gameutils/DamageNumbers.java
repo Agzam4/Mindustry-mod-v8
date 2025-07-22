@@ -33,24 +33,30 @@ public class DamageNumbers {
 	}
 	
 	private static int updates = 0;
-	
+
 	public static void draw() {
+		if(!AgzamMod.hideUnits) return;
+		for (int i = 0; i < Groups.unit.size(); i++) {
+			Unit u = Groups.unit.index(i);
+			if(u.dead()) continue;
+
+			Draw.reset();
+			Draw.z(Layer.buildBeam);
+			Draw.color(u.team().color, Color.black, .25f);
+			Fill.square(u.x, u.y, u.hitSize/2f + 1, 45);
+			Draw.color(u.team().color);
+			Fill.square(u.x, u.y, u.hitSize/2f, 45);
+			Draw.reset();
+		}
+	}
+	
+	public static void drawUi() {
 		if(damages == null) return;
 		if(!Prefs.settings.bool("show-units-health")) return;
 		
 		for (int i = 0; i < Groups.unit.size(); i++) {
 			Unit u = Groups.unit.index(i);
 			if(u.dead()) continue;
-			
-			if(AgzamMod.hideUnits) {
-				Draw.reset();
-				Draw.z(Layer.buildBeam);
-				Draw.color(u.team().color, Color.black, .25f);
-				Fill.square(u.x, u.y, u.hitSize/2f + 1, 45);
-				Draw.color(u.team().color);
-				Fill.square(u.x, u.y, u.hitSize/2f, 45);
-				Draw.reset();
-			}
 			
 			boolean found = false;
 
