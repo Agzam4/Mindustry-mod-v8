@@ -9,6 +9,7 @@ import static mindustry.Vars.player;
 import static mindustry.Vars.ui;
 
 import agzam4.ModWork;
+import agzam4.utils.Prefs;
 import arc.Core;
 import arc.Events;
 import arc.Input.TextInput;
@@ -69,7 +70,7 @@ public class CustomChatFragment extends Table {
 	public CustomChatFragment() {
 		super();
 		
-		font = ModWork.setting("outline-chat") ? Fonts.outline : Fonts.def;
+		font = Prefs.settings.bool("outline-chat") ? Fonts.outline : Fonts.def;
 		
 		messages = Reflect.get(UiOverride.oldChatFragment, "messages");
 		chatfield = Reflect.get(UiOverride.oldChatFragment, "chatfield");

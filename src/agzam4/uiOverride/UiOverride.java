@@ -1,6 +1,6 @@
 package agzam4.uiOverride;
 
-import agzam4.ModWork;
+import agzam4.utils.Prefs;
 import arc.Core;
 import mindustry.Vars;
 import mindustry.ui.fragments.ChatFragment;
@@ -26,7 +26,7 @@ public class UiOverride {
 	}
 	
 	public static void set() {
-		if(ModWork.setting("custom-chat-fragment")) {
+		if(Prefs.settings.bool("custom-chat-fragment")) {
 			if(customChatFragment == null) customChatFragment = new CustomChatFragmentHandle();
 			Core.scene.root.removeChild(Vars.ui.chatfrag);
 			Vars.ui.chatfrag = customChatFragment;

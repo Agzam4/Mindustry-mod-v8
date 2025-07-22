@@ -1,7 +1,8 @@
 package agzam4.utils;
 
 import agzam4.ModWork;
-import agzam4.MyDraw;
+import agzam4.render.MyDraw;
+import agzam4.render.Text;
 import agzam4.ui.CrossImageButton;
 import agzam4.ui.UIUtils;
 import arc.Core;
@@ -14,43 +15,27 @@ import arc.math.Mathf;
 import arc.math.geom.Position;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
-import arc.scene.event.Touchable;
+import arc.scene.event.*;
 import arc.scene.style.TextureRegionDrawable;
-import arc.scene.ui.Button;
-import arc.scene.ui.ButtonGroup;
-import arc.scene.ui.ImageButton;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.*;
 import arc.scene.ui.ImageButton.ImageButtonStyle;
-import arc.scene.ui.ScrollPane;
-import arc.scene.ui.TextButton;
-import arc.scene.ui.TextField;
 import arc.scene.ui.TextButton.TextButtonStyle;
-import arc.scene.ui.layout.Cell;
-import arc.scene.ui.layout.Table;
-import arc.struct.ObjectMap;
-import arc.struct.Seq;
-import arc.util.Align;
-import arc.util.Nullable;
-import arc.util.Time;
+import arc.struct.*;
+import arc.util.*;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.World;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.Units;
 import mindustry.game.Team;
-import mindustry.gen.Icon;
-import mindustry.gen.Iconc;
-import mindustry.gen.Tex;
-import mindustry.gen.Unit;
+import mindustry.gen.*;
 import mindustry.graphics.Layer;
 import mindustry.type.UnitType;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
-import mindustry.world.Block;
-import mindustry.world.Tile;
-import mindustry.world.blocks.environment.Floor;
-import mindustry.world.blocks.environment.OverlayFloor;
+import mindustry.world.*;
+import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.legacy.LegacyBlock;
 
 public class UnitSpawner {
@@ -401,6 +386,8 @@ public class UnitSpawner {
 	
 	public static void draw() {
 		Draw.z(Layer.flyingUnit);
+		Text.font(Fonts.outline);
+		Text.size(1f);
 	        
 		delayedBlocks.each((pos, t) -> {
 			Draw.mixcol(t.blink, 0.4f + Mathf.absin(Time.globalTime, 6f, 0.28f));
@@ -427,8 +414,14 @@ public class UnitSpawner {
 				drawContentIndex++;
 				});
 			}
-			if(drawAmount > 1) MyDraw.text("x" + drawAmount, tile.getX()+1, tile.getY(), 1, Align.right, Vars.tilesize/2, false);
+			if(drawAmount > 1) {
+				Draw.color();
+				Text.at("x" + drawAmount, tile.worldx()+1, tile.worldy(), Align.right | Align.top);
+				Text.size(1f);
+//				MyDraw.text("x" + drawAmount, tile.getX()+1, tile.getY(), 1, Align.right, Vars.tilesize/2, false);
+			}
 		});
+		Text.size();
         Draw.reset();
 	}
 	

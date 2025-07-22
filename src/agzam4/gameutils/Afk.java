@@ -1,14 +1,14 @@
 package agzam4.gameutils;
 
 import agzam4.Awt;
+import agzam4.Events;
 import agzam4.ModWork;
 import agzam4.utils.Bungle;
+import agzam4.utils.Prefs;
 import arc.ApplicationListener;
 import arc.Core;
-import arc.Events;
 import arc.math.Mathf;
 import arc.struct.Seq;
-import arc.util.Log;
 import arc.util.Nullable;
 import arc.util.Strings;
 import arc.util.Time;
@@ -30,12 +30,12 @@ public class Afk {
 	public static Seq<String> names = new Seq<String>();
 
 	public static void init() {
-		autoAI = ModWork.setting("afk.auto-afk-mode");
+		autoAI = Prefs.settings.bool("afk.auto-afk-mode");
 		names(null);
 		Events.on(PlayerChatEvent.class, e -> {
 			if(!afkAvalible) return;
 			if(!Awt.avalible) return;
-			if(!ModWork.setting("afk-ping")) return;
+			if(!Prefs.settings.bool("afk-ping")) return;
 			if(e.message == null) return;	
 			if(!isPaused) return;
 			if(e.player == null) return;
@@ -122,9 +122,7 @@ public class Afk {
 	public static void names(@Nullable String nms) {
 		if(nms == null) {
 			nms = ModWork.settingDef("afk-names", "");
-			Log.info("loaded: @", nms);
 		} else {
-			Log.info("saved: @", nms);
 			ModWork.setting("afk-names", nms);
 		}
 		names.clear();

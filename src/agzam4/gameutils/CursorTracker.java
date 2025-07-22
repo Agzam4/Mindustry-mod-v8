@@ -3,8 +3,7 @@ package agzam4.gameutils;
 import static mindustry.Vars.player;
 
 import agzam4.AgzamMod;
-import agzam4.ModWork;
-import agzam4.MyDraw;
+import agzam4.render.MyDraw;
 import agzam4.render.Text;
 import agzam4.utils.Prefs;
 import arc.graphics.Color;

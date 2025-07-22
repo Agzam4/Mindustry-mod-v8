@@ -2,7 +2,7 @@ package agzam4.gameutils;
 
 import agzam4.Events;
 import agzam4.ModWork;
-import agzam4.MyDraw;
+import agzam4.render.MyDraw;
 import agzam4.render.Text;
 import agzam4.utils.Bungle;
 import agzam4.utils.Prefs;
@@ -153,7 +153,7 @@ public class WaveViewer {
 
 	public static void draw() {
 		if(spawns == null) return;
-		if(!ModWork.setting("wave-viewer")) return;
+		if(!Prefs.settings.bool("wave-viewer")) return;
 		
 		for (int s = 0; s < spawns.size; s++) {
 			SpawnInfo info = spawns.get(s);

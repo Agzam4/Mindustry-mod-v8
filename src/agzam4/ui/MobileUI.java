@@ -10,7 +10,6 @@ import agzam4.ui.editor.MobileUIEditor;
 import agzam4.utils.PlayerUtils;
 import arc.Core;
 import arc.math.Mathf;
-import arc.math.geom.Rect;
 import arc.scene.event.*;
 import arc.scene.style.*;
 import arc.scene.ui.TextButton;
@@ -24,7 +23,6 @@ import mindustry.ui.Styles;
 public class MobileUI {
 	
 	public static boolean collapsed = false;
-	private static Rect box = new Rect();
 
 	/*
 	 * TODO: unlinked tiles to different panels 

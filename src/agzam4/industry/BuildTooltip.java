@@ -1,6 +1,6 @@
 package agzam4.industry;
 
-import agzam4.MyDraw;
+import agzam4.render.MyDraw;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;

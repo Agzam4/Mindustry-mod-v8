@@ -17,13 +17,14 @@ import arc.graphics.g2d.Draw;
 import static arc.graphics.g2d.Draw.color;
 
 import agzam4.ModWork;
+import agzam4.utils.Prefs;
 
 public class FireRange {
 
 	public static final Seq<BaseTurret> turrets = ModWork.getBlocks(BaseTurret.class);
 	
 	public static void draw() {
-		if(!ModWork.setting("show-turrets-range")) return;
+		if(!Prefs.settings.bool("show-turrets-range")) return;
 		Draw.z(Layer.effect);
 
 		final float x = Vars.player.x;
