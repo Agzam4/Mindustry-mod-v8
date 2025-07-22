@@ -3,6 +3,7 @@ package agzam4.utils;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.StringMap;
+import arc.util.Strings;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
 import mindustry.game.Schematic.Stile;
@@ -78,6 +79,10 @@ public class Code {
 		set(var, "@" + item.name);
 	}
 
+	public void sensor(String var, String type, String target) {
+		line(Strings.format("sensor @ @ @", var, target, type));
+	}
+	
 	public void sensorItems(String var, String from, Item item) {
 		line("sensor " + var + " " + from + " @" + item.name);
 	}

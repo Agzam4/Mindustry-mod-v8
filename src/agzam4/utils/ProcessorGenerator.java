@@ -14,6 +14,7 @@ import arc.struct.Seq;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.content.Blocks;
+import mindustry.content.UnitTypes;
 import mindustry.game.EventType.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -348,10 +349,27 @@ public class ProcessorGenerator {
 		}
 		return true;
 	}
+	
+//	ubind @flare
+//	sensor controller @unit @controller
+//	jump 0 notEqual controller @unit
+//	#CONTROL
+//	sensor controller @unit @controller
+//	jump 7 notEqual controller @this
+//	jump 3 always x false
+//	end
 
 	private static String createDeliveryCode(UnitType carrier, Building to, Seq<ItemStack> deliveryItems) { // TODO
 		
 		Code code = new Code();
+		code.ubind(carrier);
+		code.markLast("mark-bind");
+		
+		code.sensor("#Controller", "@controller", "@unit");
+		code.jump("notEqual #Controller @unit", "mark-bind");
+		
+		// Control
+		/*
 		code.set("#Attempts", "0");
 		code.markLast("mark-bind");
 		code.ubind(carrier);
@@ -364,6 +382,8 @@ public class ProcessorGenerator {
 		code.jump("notEqual #Flag " + to.pos(), "mark-bind-bind");
 		
 		code.uSetFlag(to.pos());	
+		*/
+		
 //		Seq<Item> deliveryItems = new Seq<Item>();
 //		if(!(to instanceof StorageBuild)) {
 //			if(to.block.consumers != null) {
@@ -396,7 +416,7 @@ public class ProcessorGenerator {
 				}
 				//  ModWork.getMaximumAccepted(to.block, deliveryItems.get(i))
 			}
-			code.jump("always 0 0", "mark-start");
+			code.jump("always 0 0", "mark-end");
 			code.jump("lessThanEq #Items 0", "mark-takeItems");
 			code.markLast("mark-delivery");
 			code.uSensorItems("#UnitItem");
@@ -404,17 +424,27 @@ public class ProcessorGenerator {
 			
 			code.approachTo(to.tileX(), to.tileY());
 			code.dropItems("#Building");
-			code.jump("always 0 0", "mark-start");
+			code.jump("always 0 0", "mark-end");
 
 			code.approachToCore();
 			code.markLast("mark-dropWrong");
 			code.dropItems("#Core");
-			code.jump("always 0 0", "mark-start");
+			code.jump("always 0 0", "mark-end");
 			
 			code.approachToCore();
 			code.markLast("mark-takeItems");
 			code.takeItems("#Core", "#DeliveryItem");
+			code.jump("always 0 0", "mark-end");
+			
+			// Validate unit
+			code.sensor("#Controller", "@controller", "@unit");
+			code.markLast("mark-end");
+			
+			code.jump("notEqual #Controller @this", "mark-bind");
+			
 			code.jump("always 0 0", "mark-start");
+			
+			
 //		}
 
 			commentMessage.append("[gold]Auto generated delivery processor[]\n");
