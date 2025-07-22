@@ -4,7 +4,8 @@ import static agzam4.ModWork.*;
 
 import agzam4.AgzamMod;
 import agzam4.ModWork;
-import agzam4.MyDraw;
+import agzam4.render.Text;
+import agzam4.utils.Prefs;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
@@ -18,23 +19,31 @@ import mindustry.game.EventType.UnitDamageEvent;
 import mindustry.gen.Groups;
 import mindustry.gen.Unit;
 import mindustry.graphics.Layer;
+import mindustry.ui.Fonts;
 
 public class DamageNumbers {
 
-	public static Seq<UnitNumbers> damages = new Seq<UnitNumbers>();
+	private static Seq<UnitNumbers> damages = null;
+	
+	public static void init() {
+		damages = new Seq<UnitNumbers>();
+	}
+	
+	public static void dispose() {
+		damages = null;
+	}
 	
 	private static int updates = 0;
 	
 	public static void draw() {
-		if(!ModWork.setting("show-units-health")) return;
+		if(damages == null) return;
+		if(!Prefs.settings.bool("show-units-health")) return;
+		
 		for (int i = 0; i < Groups.unit.size(); i++) {
 			Unit u = Groups.unit.index(i);
 			if(u.dead()) continue;
 			
 			if(AgzamMod.hideUnits) {
-//				if(u.spawnedByCore) {
-//					continue;
-//				}
 				Draw.reset();
 				Draw.z(Layer.buildBeam);
 				Draw.color(u.team().color, Color.black, .25f);
@@ -45,15 +54,20 @@ public class DamageNumbers {
 			}
 			
 			boolean found = false;
-			
+
+			Text.font(Fonts.outline);
+			Draw.z(Layer.playerName);
 			for (int j = 0; j < damages.size; j++) {
 				UnitNumbers numbers = damages.get(j);
 				if(numbers.id == u.id) {
+					numbers.unit = u;
 					numbers.draw(updates);
 					found = true;
 					break;
 				}
 			}
+			Text.size();
+			Draw.color();
 			
 			if(!found) {
 				damages.add(new UnitNumbers(u, updates));
@@ -159,47 +173,33 @@ public class DamageNumbers {
 			}
 
 			if(hScale > 0.1f) {
-//				float r, g, b;
-//				if(hColor > 0) {
-//					r = 1f;
-//					g = .2f + hColor*.00_8f;
-//					b = .1f + hColor*.00_9f;
-//				} else {
-//					r = .2f - hColor*.00_8f;
-//					g = .8f - hColor*.00_2f;
-//					b = .4f - hColor*.00_6f;
-//				}
-				// change > 0 ? "+" : "" + 
 				int index = (int) (unit.health*gradient/unit.maxHealth);
 				if(index < 0) index = 0;
 				if(index >= gradient) index = gradient-1;
+
+				Text.size(hScale);
+
+				float x = unit.x;
+				float y = unit.y + unit.hitSize*hScale/2f + unit.hitSize/2f;
+				Draw.color();
+				Text.at("|", x, y);
 				
 				if(unit.shield > 0) {
-					MyDraw.textColor(" " + StatusEffects.shielded.emoji() + roundSimple(unit.shield), 
-							unit.getX(), unit.getY()+unit.hitSize/2,
-							1f, .9f, .5f, hScale, Align.left);
+					Draw.color(1f, .9f, .5f);
+					Text.at(" " + StatusEffects.shielded.emoji() + roundSimple(unit.shield), x, y, Align.left);
 				} else {
-					MyDraw.textColor(" " + roundSimple(unit.health*unit.team.rules().unitHealthMultiplier*Vars.state.rules.unitHealthMultiplier), 
-							unit.getX(), unit.getY()+unit.hitSize/2,
-							rs[index], gs[index], bs[index], hScale, Align.left);
+					Draw.color(rs[index], gs[index], bs[index]);
+					Text.at(" " + roundSimple(unit.health*unit.team.rules().unitHealthMultiplier*Vars.state.rules.unitHealthMultiplier), x, y, Align.left);
 				}
 				
 				if(dps == 0) {
-					MyDraw.textColor(unit.type.localizedName + " ",
-							unit.getX(), unit.getY()+unit.hitSize/2f,
-							unit.team.color.r, unit.team.color.g, unit.team.color.b,
-							hScale, Align.right);
+					Draw.color(unit.team.color);
+					Text.at(unit.type.localizedName + " ", x, y, Align.right);
 				} else {
 					boolean a = dps > 0;
-					MyDraw.textColor((a ? "" : "+") + roundSimple(Math.abs(dps*unit.team.rules().unitHealthMultiplier*Vars.state.rules.unitHealthMultiplier)) + " ", 
-							unit.getX(), unit.getY()+unit.hitSize/2f,
-							a ? 1f : .2f,
-							a ? .2f : .8f,		
-							a ? .1f : .4f,
-							hScale, Align.right);
+					Draw.color(a ? 1f : .2f, a ? .2f : .8f, a ? .1f : .4f);
+					Text.at((a ? "" : "+") + roundSimple(Math.abs(dps*unit.team.rules().unitHealthMultiplier*Vars.state.rules.unitHealthMultiplier)) + " ", x, y, Align.right);
 				}
-				MyDraw.textColor("|", unit.getX(), unit.getY()+unit.hitSize/2f,
-						1f, 1f, 1f, hScale, Align.center);
 			} else {
 				dps = 0;
 				elapsed = 0;

@@ -33,6 +33,7 @@ public class AgzamMod extends Mod {
 	
 	/** Safe URL is mod.getRepo() is null **/
 	public static final String repo = "Agzam4/Mindustry-mod-v8";
+	public static final String name = "agzam4mod";
 	
 	/**
 	 * TODO:
@@ -57,6 +58,8 @@ public class AgzamMod extends Mod {
 		MyIndexer.init();
 		
 		ModStyles.init();
+		
+		DamageNumbers.init();
 		
 		try {
 			UiOverride.init();
@@ -139,10 +142,13 @@ public class AgzamMod extends Mod {
 		Events.run(Trigger.preDraw, () -> {
 			PlayerAI.preDraw();
 		});
+
+		Events.run(Trigger.uiDrawBegin, () -> {
+			DamageNumbers.draw();
+		});
 		
 		Events.run(Trigger.drawOver, () -> {
 			CursorTracker.draw();
-			DamageNumbers.draw();
 			FireRange.draw();
 			IndustryCalculator.draw();
 			ProcessorGenerator.draw();
@@ -183,6 +189,7 @@ public class AgzamMod extends Mod {
 		MobileUI.remove();
 		Events.clear();
 		CursorTracker.dispose();
+		DamageNumbers.dispose();
 	}
 
 	public static void hideUnits(boolean b) {
