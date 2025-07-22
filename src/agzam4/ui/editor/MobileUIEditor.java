@@ -176,7 +176,7 @@ public class MobileUIEditor extends BaseDialog {
 		
 		@Override
 		public void act(float delta) {
-			ModStyles.mobileAlpha(opacity);		
+			ModStyles.mobileAlpha(opacity/100f);		
 			ModStyles.mobileFontAlpha(1f);	
 			super.act(delta);
 		}
