@@ -2,18 +2,13 @@ package agzam4.utils;
 
 import agzam4.*;
 import agzam4.Events;
-import agzam4.debug.Debug;
 import agzam4.events.SceneTileTap;
 import agzam4.industry.IndustryCalculator;
 import agzam4.render.MyDraw;
 import arc.*;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
-import arc.input.KeyCode;
 import arc.math.Mathf;
-import arc.scene.event.ClickListener;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
@@ -30,8 +25,7 @@ import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.turrets.ItemTurret.ItemTurretBuild;
 import mindustry.world.blocks.logic.LogicBlock;
-import mindustry.world.blocks.logic.LogicBlock.LogicBuild;
-import mindustry.world.blocks.logic.LogicBlock.LogicLink;
+import mindustry.world.blocks.logic.LogicBlock.*;
 import mindustry.world.blocks.storage.StorageBlock.StorageBuild;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 
@@ -44,7 +38,6 @@ public class ProcessorGenerator {
 	private static BaseDialog dialog;
 	
 	private static int buttonsPerRow = 0;
-	
 
 	private static final int NONE = -1;
 	private static final int MINING = 0;
@@ -337,82 +330,8 @@ public class ProcessorGenerator {
 			deliveryItems.show();
 			return;
 		});
-		
-//		Events.on(TapEvent.class, e -> {
-//			if(e.player != Vars.player) return;
-////			Log.info("TAP! @", selectedType);
-//			if(selectedType == DELIVERY) {
-//				if(!isDeliveryBuild(e.tile.build)) return;
-//				
-//				if(lastTap != null) {
-//					if(lastTap.intValue() == e.tile.pos()) {
-//						if(to != e.tile) {
-//							to = e.tile;
-//							selectedType = NONE;
-////							if(from.build == null) return;
-//							if(to.build == null) return;
-//							if(carrier == null) return;
-//							link = new LogicLink(to.centerX(), to.centerY(),
-//									"agzamMod-delivery-autolink", false);
-//							Seq<ItemStack> items = ModWork.getMaximumAcceptedConsumers(to.block());
-//							if(items.size == 0) return;
-//							boolean[] selected = new boolean[Vars.content.items().size];
-//							for (int i = 0; i < selected.length; i++) {
-//								for (int j = 0; j < items.size; j++) {
-//									if(items.get(j).item.id == i) {
-//										selected[i] = true;
-//										break;
-//									}
-//								}
-//							}
-//							
-//							BaseDialog deliveryItems = new BaseDialog(Bungle.dialog("delivery-items"));
-//
-//							deliveryItems.title.setColor(Color.white);
-//							deliveryItems.closeOnBack();
-//							deliveryItems.cont.pane(op -> {
-//								op.defaults().left().pad(5);
-////								UnitTypes.mono.lightColor
-//								items.each(i -> {
-//									op.check(i.item.emoji() + " " + i.item.localizedName, true, b -> {
-//										selected[i.item.id] = b;
-//									}).row();
-//								});
-//								
-//								op.button("@ok", () -> {
-//									boolean hasSelected = false;
-//									for (int i = 0; i < selected.length; i++) {
-//										if(selected[i]) {
-//											hasSelected = true;
-//											break;
-//										}
-//									}
-//									if(hasSelected) {
-//										Seq<ItemStack> selectedItems = new Seq<>();
-//										for (int i = 0; i < items.size; i++) {
-//											if(selected[items.get(i).item.id]) {
-//												selectedItems.add(items.get(i));
-//											}
-//										}
-//										commentMessage = new StringBuilder();
-//										addCode(createDeliveryCode(carrier, to.build, selectedItems), 
-//												commentMessage.toString(), new Seq<>(new LogicLink[]{link}));
-//										hide();
-//										deliveryItems.hide();
-//									}
-//								});
-//							});
-//							deliveryItems.show();
-//						}
-//					}
-//				}
-//				lastTap = e.tile.pos();
-//				return;
-//			}
-//			lastTap = null;
-//			return;
-//		});
 	}
+	
 	private static LogicLink link;
 	
 	private static boolean isDeliveryBuild(@Nullable Building build) {
@@ -427,15 +346,6 @@ public class ProcessorGenerator {
 		return true;
 	}
 	
-//	ubind @flare
-//	sensor controller @unit @controller
-//	jump 0 notEqual controller @unit
-//	#CONTROL
-//	sensor controller @unit @controller
-//	jump 7 notEqual controller @this
-//	jump 3 always x false
-//	end
-
 	private static String createDeliveryCode(UnitType carrier, Building to, Seq<ItemStack> deliveryItems) { // TODO
 		
 		Code code = new Code();
@@ -445,90 +355,63 @@ public class ProcessorGenerator {
 		code.sensor("#Controller", "@controller", "@unit");
 		code.jump("notEqual #Controller @unit", "mark-bind");
 		
-		// Control
-		/*
-		code.set("#Attempts", "0");
-		code.markLast("mark-bind");
-		code.ubind(carrier);
-		code.markLast("mark-bind-bind");
+		code.ulocateCore();
+		code.markLast("mark-start");
 
-		code.sum("#Attempts", "#Attempts", "1");
-		code.uFlag("#Flag");
-		code.jump("equal #Flag 0 ", +3);
-		code.jump("lessThan " + Vars.player.team().data().unitCap*2 + " #Attempts", +2);
-		code.jump("notEqual #Flag " + to.pos(), "mark-bind-bind");
-		
-		code.uSetFlag(to.pos());	
-		*/
-		
-//		Seq<Item> deliveryItems = new Seq<Item>();
-//		if(!(to instanceof StorageBuild)) {
-//			if(to.block.consumers != null) {
-//				for (int c = 0; c < to.block.consumers.length; c++) {
-//					ModWork.consumeItems(to.block.consumers[c], to, 0, (item, ips) -> {
-//						if(!deliveryItems.contains(item)) deliveryItems.addUnique(item);
-//					});
-//				}
-//			}
-			code.ulocateCore();
-			code.markLast("mark-start");
-			
-			code.jump("equal @unit null", "mark-bind");
-			code.getLink("#Building", 0);
-			code.uItemStack();
-			if(carrier.canBoost) code.boost(true);
-			
-			for (int i = 0; i < deliveryItems.size; i++) {
-				if(to instanceof ItemTurretBuild) {
-//					code.sensorAmmo("#DeliveryItems", "#Building");
-					code.uSensorItem("#UnitItem", deliveryItems.get(i).item);
-					code.sensorItems("#CoreItems", "#Core", deliveryItems.get(i).item);
-					code.sum("#CoreAndUnitItems", "#CoreItems", "#UnitItem");
-					code.set("#DeliveryItem", deliveryItems.get(i).item);
-					code.jump("lessThan 0 #CoreAndUnitItems", "mark-delivery");
-				} else {
-					code.sensorItems("#DeliveryItems", "#Building", deliveryItems.get(i).item);
-					code.set("#DeliveryItem", deliveryItems.get(i).item);
-					code.jump("lessThan #DeliveryItems " + deliveryItems.get(i).amount, "mark-delivery");
-				}
-				//  ModWork.getMaximumAccepted(to.block, deliveryItems.get(i))
-			}
-			code.jump("always 0 0", "mark-end");
-			code.jump("lessThanEq #Items 0", "mark-takeItems");
-			code.markLast("mark-delivery");
-			code.uSensorItems("#UnitItem");
-			code.jump("notEqual #UnitItem #DeliveryItem", "mark-dropWrong");
-			
-			code.approachTo(to.tileX(), to.tileY());
-			code.dropItems("#Building");
-			code.jump("always 0 0", "mark-end");
+		code.jump("equal @unit null", "mark-bind");
+		code.getLink("#Building", 0);
+		code.uItemStack();
+		if(carrier.canBoost) code.boost(true);
 
-			code.approachToCore();
-			code.markLast("mark-dropWrong");
-			code.dropItems("#Core");
-			code.jump("always 0 0", "mark-end");
-			
-			code.approachToCore();
-			code.markLast("mark-takeItems");
-			code.takeItems("#Core", "#DeliveryItem");
-			code.jump("always 0 0", "mark-end");
-			
-			// Validate unit
-			code.sensor("#Controller", "@controller", "@unit");
-			code.markLast("mark-end");
-			
-			code.jump("notEqual #Controller @this", "mark-bind");
-			
-			code.jump("always 0 0", "mark-start");
-			
-			commentMessage.append("[gold]Auto generated delivery processor[]\n");
-			commentMessage.append("[accent]Unit: []" + carrier.emoji() + " " + carrier.localizedName);
-			commentMessage.append("\n[accent]Items: []");
-			for (int i = 0; i < deliveryItems.size; i++) {
-				if(i != 0) commentMessage.append(", ");
-				commentMessage.append(deliveryItems.get(i).item.emoji());
+		for (int i = 0; i < deliveryItems.size; i++) {
+			if(to instanceof ItemTurretBuild) {
+				code.uSensorItem("#UnitItem", deliveryItems.get(i).item);
+				code.sensorItems("#CoreItems", "#Core", deliveryItems.get(i).item);
+				code.sum("#CoreAndUnitItems", "#CoreItems", "#UnitItem");
+				code.set("#DeliveryItem", deliveryItems.get(i).item);
+				code.jump("lessThan 0 #CoreAndUnitItems", "mark-delivery");
+			} else {
+				code.sensorItems("#DeliveryItems", "#Building", deliveryItems.get(i).item);
+				code.set("#DeliveryItem", deliveryItems.get(i).item);
+				code.jump("lessThan #DeliveryItems " + deliveryItems.get(i).amount, "mark-delivery");
 			}
-			commentMessage.append("\n[lightgray]Agzam's mod");
+		}
+		code.jump("always 0 0", "mark-end");
+		code.jump("lessThanEq #Items 0", "mark-takeItems");
+		code.markLast("mark-delivery");
+		code.uSensorItems("#UnitItem");
+		code.jump("notEqual #UnitItem #DeliveryItem", "mark-dropWrong");
+
+		code.approachTo(to.tileX(), to.tileY());
+		code.dropItems("#Building");
+		code.jump("always 0 0", "mark-end");
+
+		code.approachToCore();
+		code.markLast("mark-dropWrong");
+		code.dropItems("#Core");
+		code.jump("always 0 0", "mark-end");
+
+		code.approachToCore();
+		code.markLast("mark-takeItems");
+		code.takeItems("#Core", "#DeliveryItem");
+		code.jump("always 0 0", "mark-end");
+
+		// Validate unit
+		code.sensor("#Controller", "@controller", "@unit");
+		code.markLast("mark-end");
+
+		code.jump("notEqual #Controller @this", "mark-bind");
+
+		code.jump("always 0 0", "mark-start");
+
+		commentMessage.append("[gold]Auto generated delivery processor[]\n");
+		commentMessage.append("[accent]Unit: []" + carrier.emoji() + " " + carrier.localizedName);
+		commentMessage.append("\n[accent]Items: []");
+		for (int i = 0; i < deliveryItems.size; i++) {
+			if(i != 0) commentMessage.append(", ");
+			commentMessage.append(deliveryItems.get(i).item.emoji());
+		}
+		commentMessage.append("\n[lightgray]Agzam's mod");
 		
 		code.set("#Link", "\"" + to.tileX() + " " + to.tileY() + "\"");
 		return code.toString();
