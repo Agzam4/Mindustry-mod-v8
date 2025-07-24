@@ -21,5 +21,12 @@ public class Prefs {
 	public boolean bool(String string, boolean def) {
 		return Core.settings.getBool(prefix + string, def);
 	}
-	
+
+	public String string(String string, String def) {
+		return Core.settings.getString(prefix + string, def);
+	}
+
+	public void put(String string, String value) {
+		Core.settings.put(prefix + string, value);
+	}
 }

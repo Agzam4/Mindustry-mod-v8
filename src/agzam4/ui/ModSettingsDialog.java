@@ -7,6 +7,7 @@ import agzam4.gameutils.Afk;
 import agzam4.ui.editor.MobileUIEditor;
 import agzam4.uiOverride.*;
 import agzam4.utils.Bungle;
+import agzam4.utils.Prefs;
 import arc.Core;
 import arc.files.Fi;
 import arc.func.Cons;
@@ -363,12 +364,11 @@ public class ModSettingsDialog extends Table {
 		
 		mainTable.row();
 
-		mainTable.label(() -> Bungle.settings("ui.messages-gradient-trigger")).growX().colspan(4).pad(10).padBottom(10).row();
+		mainTable.label(() -> Prefs.settings.string("ui.messages-gradient-trigger", "")).growX().colspan(4).pad(10).padBottom(10).row();
 		mainTable.field(CustomChatFragment.colorTrigger, t -> {
 			CustomChatFragment.colorTrigger = t;
-			ModWork.setting("messages-gradient-trigger", t);
+			Prefs.settings.put("messages-gradient-trigger", t);
 		}).row();
-		
 		
 //		chatColor = table.button(Iconc.chat + "[white]" + ModWork.bungle("settings.ui.chat-color"), Styles.defaultt, () -> {
 //			ColorPicker colorPicker = new ColorPicker();
