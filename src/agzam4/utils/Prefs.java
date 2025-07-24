@@ -26,7 +26,7 @@ public class Prefs {
 		return Core.settings.getString(prefix + string, def);
 	}
 
-	public void put(String string, String value) {
+	public void put(String string, Object value) {
 		Core.settings.put(prefix + string, value);
 	}
 }

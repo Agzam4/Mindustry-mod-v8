@@ -3,6 +3,8 @@ package agzam4.ui.editor;
 import agzam4.ui.MobileUI.MobileButtons;
 import agzam4.ui.ModStyles;
 import arc.func.Boolc;
+import arc.func.Boolf;
+import arc.func.Boolp;
 import arc.math.geom.Point2;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Table;
@@ -15,6 +17,7 @@ public class ButtonProps {
 
 	public @Nullable Runnable onClick;
 	public @Nullable Boolc onToggle;
+	public @Nullable Boolp toggled;
 	
 	public Point2 position = new Point2(0, 0);
 	public String text = "";
@@ -37,6 +40,12 @@ public class ButtonProps {
 	
 	public boolean isToggle() {
 		return onToggle != null;
+	}
+
+	
+	public ButtonProps toggled(Boolp toggled) {
+		this.toggled = toggled;
+		return this;
 	}
 	
 	public ButtonProps position(int x, int y) {
@@ -92,5 +101,10 @@ public class ButtonProps {
 	public ButtonProps collapseable(boolean collapseable) {
 		this.collapseable = collapseable;
 		return this;
+	}
+
+	public boolean toggle() {
+		if(toggled == null) return false;
+		return toggled.get();
 	}
 }

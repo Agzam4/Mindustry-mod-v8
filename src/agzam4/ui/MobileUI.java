@@ -8,6 +8,7 @@ import agzam4.ui.editor.ButtonProps;
 import agzam4.ui.editor.ButtonsPropsTable;
 import agzam4.ui.editor.MobileUIEditor;
 import agzam4.utils.PlayerUtils;
+import agzam4.utils.Prefs;
 import arc.Core;
 import arc.math.Mathf;
 import arc.scene.event.*;
@@ -33,6 +34,7 @@ public class MobileUI {
 
 		remove(new ButtonProps("remove", () -> {}).icon(Iconc.trash)), // editor only
 		empty(new ButtonProps("empty", () -> {}).icon(Iconc.move)), // editor only
+		
 		utils(new ButtonProps("utils", PlayerUtils::show).icon(Iconc.wrench).position(0, 0)),
 		collapse(new ButtonProps("collapse", b -> {
 			collapsed = b;
@@ -41,7 +43,10 @@ public class MobileUI {
 		hideUnits(new ButtonProps("hide-units", b -> AgzamMod.hideUnits(b)).icon(Iconc.units).position(0, -1)),
 		lockUnit(new ButtonProps("lock-unit", b -> AgzamMod.lockUnit(b)).icon(Iconc.lock).position(1, -1)),
 		selection(new ButtonProps("selection", b -> KeyBinds.selection.isDown = b).icon(Iconc.book).position(0, -2)),
-		selectionClear(new ButtonProps("selection-clear", IndustryCalculator::clearSelection).icon(Iconc.cancel).position(1, -2));
+		selectionClear(new ButtonProps("selection-clear", IndustryCalculator::clearSelection).icon(Iconc.cancel).position(1, -2)),
+		
+		// Extra
+		blockTooltips(new ButtonProps("show-blocks-tooltip", b -> Prefs.settings.put("show-blocks-tooltip", b)).toggled(() -> Prefs.settings.bool("show-blocks-tooltip")).icon(Iconc.infoCircle));
 
 		public final ButtonProps prop;
 		
@@ -172,7 +177,9 @@ public class MobileUI {
 		
 		
 		for (var button : tiles) {
-			var cell = container.add(button.button(true));
+			var btn = button.button(true);
+			if(button.toggle()) btn.toggle();
+			var cell = container.add(btn);
 			
 	        cell.update(t -> {
 	        	int x = button.x();//MobileButtons.collapse.prop.x();

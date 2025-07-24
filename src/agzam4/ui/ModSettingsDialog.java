@@ -281,6 +281,13 @@ public class ModSettingsDialog extends Table {
 		}).growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 		
 		table.row();
+		
+
+//		table.table(t -> {
+//			t.button(Iconc.terminal + " Debug", Styles.defaultt, () -> {
+//				Vars.ui.showInfo(Strings.format("Scale: [accent]@[]", Scl.scl()));
+//			}).growX().fillX().height(54f).marginLeft(10).padRight(5f);
+//		}).growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 //		addCategory(table, "mobile-ui");
 		
 //		table.table(Tex.button, t -> {
@@ -391,7 +398,7 @@ public class ModSettingsDialog extends Table {
 	private static void addCheck(Table table, String settings, boolean def, Cons<Boolean> listener) {
 		String tooltip = Bungle.settingsTooltip(settings);
 		var cell = table.check(Bungle.settings(settings), ModWork.settingDef(settings, def), b -> {
-			ModWork.setting(settings, b);
+			Prefs.settings.put(settings, b);
 			if(listener != null) listener.get(b);
 		}).colspan(4).pad(10).padBottom(4).left();
 		cell.row();
