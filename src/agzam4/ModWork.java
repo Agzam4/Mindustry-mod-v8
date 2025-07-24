@@ -179,7 +179,7 @@ public class ModWork {
 			return;
 		}
 		if(block instanceof LandingPad landingPad) {
-			craftSpeed = 60f/(landingPad.cooldownTime + landingPad.arrivalDuration);
+			craftSpeedMultiplier *= 1f / (landingPad.cooldownTime + landingPad.arrivalDuration);
 		}
 		if(building instanceof AttributeCrafterBuild crafterBuild) craftSpeedMultiplier = crafterBuild.efficiencyMultiplier();
 		if(building instanceof UnitFactoryBuild factoryBuild && block instanceof UnitFactory factory) {
