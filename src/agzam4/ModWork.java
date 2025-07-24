@@ -20,6 +20,7 @@ import arc.struct.Seq;
 import arc.util.Nullable;
 import arc.util.Strings;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.Planets;
 import mindustry.core.UI;
@@ -48,6 +49,8 @@ import mindustry.world.consumers.ConsumePower;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.ConstructBlock.ConstructBuild;
+import mindustry.world.blocks.campaign.LandingPad;
+import mindustry.world.blocks.campaign.LaunchPad;
 import mindustry.world.blocks.defense.ForceProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.defense.turrets.ItemTurret.ItemTurretBuild;
@@ -174,6 +177,9 @@ public class ModWork {
 			craftSpeedMultiplier = crafter.maxEfficiency;
 			cons.get(craftSpeed*craftSpeedMultiplier, craftSpeedMultiplier);
 			return;
+		}
+		if(block instanceof LandingPad landingPad) {
+			craftSpeed = 60f/(landingPad.cooldownTime + landingPad.arrivalDuration);
 		}
 		if(building instanceof AttributeCrafterBuild crafterBuild) craftSpeedMultiplier = crafterBuild.efficiencyMultiplier();
 		if(building instanceof UnitFactoryBuild factoryBuild && block instanceof UnitFactory factory) {
