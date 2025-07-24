@@ -107,6 +107,8 @@ public class ModWork {
 		public KeyCode key;
 		public String keybind;
 		
+		private final KeyBind keyBind;
+		
 		KeyBinds(String keybind, KeyCode def) {
 			this.def = def;
 			this.keybind = keybind;
@@ -117,7 +119,7 @@ public class ModWork {
 				key = KeyCode.all[bind];
 			}
 			
-			KeyBind.add(keybind, def, AgzamMod.mod.name);
+			keyBind = KeyBind.add(keybind, def, AgzamMod.mod.name);
 		}
 
 		void put() {
@@ -128,6 +130,12 @@ public class ModWork {
 
 		boolean isDown() {
 			return isDown;
+		}
+
+		public static void dispose() {
+			for (var v : values()) {
+				KeyBind.all.remove(v.keyBind);
+			}
 		}
 		
 	}

@@ -25,6 +25,7 @@ import agzam4.gameutils.Afk;
 import agzam4.gameutils.CursorTracker;
 import agzam4.gameutils.DamageNumbers;
 import agzam4.gameutils.FireRange;
+import agzam4.gameutils.UnitsVisibility;
 import agzam4.gameutils.WaveViewer;
 import agzam4.industry.IndustryCalculator;
 import agzam4.render.Text;
@@ -47,9 +48,6 @@ public class AgzamMod extends Mod {
 	 * Messge limit
 	 */
 
-	public static boolean hideUnits;
-	private static UnitTextures[] unitTextures;
-	private static TextureRegion minelaser, minelaserEnd;
 	
 	int pauseRandomNum = 0;
 	
@@ -68,6 +66,7 @@ public class AgzamMod extends Mod {
 		ModStyles.init();
 		
 		DamageNumbers.init();
+		UnitsVisibility.init();
 		
 		try {
 			UiOverride.init();
@@ -91,19 +90,12 @@ public class AgzamMod extends Mod {
 			} catch (Error e) {} 
 		} catch (Throwable e) {}
 		
-		minelaser = Core.atlas.find("minelaser");
-		minelaserEnd = Core.atlas.find("minelaser-end");
-		unitTextures = new UnitTextures[Vars.content.units().size];
-		for (int i = 0; i < unitTextures.length; i++) {
-			unitTextures[i] = new UnitTextures(Vars.content.unit(i));
-		}
-		
 		Events.scene(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, KeyCode keyCode) {
                 if (ModWork.acceptKey()) {
                 	if(keyCode.equals(KeyBinds.hideUnits.key)) {
-                		hideUnits(!hideUnits);
+                		UnitsVisibility.toggle();
                 	}
                 	if(keyCode.equals(KeyBinds.openUtils.key)) {
                 		PlayerUtils.show();
@@ -177,8 +169,8 @@ public class AgzamMod extends Mod {
 			FireRange.draw();
 			ProcessorGenerator.draw();
 			UnitSpawner.draw();
-			DamageNumbers.draw();
 			IndustryCalculator.draw();
+			UnitsVisibility.draw();
 			
 			WaveViewer.draw(); // FIXME
 //			EnemiesPaths.draw();
@@ -216,74 +208,10 @@ public class AgzamMod extends Mod {
 		MobileUI.remove();
 		CursorTracker.dispose();
 		DamageNumbers.dispose();
-
+		UnitsVisibility.dispose();
 		Events.clear();
+		KeyBinds.dispose();
 	}
-
-	public static void hideUnits(boolean b) {
-		hideUnits = b;
-		if(b) {
-			for (int i = 0; i < unitTextures.length; i++) {
-				unitTextures[i].hideTextures();
-				unitTextures[i].hideEngines();
-			}
-			Core.atlas.addRegion("minelaser", UnitTextures.none);
-			Core.atlas.addRegion("minelaser-end", UnitTextures.none);
-		} else {
-			for (int i = 0; i < unitTextures.length; i++) {
-				unitTextures[i].returnTextures();
-				unitTextures[i].returnEngines();
-			}
-			Core.atlas.addRegion("minelaser", minelaser);
-			Core.atlas.addRegion("minelaser-end", minelaserEnd);
-		}
-	}
-
-//	Section section = Core.keybinds.getSections()[0];
-//	private void openDialog(final KeyBinds keybind) {
-//		Dialog keybindDialog = new Dialog(Core.bundle.get("keybind.press"));
-//
-//		keybindDialog.titleTable.getCells().first().pad(4);
-//			
-//        if(section.device.type() == DeviceType.keyboard){
-//
-//        	keybindDialog.addListener(new InputListener(){
-//                @Override
-//                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
-//                    if(Core.app.isAndroid()) return false;
-//                    rebind(keybindDialog, keybind, button);
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean keyDown(InputEvent event, KeyCode button){
-//                	keybindDialog.hide();
-//                    if(button == KeyCode.escape) return false;
-//                    rebind(keybindDialog, keybind, button);
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean scrolled(InputEvent event, float x, float y, float amountX, float amountY){
-//                    keybindDialog.hide();
-//                    rebind(keybindDialog, keybind, KeyCode.scroll);
-//                    return false;
-//                }
-//            });
-//        }
-//
-//        keybindDialog.show();
-//        Time.runTask(1f, () -> keybindDialog.getScene().setScrollFocus(keybindDialog));
-//    }
-//	
-	void rebind(Dialog rebindDialog, KeyBinds keyBinds, KeyCode newKey){
-        rebindDialog.hide();
-        keyBinds.key = newKey;
-        keyBinds.put();
-    }
-
-	//  Core.settings.put("agzam4mod-units.settings.hideUnitsHotkey", new java.lang.Integer(75))
-	// Core.settings.getInt("agzam4mod-units.settings.hideUnitsHotkey", KeyCode.h.ordinal())
 
 	static boolean lockUnit = false;
 	

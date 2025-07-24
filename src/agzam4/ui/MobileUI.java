@@ -3,6 +3,7 @@ package agzam4.ui;
 import agzam4.AgzamMod;
 import agzam4.ModWork;
 import agzam4.ModWork.KeyBinds;
+import agzam4.gameutils.UnitsVisibility;
 import agzam4.industry.IndustryCalculator;
 import agzam4.ui.editor.ButtonProps;
 import agzam4.ui.editor.ButtonsPropsTable;
@@ -40,7 +41,7 @@ public class MobileUI {
 			collapsed = b;
 			
 		}).icon(Iconc.resize).position(1, 0).collapseable(false)),
-		hideUnits(new ButtonProps("hide-units", b -> AgzamMod.hideUnits(b)).icon(Iconc.units).position(0, -1)),
+		hideUnits(new ButtonProps("hide-units", b -> UnitsVisibility.visibility(b)).icon(Iconc.units).position(0, -1)),
 		lockUnit(new ButtonProps("lock-unit", b -> AgzamMod.lockUnit(b)).icon(Iconc.lock).position(1, -1)),
 		selection(new ButtonProps("selection", b -> KeyBinds.selection.isDown = b).icon(Iconc.book).position(0, -2)),
 		selectionClear(new ButtonProps("selection-clear", IndustryCalculator::clearSelection).icon(Iconc.cancel).position(1, -2)),
