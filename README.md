@@ -15,7 +15,7 @@
 # Thanks
 
 **GikSt**
-**xhstoyea**
+**xhstoyea** **yjysy2004**
 
 # Other versions:
 [Before Mindustry v8](https://github.com/Agzam4/Mindustry-mod) 
