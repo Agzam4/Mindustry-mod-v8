@@ -8,6 +8,7 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.*;
 import arc.scene.event.*;
+import arc.scene.ui.layout.Scl;
 import arc.util.Nullable;
 
 public class ElementDragg {
@@ -31,6 +32,7 @@ public class ElementDragg {
 
 			@Override
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
+				if(Math.abs(draggStart.x - x) < Scl.scl(3f) && Math.abs(draggStart.y - y) < Scl.scl(3f)) return;
 				update(x, y);
 				element.touchable = Touchable.disabled;
 			}
