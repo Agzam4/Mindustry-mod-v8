@@ -165,7 +165,7 @@ public class AgzamMod extends Mod {
 			DamageNumbers.drawUi();
 			CursorTracker.draw();
 			WaveViewer.drawUi();
-			IndustryCalculator.draw();
+			IndustryCalculator.drawUi();
 			Text.font(Fonts.outline);
 			Text.size();
 			Text.font(Fonts.def);
@@ -178,6 +178,7 @@ public class AgzamMod extends Mod {
 			ProcessorGenerator.draw();
 			UnitSpawner.draw();
 			DamageNumbers.draw();
+			IndustryCalculator.draw();
 			
 			WaveViewer.draw(); // FIXME
 //			EnemiesPaths.draw();

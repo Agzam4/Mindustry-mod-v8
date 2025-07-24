@@ -80,9 +80,12 @@ public class IndustryCalculator {
 	
 
 	public static BuildTooltip buildTooltip = new BuildTooltip();
-	
+
 	public static void draw() {
 		drawSelect();
+	}
+	
+	public static void drawUi() {
 		buildTooltip.rebuild();
 		
 		final float mouseX = Core.input.mouseWorldX();
