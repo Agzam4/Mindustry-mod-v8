@@ -87,7 +87,7 @@ public class ModSettingsDialog extends Table {
                 for (var cui : CheckUpdatesInterval.values()) {
                     tg.button(Bungle.settings("check-updates." + cui.kebab()), style, () -> {
                     	UpdateInfo.checkUpdatesInterval(cui);
-                    }).growX().fillX().group(group).height(35f);
+                    }).growX().fillX().group(group).height(35f).checked(UpdateInfo.checkUpdatesInterval() == cui);
 				}
             }).fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 
