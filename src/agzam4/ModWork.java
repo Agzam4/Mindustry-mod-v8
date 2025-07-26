@@ -13,64 +13,38 @@ import arc.graphics.Pixmaps;
 import arc.input.KeyBind;
 import arc.input.KeyCode;
 import arc.math.Mathf;
-import arc.scene.style.Drawable;
-import arc.scene.style.TextureRegionDrawable;
-import arc.struct.ObjectIntMap;
-import arc.struct.Seq;
+import arc.scene.style.*;
+import arc.struct.*;
 import arc.util.Nullable;
 import arc.util.Strings;
 import mindustry.Vars;
-import mindustry.content.Blocks;
-import mindustry.content.Items;
-import mindustry.content.Planets;
+import mindustry.content.*;
 import mindustry.core.UI;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.WorldLoadEndEvent;
-import mindustry.gen.Building;
-import mindustry.gen.Unit;
-import mindustry.type.Item;
-import mindustry.type.ItemStack;
-import mindustry.type.Liquid;
-import mindustry.type.LiquidStack;
-import mindustry.world.blocks.production.GenericCrafter;
-import mindustry.world.blocks.production.HeatCrafter;
+import mindustry.gen.*;
+import mindustry.type.*;
+import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.production.HeatCrafter.HeatCrafterBuild;
 import mindustry.world.blocks.production.Pump;
-import mindustry.world.blocks.units.Reconstructor;
-import mindustry.world.blocks.units.UnitFactory;
+import mindustry.world.blocks.units.*;
 import mindustry.world.blocks.units.UnitFactory.UnitFactoryBuild;
-import mindustry.world.consumers.Consume;
-import mindustry.world.consumers.ConsumeItemDynamic;
-import mindustry.world.consumers.ConsumeItemFilter;
-import mindustry.world.consumers.ConsumeItems;
-import mindustry.world.consumers.ConsumeLiquid;
-import mindustry.world.consumers.ConsumeLiquids;
-import mindustry.world.consumers.ConsumePower;
-import mindustry.world.Block;
-import mindustry.world.Tile;
+import mindustry.world.*;
+import mindustry.world.consumers.*;
 import mindustry.world.blocks.ConstructBlock.ConstructBuild;
 import mindustry.world.blocks.campaign.LandingPad;
-import mindustry.world.blocks.campaign.LaunchPad;
 import mindustry.world.blocks.defense.ForceProjector;
-import mindustry.world.blocks.defense.turrets.ItemTurret;
+import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.ItemTurret.ItemTurretBuild;
-import mindustry.world.blocks.defense.turrets.PowerTurret;
-import mindustry.world.blocks.heat.HeatBlock;
 import mindustry.world.blocks.heat.HeatConductor.HeatConductorBuild;
-import mindustry.world.blocks.heat.HeatConsumer;
-import mindustry.world.blocks.heat.HeatProducer;
-import mindustry.world.blocks.power.ConsumeGenerator;
-import mindustry.world.blocks.power.PowerGenerator;
+import mindustry.world.blocks.heat.*;
+import mindustry.world.blocks.power.*;
 import mindustry.world.blocks.power.PowerGenerator.GeneratorBuild;
-import mindustry.world.blocks.production.AttributeCrafter;
 import mindustry.world.blocks.production.AttributeCrafter.AttributeCrafterBuild;
-import mindustry.world.blocks.production.Drill;
 import mindustry.world.blocks.production.Drill.DrillBuild;
 import mindustry.world.blocks.production.Pump.PumpBuild;
-import mindustry.world.blocks.storage.StorageBlock.StorageBuild;
-import mindustry.world.blocks.production.Separator;
-import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.blocks.production.SolidPump.SolidPumpBuild;
+import mindustry.world.blocks.storage.StorageBlock.StorageBuild;
 
 public class ModWork {
 
@@ -238,6 +212,7 @@ public class ModWork {
 		}
 		if(!hasConsumer) return 0;
 		float craftSpeed = 1f;
+
 		if(block instanceof GenericCrafter crafter) craftSpeed = 60f / crafter.craftTime;
 		if(block instanceof AttributeCrafter attribute) {
 			craftSpeed *= attribute.baseEfficiency + Math.min(attribute.maxBoost, attribute.boostScale * block.sumAttribute(attribute.attribute, x, y));
@@ -382,6 +357,10 @@ public class ModWork {
 
 
 	public static void consumeItems(Consume consume, Building building, float craftSpeed, Cons2<Item, Float> cons) {
+		if(building.block instanceof WallCrafter crafter) {
+			craftSpeed *= 60f/crafter.boostItemUseTime;
+		}
+		// Blocks 
 		if(consume instanceof ConsumeItems) {
 			ConsumeItems items = (ConsumeItems) consume;
 			ItemStack[] stacks = items.items;
@@ -614,6 +593,13 @@ public class ModWork {
 
 	public static void consumeBlock(Block block, int x, int y, Object config, float craftSpeed,
 			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons, Cons<Float> heatCons) {
+		
+		float liquidSpeed = 1f;
+		
+		if(block instanceof LandingPad landingPad) {
+			liquidSpeed *= 1f / (landingPad.cooldownTime + landingPad.arrivalDuration);
+		}
+		
 		if(block.consumers != null) {
 			for (int c = 0; c < block.consumers.length; c++) {
 				Consume consume = block.consumers[c];
@@ -647,13 +633,13 @@ public class ModWork {
 //				}
 				if(consume instanceof ConsumePower power) powerCons.get(power.usage*60);
 				if(consume instanceof ConsumeLiquid liquid) {
-					liquidCons.get(liquid.liquid, 60*liquid.amount);
+					liquidCons.get(liquid.liquid, 60*liquid.amount*liquidSpeed);
 					continue;
 				}
 			}
 		}
 		if(block instanceof HeatCrafter heatCrafter) heatCons.get(heatCrafter.heatRequirement * heatCrafter.maxEfficiency);
-		if(block instanceof PowerTurret powerTurret) heatCons.get(powerTurret.heatRequirement);
+		if(block instanceof Turret turret && turret.heatRequirement > 0f) heatCons.get(turret.heatRequirement);
 	}
 
 	

@@ -2,6 +2,7 @@ package agzam4.industry;
 
 import static agzam4.ModWork.*;
 
+import agzam4.AgzamMod;
 import agzam4.Events;
 import agzam4.ModWork;
 import agzam4.debug.Debug;
@@ -18,11 +19,14 @@ import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.math.geom.Point2;
 import arc.scene.ui.layout.*;
+import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.Log;
 import arc.util.Nullable;
 import arc.util.pooling.Pools;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.core.World;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.*;
@@ -33,6 +37,7 @@ import mindustry.type.*;
 import mindustry.ui.Fonts;
 import mindustry.world.*;
 import mindustry.world.blocks.ConstructBlock.ConstructBuild;
+import mindustry.world.blocks.campaign.LandingPad;
 import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.production.*;
@@ -86,6 +91,7 @@ public class IndustryCalculator {
 	}
 	
 	public static void drawUi() {
+		
 		buildTooltip.rebuild();
 		
 		final float mouseX = Core.input.mouseWorldX();
@@ -138,9 +144,15 @@ public class IndustryCalculator {
 //				StringBuilder info = new StringBuilder(block.emoji() + " " + block.localizedName.toUpperCase());
 				buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
 				
-//				if(Debug.debug) {
-//					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed);
-//				}
+				if(Debug.debug) {
+					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed + "/" + craftSpeedMultiplier);
+					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
+
+					if(block instanceof LandingPad landingPad) {
+						buildTooltip.line(block, "[royal]cooldownTime:[lightgray]" + landingPad.cooldownTime);
+						buildTooltip.line(block, "[royal]arrivalDuration:[lightgray]" + landingPad.arrivalDuration);
+					}
+				}
 //				buildTooltip.color(Pal.accent);
 
 				if(craftSpeed > 0) {
@@ -378,6 +390,8 @@ public class IndustryCalculator {
 		Cons<Float> powerProduce = pps -> power += pps;
 		Cons<Float> powerConsume = pps -> power -= pps;
 
+		balanceFragment.element.rebuild();
+		
 		boolean buildPlans = false;
 		if(Prefs.settings.bool("buildplans-calculations")) {
 			if(Vars.player.unit() != null) {
@@ -386,8 +400,7 @@ public class IndustryCalculator {
 						for (int i = 0; i < Vars.player.unit().plans().size; i++) {
 							BuildPlan buildPlan = Vars.player.unit().plans().get(i);
 							if(buildPlan.breaking) continue;
-							float craftSpeed = ModWork.getCraftSpeed(buildPlan.block,
-									buildPlan.x, buildPlan.y, buildPlan.config);
+							float craftSpeed = ModWork.getCraftSpeed(buildPlan.block, buildPlan.x, buildPlan.y, buildPlan.config);
 							ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
 									buildPlan.config, craftSpeed, 
 									(item, ips) -> itemsBalance[item.id] -= ips,
@@ -449,7 +462,6 @@ public class IndustryCalculator {
 //			Log.info("3 heat: @", heat);
 		}
 		
-		balanceFragment.element.rebuild();
 		
 		if(selected.size > 0) {
 			balanceFragment.element.line("[accent]Selected" + (buildPlans ? " & build plans" : ""));
@@ -468,11 +480,15 @@ public class IndustryCalculator {
 		
 		selected = selected_;
 		
+		ObjectMap<Block, Integer> count = new ObjectMap<>();
+		
 		for (int s = 0; s < selected.size; s++) {
 			Tile tile = selected.get(s);
 			Building building = tile.build;
 			Block block = tile.block();
 			if(building == null) continue;
+			
+			count.put(block, count.get(block, 0)+1);
 			
 			if(building instanceof BaseTurretBuild && block instanceof BaseTurret) {
 				BaseTurretBuild baseTurretBuild = (BaseTurretBuild) building;
@@ -597,6 +613,17 @@ public class IndustryCalculator {
 //				info.append("\n[white]" + liquid.emoji() + " [green]+" + ModWork.round(lps) + "/sec");
 			}
 		}
+
+		count.each((block, c) -> {
+			balanceFragment.element.line(block, "x" + c);
+		});
+//		for (int s = 0; s < selected.size; s++) {
+//			Tile tile = selected.get(s);
+//			Building building = tile.build;
+//			Block block = tile.block();
+//		}
+		
+		
 		updates++;
 		
 //		balanceFragment.setText(info.toString());
