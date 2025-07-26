@@ -35,6 +35,10 @@ public class Bungle {
 	public static String dialog(String string) {
 		return Core.bundle.get("agzam4mod.dialog." + string, "[red]??dialog." + string + "??[]");
 	}
+
+	public static String calculator(String string) {
+		return Core.bundle.get("agzam4mod.calculator." + string, "[red]??calculator." + string + "??[]");
+	}
 	
 	
 }

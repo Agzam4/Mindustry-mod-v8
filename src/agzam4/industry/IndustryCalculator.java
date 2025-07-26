@@ -9,6 +9,7 @@ import agzam4.debug.Debug;
 import agzam4.debug.ObjectInspector;
 import agzam4.render.MyDraw;
 import agzam4.render.Text;
+import agzam4.utils.Bungle;
 import agzam4.utils.Prefs;
 import agzam4.ModWork.KeyBinds;
 import arc.Core;
@@ -145,11 +146,6 @@ public class IndustryCalculator {
 				if(Debug.debug) {
 					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed + "/" + craftSpeedMultiplier);
 					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
-
-					if(block instanceof LandingPad landingPad) {
-						buildTooltip.line(block, "[royal]cooldownTime:[lightgray]" + landingPad.cooldownTime);
-						buildTooltip.line(block, "[royal]arrivalDuration:[lightgray]" + landingPad.arrivalDuration);
-					}
 				}
 //				buildTooltip.color(Pal.accent);
 
@@ -168,7 +164,7 @@ public class IndustryCalculator {
 				
 				float heat = ModWork.consumeHeat(building, craftSpeed);
 				if(heat > 0) {
-					buildTooltip.line("[red]" + Iconc.waves + " [lightgray]" + ModWork.round(heat) + "/sec");
+					buildTooltip.line("[red]" + Iconc.waves + " [lightgray]" + ModWork.round(heat) + Bungle.core("unit.persecond"));
 					addHeatCrafters(buildTooltip, block, heat);
 				}
 						
@@ -472,15 +468,13 @@ public class IndustryCalculator {
 				}
 				buildPlans = true;
 			}
-			
-//			Log.info("3 heat: @", heat);
 		}
 		
 		
 		if(selected.size > 0) {
-			balanceFragment.element.line("[accent]Selected" + (buildPlans ? " & build plans" : ""));
+			balanceFragment.element.line(buildPlans ? Bungle.calculator("header.selected-and-plans") : Bungle.calculator("header.selected"));
 		} else if(buildPlans) {
-			balanceFragment.element.line("[accent]Build plans");
+			balanceFragment.element.line(Bungle.calculator("header.plans"));
 		}
 
 		Seq<Tile> selected_ = new Seq<>();
@@ -585,16 +579,16 @@ public class IndustryCalculator {
 		}
 
 		if(power != 0) {
-			balanceFragment.element.line(Icon.power.getRegion(), (power > 0 ? "[green]" : "[scarlet]") + ModWork.round(power) + "/sec");
+			balanceFragment.element.line(Icon.power.getRegion(), (power > 0 ? "[green]" : "[scarlet]") + ModWork.round(power) + Bungle.core("unit.persecond"));
 			balanceFragment.element.color(Pal.engine);
 		}
 		if(heat != 0) {
-			balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + "/sec");
+			balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + Bungle.core("unit.persecond"));
 			if(heat < 0) addHeatCrafters(balanceFragment.element, null, -heat);
 		}
 		if(airDps != 0 || groundDps != 0) {
-			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(airDps) + " air damage/sec");
-			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[olive]" + ModWork.round(groundDps) + " ground damage/sec");
+			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(airDps) + " " + Bungle.calculator("line.air-dps"));
+			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[olive]" + ModWork.round(groundDps)  + " " + Bungle.calculator("line.ground-dps"));
 		}
 
 		for (int i = 0; i < itemsBalance.length; i++) {
@@ -603,7 +597,7 @@ public class IndustryCalculator {
 			if(updates < 60) ips = itemsBalance[i];
 			if(ips == 0) {
 				if(itemsWarn[i]) {
-					balanceFragment.element.line(item, "[yellow]0/sec " + Iconc.warning);
+					balanceFragment.element.line(item, "[yellow]0" + Bungle.core("unit.persecond") + " " + Iconc.warning);
 //					info.append();
 				}
 				continue;
@@ -611,7 +605,7 @@ public class IndustryCalculator {
 			if(ips < 0) {
 				addItemInfo(balanceFragment.element, null, item, ips, itemsWarn[i]);
 			} else {
-				balanceFragment.element.line(item, " [green]+" + ModWork.round(ips) + "/sec" + (itemsWarn[i] ? (" [yellow]" + Iconc.warning) : ""));
+				balanceFragment.element.line(item, " [green]+" + ModWork.round(ips) + Bungle.core("unit.persecond") + (itemsWarn[i] ? (" [yellow]" + Iconc.warning) : ""));
 			}
 		}
 		
@@ -623,7 +617,7 @@ public class IndustryCalculator {
 			if(lps < 0) {
 				addLiquidInfo(balanceFragment.element, null, liquid, lps, false);
 			} else {
-				balanceFragment.element.line(liquid, " [green]+" + ModWork.round(lps) + "/sec");
+				balanceFragment.element.line(liquid, " [green]+" + ModWork.round(lps) + Bungle.core("unit.persecond"));
 //				info.append("\n[white]" + liquid.emoji() + " [green]+" + ModWork.round(lps) + "/sec");
 			}
 		}
@@ -670,10 +664,10 @@ public class IndustryCalculator {
     
 	private static void addItemInfo(IndustryElement element, @Nullable Block block, Item item, float ips, boolean warn) {
 		if(ips < 0) {
-			element.line(item, " [scarlet]" + ModWork.round(ips) + "/sec" + (warn ? "[yellow]" + Iconc.warning : ""));
+			element.line(item, " [scarlet]" + ModWork.round(ips) + Bungle.core("unit.persecond") + (warn ? " [yellow]" + Iconc.warning : ""));
 			ips = -ips;
 		} else {
-			element.line(item, " [lightgray]" + ModWork.round(ips) + "/sec" + (warn ? "[yellow]" + Iconc.warning : ""));
+			element.line(item, " [lightgray]" + ModWork.round(ips) + Bungle.core("unit.persecond") + (warn ? " [yellow]" + Iconc.warning : ""));
 		}
 		addDrills(element, block, item, ips);
 		addCrafters(element, block, item, ips);
@@ -681,10 +675,10 @@ public class IndustryCalculator {
 	
 	private static void addLiquidInfo(IndustryElement element, @Nullable Block block, Liquid liquid, float lps, boolean warn) {
 		if(lps < 0) {
-			element.line(liquid, " [scarlet]" + ModWork.round(lps) + "/sec " + (warn ? "[yellow]" + Iconc.warning : ""));
+			element.line(liquid, " [scarlet]" + ModWork.round(lps) + Bungle.core("unit.persecond") + (warn ? " [yellow]" + Iconc.warning : ""));
 			lps = -lps;
 		} else {
-			element.line(liquid, " [lightgray]" + ModWork.round(lps) + "/sec" + (warn ? "[yellow]" + Iconc.warning : ""));
+			element.line(liquid, " [lightgray]" + ModWork.round(lps) + Bungle.core("unit.persecond") + (warn ? " [yellow]" + Iconc.warning : ""));
 		}
 //		if(warn) info.append(warn);
 		addPumps(element, block, liquid, lps);
