@@ -34,6 +34,7 @@ import mindustry.world.consumers.*;
 import mindustry.world.blocks.ConstructBlock.ConstructBuild;
 import mindustry.world.blocks.campaign.LandingPad;
 import mindustry.world.blocks.defense.ForceProjector;
+import mindustry.world.blocks.defense.RegenProjector;
 import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.ItemTurret.ItemTurretBuild;
 import mindustry.world.blocks.heat.HeatConductor.HeatConductorBuild;
@@ -212,6 +213,13 @@ public class ModWork {
 		}
 		if(!hasConsumer) return 0;
 		float craftSpeed = 1f;
+		
+		if(block instanceof WallCrafter crafter) {
+			craftSpeed *= 60f/crafter.boostItemUseTime;
+		}
+		if(block instanceof RegenProjector projector) {
+			craftSpeed *= 60f/projector.optionalUseTime;
+		}
 
 		if(block instanceof GenericCrafter crafter) craftSpeed = 60f / crafter.craftTime;
 		if(block instanceof AttributeCrafter attribute) {
@@ -359,6 +367,9 @@ public class ModWork {
 	public static void consumeItems(Consume consume, Building building, float craftSpeed, Cons2<Item, Float> cons) {
 		if(building.block instanceof WallCrafter crafter) {
 			craftSpeed *= 60f/crafter.boostItemUseTime;
+		}
+		if(building.block instanceof RegenProjector projector) {
+			craftSpeed *= 60f/projector.optionalUseTime;
 		}
 		// Blocks 
 		if(consume instanceof ConsumeItems) {
