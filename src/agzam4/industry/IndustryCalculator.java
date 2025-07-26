@@ -24,6 +24,7 @@ import arc.struct.Seq;
 import arc.util.*;
 import arc.util.pooling.Pools;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.core.World;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.*;
@@ -345,6 +346,9 @@ public class IndustryCalculator {
 	
 	private static float itemsBalanceFixed[] = new float[Vars.content.items().size];
 	private static float liquidBalanceFixed[] = new float[Vars.content.liquids().size];
+	
+
+	private static int blockRequirements[] = new int[Vars.content.items().size];
 
 	private static float airDps = 0;
 	private static float groundDps = 0;
@@ -354,9 +358,9 @@ public class IndustryCalculator {
 	static Seq<Tile> selected_ = new Seq<>();
 	
 	static int updates = 0;
+	
 	private static void calcBalance() {
 //		StringBuilder info = new StringBuilder();
-		
 		
 		for (int i = 0; i < itemsBalance.length; i++) {
 			itemsBalance[i] = 0;
@@ -364,6 +368,10 @@ public class IndustryCalculator {
 		}
 		for (int i = 0; i < liquidBalance.length; i++) {
 			liquidBalance[i] = 0;
+		}
+
+		for (int i = 0; i < blockRequirements.length; i++) {
+			blockRequirements[i] = 0;
 		}
 		
 		if(selected.size == 0) {
@@ -396,6 +404,9 @@ public class IndustryCalculator {
 					if(Vars.player.unit().plans().size > 0) {
 						for (int i = 0; i < Vars.player.unit().plans().size; i++) {
 							BuildPlan buildPlan = Vars.player.unit().plans().get(i);
+							
+							for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount;
+							
 							if(buildPlan.breaking) continue;
 							float craftSpeed = ModWork.getCraftSpeed(buildPlan.block, buildPlan.x, buildPlan.y, buildPlan.config);
 							ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
@@ -418,6 +429,9 @@ public class IndustryCalculator {
 			if(Vars.control.input.selectPlans.size > 0) {
 				for (int i = 0; i < Vars.control.input.selectPlans.size; i++) {
 					BuildPlan buildPlan = Vars.control.input.selectPlans.get(i);
+					
+					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount;
+					
 					if(buildPlan.breaking) continue;
 					float craftSpeed = ModWork.getCraftSpeed(buildPlan.block,
 							buildPlan.x, buildPlan.y, buildPlan.config);
@@ -439,6 +453,9 @@ public class IndustryCalculator {
 			if(Vars.control.input.linePlans.size > 0) {
 				for (int i = 0; i < Vars.control.input.linePlans.size; i++) {
 					BuildPlan buildPlan = Vars.control.input.linePlans.get(i);
+
+					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount;
+					
 					if(buildPlan.breaking) continue;
 					float craftSpeed = ModWork.getCraftSpeed(buildPlan.block,
 							buildPlan.x, buildPlan.y, buildPlan.config);
@@ -612,8 +629,17 @@ public class IndustryCalculator {
 		}
 
 		count.each((block, c) -> {
-			balanceFragment.element.line(block, "x" + c);
+			balanceFragment.element.line(block, "[white]x" + c);
+			balanceFragment.element.color(Color.white);
 		});
+		
+		for (int i = 0; i < blockRequirements.length; i++) {
+			int r = blockRequirements[i];
+			if(r <= 0) continue;
+			balanceFragment.element.line(Vars.content.item(i), "[white]" + r);
+			balanceFragment.element.color(Color.white);
+		}
+		
 //		for (int s = 0; s < selected.size; s++) {
 //			Tile tile = selected.get(s);
 //			Building building = tile.build;
@@ -907,6 +933,7 @@ public class IndustryCalculator {
 			if(Vars.ui.database.isShown()) return;
 			if(!Vars.ui.hudfrag.shown) return;
 			
+			Draw.color();
 			Font font = Fonts.outline;
 			
 
