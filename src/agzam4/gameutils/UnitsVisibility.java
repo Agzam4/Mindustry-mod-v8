@@ -12,8 +12,6 @@ import mindustry.graphics.Layer;
 
 public class UnitsVisibility {
 
-	// FIXME: Fix mine lasers
-	
 	public static boolean hide = false;
 	
 	private static UnitTextures[] unitTextures;
@@ -35,7 +33,7 @@ public class UnitsVisibility {
 	public static void draw() {
 		if(!hide) return;
 		
-		float opacity = Vars.renderer.animateShields ? 1f : .5f; // TODO: configurable 
+		float opacity = Vars.renderer.animateShields ? 1f : .25f; // TODO: configurable 
 		
         Rect rect = Core.camera.bounds(new Rect());
 		Draw.reset();

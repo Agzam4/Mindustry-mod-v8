@@ -9,7 +9,7 @@ public class UnitTextures {
 	public static final TextureRegion none = AgzamMod.sprite("none");
 
     public TextureRegion baseRegion, legRegion, region, previewRegion, shadowRegion, cellRegion, itemCircleRegion,
-        softShadowRegion, jointRegion, footRegion, legBaseRegion, baseJointRegion, outlineRegion, treadRegion;
+        softShadowRegion, jointRegion, footRegion, legBaseRegion, baseJointRegion, outlineRegion, treadRegion, mineLaserRegion, mineLaserEndRegion;
 
     public TextureRegion[][] weaponsTextures;
     public float[] enginesRadius;
@@ -32,6 +32,8 @@ public class UnitTextures {
     	legBaseRegion 		= unit.legBaseRegion;
     	baseJointRegion 	= unit.baseJointRegion;
     	treadRegion 		= unit.treadRegion;
+    	mineLaserRegion 	= unit.mineLaserRegion;
+    	mineLaserEndRegion 	= unit.mineLaserEndRegion;
 
     	weaponsTextures = new TextureRegion[unit.weapons.size][4];
     	
@@ -75,6 +77,9 @@ public class UnitTextures {
         unit.legBaseRegion   	= legBaseRegion;
         unit.baseJointRegion 	= baseJointRegion;
         unit.treadRegion     	= treadRegion;
+
+    	unit.mineLaserRegion 	= mineLaserRegion;
+    	unit.mineLaserEndRegion = mineLaserEndRegion;
         
     	for (int i = 0; i < unit.weapons.size; i++) {
 			Weapon weapon = unit.weapons.get(i);
@@ -99,6 +104,9 @@ public class UnitTextures {
     	unit.legBaseRegion 		= none;
     	unit.baseJointRegion 	= none;
     	unit.treadRegion 		= none;
+    	
+    	unit.mineLaserRegion 	= none;
+    	unit.mineLaserEndRegion = none;
     	
     	for (int i = 0; i < unit.weapons.size; i++) {
 			Weapon weapon = unit.weapons.get(i);
