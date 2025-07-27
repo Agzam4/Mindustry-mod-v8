@@ -169,7 +169,7 @@ public class DamageNumbers {
 				Text.size(hScale);
 
 				float x = unit.x;
-				float y = unit.y + unit.hitSize*hScale/2f + unit.hitSize/2f;
+				float y = unit.y + unit.hitSize*hScale/4f + 6f + unit.hitSize*hScale/4f;
 				Draw.color();
 				Text.at("|", x, y);
 				
