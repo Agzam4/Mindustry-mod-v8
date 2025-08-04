@@ -395,76 +395,44 @@ public class IndustryCalculator {
 		
 		boolean buildPlans = false;
 		if(Prefs.settings.bool("buildplans-calculations")) {
+			Cons<BuildPlan> calcFor = buildPlan -> {
+				if(buildPlan.breaking) {
+					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] -= r.amount * Vars.state.rules.buildCostMultiplier * Vars.state.rules.deconstructRefundMultiplier;
+				} else {
+					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount * Vars.state.rules.buildCostMultiplier;
+				}
+				if(buildPlan.breaking) return;
+				float craftSpeed = ModWork.getCraftSpeed(buildPlan.block, buildPlan.x, buildPlan.y, buildPlan.config);
+				ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
+						buildPlan.config, craftSpeed, 
+						(item, ips) -> itemsBalance[item.id] -= ips,
+						(liquid, lps) -> liquidBalance[liquid.id] -= lps,
+						powerConsume, heatConsume);
+				ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
+						buildPlan.config, craftSpeed, 
+						(item, ips) -> itemsBalance[item.id] += ips,
+						(liquid, lps) -> liquidBalance[liquid.id] += lps,
+						powerProduce, heatProduce);
+			};
 			if(Vars.player.unit() != null) {
 				if(Vars.player.unit().plans != null) {
 					if(Vars.player.unit().plans().size > 0) {
 						for (int i = 0; i < Vars.player.unit().plans().size; i++) {
-							BuildPlan buildPlan = Vars.player.unit().plans().get(i);
-							
-							for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount;
-							
-							if(buildPlan.breaking) continue;
-							float craftSpeed = ModWork.getCraftSpeed(buildPlan.block, buildPlan.x, buildPlan.y, buildPlan.config);
-							ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-									buildPlan.config, craftSpeed, 
-									(item, ips) -> itemsBalance[item.id] -= ips,
-									(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-									powerConsume, heatConsume);
-							ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-									buildPlan.config, craftSpeed, 
-									(item, ips) -> itemsBalance[item.id] += ips,
-									(liquid, lps) -> liquidBalance[liquid.id] += lps,
-									powerProduce, heatProduce);
+							calcFor.get(Vars.player.unit().plans().get(i));
 						}
-						
 						buildPlans = true;
 					}
 				}
 			}
-//			Log.info("1 heat: @", heat);
 			if(Vars.control.input.selectPlans.size > 0) {
 				for (int i = 0; i < Vars.control.input.selectPlans.size; i++) {
-					BuildPlan buildPlan = Vars.control.input.selectPlans.get(i);
-					
-					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount;
-					
-					if(buildPlan.breaking) continue;
-					float craftSpeed = ModWork.getCraftSpeed(buildPlan.block,
-							buildPlan.x, buildPlan.y, buildPlan.config);
-					ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-							buildPlan.config, craftSpeed, 
-							(item, ips) -> itemsBalance[item.id] -= ips,
-							(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-							powerConsume, heatConsume);
-					ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-							buildPlan.config, craftSpeed, 
-							(item, ips) -> itemsBalance[item.id] += ips,
-							(liquid, lps) -> liquidBalance[liquid.id] += lps,
-							powerProduce, heatProduce);
+					calcFor.get(Vars.control.input.selectPlans.get(i));
 				}
 				buildPlans = true;
 			}
-//			Log.info("2 heat: @", heat);
-			
 			if(Vars.control.input.linePlans.size > 0) {
 				for (int i = 0; i < Vars.control.input.linePlans.size; i++) {
-					BuildPlan buildPlan = Vars.control.input.linePlans.get(i);
-
-					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount;
-					
-					if(buildPlan.breaking) continue;
-					float craftSpeed = ModWork.getCraftSpeed(buildPlan.block,
-							buildPlan.x, buildPlan.y, buildPlan.config);
-					ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-							buildPlan.config, craftSpeed, 
-							(item, ips) -> itemsBalance[item.id] -= ips,
-							(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-							powerConsume, heatConsume);
-					ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-							buildPlan.config, craftSpeed, 
-							(item, ips) -> itemsBalance[item.id] += ips,
-							(liquid, lps) -> liquidBalance[liquid.id] += lps,
-							powerProduce, heatProduce);
+					calcFor.get(Vars.control.input.linePlans.get(i));
 				}
 				buildPlans = true;
 			}
@@ -629,8 +597,8 @@ public class IndustryCalculator {
 		
 		for (int i = 0; i < blockRequirements.length; i++) {
 			int r = blockRequirements[i];
-			if(r <= 0) continue;
-			balanceFragment.element.line(Vars.content.item(i), "[white]" + r);
+			if(r == 0) continue;
+			balanceFragment.element.line(Vars.content.item(i), r > 0 ? "[red]-"+r : "[green]+"+-r);
 			balanceFragment.element.color(Color.white);
 		}
 		
