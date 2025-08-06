@@ -4,7 +4,7 @@
   author: "Agzam4"
   main: "agzam4.AgzamMod"
   description: "Additional functionality"
-  version: 150.1.0
+  version: 150.1.1
   minGameVersion: 149
   java: true
   hidden: true

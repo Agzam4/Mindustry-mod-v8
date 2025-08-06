@@ -8,7 +8,6 @@ import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.scene.event.*;
-import arc.scene.ui.*;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.game.EventType.*;
@@ -29,6 +28,7 @@ import agzam4.gameutils.UnitsVisibility;
 import agzam4.gameutils.WaveViewer;
 import agzam4.industry.IndustryCalculator;
 import agzam4.render.Text;
+import agzam4.render.light.LightRenderer;
 import agzam4.ui.MobileUI;
 import agzam4.ui.ModSettingsDialog;
 import agzam4.ui.ModStyles;
@@ -67,6 +67,8 @@ public class AgzamMod extends Mod {
 		
 		DamageNumbers.init();
 		UnitsVisibility.init();
+		
+		LightRenderer.init();
 		
 		try {
 			UiOverride.init();
@@ -210,6 +212,7 @@ public class AgzamMod extends Mod {
 		DamageNumbers.dispose();
 		UnitsVisibility.dispose();
 		Events.clear();
+		LightRenderer.unapply();
 		KeyBinds.dispose();
 	}
 

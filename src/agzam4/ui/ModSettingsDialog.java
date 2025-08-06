@@ -1,9 +1,13 @@
 package agzam4.ui;
 
+import static arc.Core.settings;
+
 import agzam4.*;
 import agzam4.UpdateInfo.CheckUpdatesInterval;
 import agzam4.debug.Debug;
 import agzam4.gameutils.Afk;
+import agzam4.render.light.LightRenderer;
+import agzam4.render.light.LightRenderer.LightTypes;
 import agzam4.ui.editor.MobileUIEditor;
 import agzam4.uiOverride.*;
 import agzam4.utils.Bungle;
@@ -13,6 +17,7 @@ import arc.files.Fi;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.scene.event.Touchable;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
@@ -20,11 +25,14 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
+import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable;
+import mindustry.ui.dialogs.SettingsMenuDialog.StringProcessor;
+import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable.SliderSetting;
 import mindustry.world.Block;
 import mindustry.world.meta.BuildVisibility;
 
@@ -53,7 +61,7 @@ public class ModSettingsDialog extends Table {
 		settingsTable.name = Bungle.settings("name");
 		settingsTable.visible = true;
 
-		addCategory(table, "updates");
+		category(table, "updates");
 		
 		updateBuilder = t -> {
 			t.label(() -> UpdateInfo.currentName() + " v" + UpdateInfo.currentVersion() + " " + versionInfo).row();
@@ -124,7 +132,7 @@ public class ModSettingsDialog extends Table {
 		updateTable.fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 		updateTable.row();
 		
-		addCategory(table, "unlock");
+		category(table, "unlock");
 		
 
 		unlockTable = table.table(t -> {
@@ -198,10 +206,10 @@ public class ModSettingsDialog extends Table {
 //		}).growX().pad(10).padBottom(4);
 //		table.row();
 
-		addCategory(table, "cursors");
+		category(table, "cursors");
         addCheck(table, "cursors-tracking");
 
-		addCategory(table, "units-and-buildings");
+		category(table, "units-and-buildings");
         addCheck(table, "show-turrets-range");
         addCheck(table, "show-build-health");
         addCheck(table, "show-units-health");
@@ -210,7 +218,7 @@ public class ModSettingsDialog extends Table {
 //		addKeyBind(table, KeyBinds.hideUnits);
 //		addKeyBind(table, KeyBinds.slowMovement);
 
-		addCategory(table, "calculations");
+		category(table, "calculations");
 		addCheck(table, "show-blocks-tooltip");
 		addCheck(table, "selection-calculations");
 		addCheck(table, "buildplans-calculations");
@@ -218,7 +226,7 @@ public class ModSettingsDialog extends Table {
 //		addKeyBind(table, KeyBinds.selection);
 //		addKeyBind(table, KeyBinds.clearSelection);
 		
-		addCategory(table, "afk");
+		category(table, "afk");
 		
 		try {
 			Afk.afkAvalible = true;
@@ -227,7 +235,7 @@ public class ModSettingsDialog extends Table {
 					Core.settings.put("agzam4mod.afk-start", t);
 				}).tooltip(Bungle.afk("automessage-start-tooltip")).width(Core.scene.getWidth()/2f).row();
 				addCheck(table, "afk.afk-ping");
-				addCheck(table, "afk.auto-afk-mode", b -> Afk.autoAI = b);
+				check(table, "afk.auto-afk-mode", b -> Afk.autoAI = b);
 				table.labelWrap(() -> Strings.format(Bungle.afk("default-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
 
 				table.labelWrap(() -> Strings.format(Bungle.afk("custom-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
@@ -248,7 +256,7 @@ public class ModSettingsDialog extends Table {
 		 * addKeyBind(table, KeyBinds.openUtils);
 		 */
 		
-		addCategory(table, "custom-ui");
+		category(table, "custom-ui");
 
 		if(MobileUI.enabled) {
 			table.button(Bungle.settings("edit-mobile-ui"), () -> {
@@ -256,15 +264,39 @@ public class ModSettingsDialog extends Table {
 			}).growX().fillX().pad(6).colspan(4).padTop(10).padBottom(10).row();
 		}
 		
-		addCheck(table, "custom-chat-fragment", b -> UiOverride.set());
-		addCheck(table, "outline-chat", b -> CustomChatFragment.font = b ? Fonts.outline : Fonts.def);
+		check(table, "custom-chat-fragment", b -> UiOverride.set());
+		check(table, "outline-chat", b -> CustomChatFragment.font = b ? Fonts.outline : Fonts.def);
 
+
+		category(table, "custom-render");
+
+		table.table(Tex.button, tg -> {
+            tg.margin(10f);
+            var group = new ButtonGroup<>();
+            var style = Styles.flatTogglet;
+            
+            tg.button(Bungle.settings("custom-render.disabled"), style, () -> {
+            	LightRenderer.set(null);
+            }).growX().fillX().group(group).checked(LightRenderer.type == null).height(35f).row();
+            
+            for (var type : LightTypes.values()) {
+                tg.button(Bungle.settings("custom-render." + type.kebab()), style, () -> {
+                	LightRenderer.set(type);
+                }).growX().fillX().group(group).checked(LightRenderer.type == type).height(35f).row();
+			}
+        }).fillX().pad(6).colspan(20).padTop(0).padBottom(10).row();
 		
+		sliderInt(table, "custom-render.opacity", 50, 0, 100, i -> {
+			LightRenderer.opacity = i/100f;
+			return i + "%";
+		});
 		
 		createMessagesGradientPicker(table);
+		
+		
 		table.row();
 
-		addCategory(table, "report-bugs");
+		category(table, "report-bugs");
 		table.table(t -> {
 			t.button(Iconc.github + " Github", Styles.defaultt, () -> {
 	            if(!Core.app.openURI("https://github.com/Agzam4")){
@@ -319,10 +351,47 @@ public class ModSettingsDialog extends Table {
 		
 	};
 
+//    public SliderSetting sliderPref(String name, int def, int min, int max, StringProcessor s){
+//        return sliderPref(name, def, min, max, 1, s);
+//    }
+
+    public static void sliderInt(Table table, String name, int def, int min, int max, StringProcessor s) {
+
+        Slider slider = new Slider(0, 100, 1, false);
+
+        slider.setValue(Prefs.settings.integer(name, def));
+
+        Label value = new Label("", Styles.outlineLabel);
+        Table content = new Table();
+        content.add(Bungle.settings(name), Styles.outlineLabel).left().growX().wrap();
+        content.add(value).padLeft(10f).right();
+        content.margin(3f, 33f, 3f, 33f);
+        content.touchable = Touchable.disabled;
+
+        slider.changed(() -> {
+        	Prefs.settings.put(name, (int)slider.getValue());
+            value.setText(s.get((int)slider.getValue()));
+        });
+
+        slider.change();
+        
+
+//        table.add(content).growX().fillX();
+        var stack = table.stack(slider, content);
+        
+        stack.fillX().pad(6).colspan(4).padTop(0).padBottom(10).row();
+//        st.fillX().growX().left().padTop(4f);
+        
+        Vars.ui.addDescTooltip(stack.get(), Bungle.settingsTooltip(name));
+        
+        table.row();
+
+//		Vars.ui.settings.graphics.scaleBy(0);
+    }
 
 	
 	private static void addCheck(Table table, String settings) {
-		addCheck(table, settings, null);
+		check(table, settings, null);
 	}
 
 	private static void rebuildMessagesColors(Table table) {
@@ -391,11 +460,11 @@ public class ModSettingsDialog extends Table {
 //		chatColor.get().color.set(CustomChatFragment.messagesColor());
 	}
 
-	private static void addCheck(Table table, String settings, Cons<Boolean> listener) {
-		addCheck(table, settings, true, listener);
+	private static void check(Table table, String settings, Cons<Boolean> listener) {
+		check(table, settings, true, listener);
 	}
 	
-	private static void addCheck(Table table, String settings, boolean def, Cons<Boolean> listener) {
+	private static void check(Table table, String settings, boolean def, Cons<Boolean> listener) {
 		String tooltip = Bungle.settingsTooltip(settings);
 		var cell = table.check(Bungle.settings(settings), ModWork.settingDef(settings, def), b -> {
 			Prefs.settings.put(settings, b);
@@ -409,7 +478,7 @@ public class ModSettingsDialog extends Table {
 		}
 	}
 	
-	private static void addCategory(Table table, String category) {
+	private static void category(Table table, String category) {
 		table.add(Bungle.category(category)).color(Pal.accent).colspan(4).pad(10).padBottom(4).row();
 	    table.image().color(Pal.accent).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();
 	}
