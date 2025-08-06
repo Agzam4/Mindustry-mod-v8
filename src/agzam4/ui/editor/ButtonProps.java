@@ -3,7 +3,6 @@ package agzam4.ui.editor;
 import agzam4.ui.MobileUI.MobileButtons;
 import agzam4.ui.ModStyles;
 import arc.func.Boolc;
-import arc.func.Boolf;
 import arc.func.Boolp;
 import arc.math.geom.Point2;
 import arc.scene.ui.TextButton;

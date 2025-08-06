@@ -1,7 +1,5 @@
 package agzam4.utils;
 
-import agzam4.AgzamMod;
-import agzam4.debug.Debug;
 import arc.graphics.Color;
 import arc.scene.ui.layout.Table;
 import mindustry.content.*;

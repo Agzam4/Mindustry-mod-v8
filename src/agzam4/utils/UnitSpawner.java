@@ -1,7 +1,6 @@
 package agzam4.utils;
 
 import agzam4.ModWork;
-import agzam4.render.MyDraw;
 import agzam4.render.Text;
 import agzam4.ui.CrossImageButton;
 import agzam4.ui.UIUtils;

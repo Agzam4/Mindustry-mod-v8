@@ -1,7 +1,5 @@
 package agzam4.gameutils;
 
-import static mindustry.Vars.player;
-
 import agzam4.AgzamMod;
 import agzam4.render.MyDraw;
 import agzam4.render.Text;
@@ -12,6 +10,7 @@ import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Align;
+import mindustry.Vars;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.graphics.Layer;
@@ -41,7 +40,7 @@ public class CursorTracker {
 		
 		for (int i = 0; i < Groups.player.size(); i++) {
 			Player p = Groups.player.index(i);
-			if(p == player) continue;
+			if(p == Vars.player) continue;
 			
 			boolean found = false;
 			

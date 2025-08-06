@@ -2,13 +2,10 @@ package agzam4.gameutils;
 
 import static agzam4.ModWork.*;
 
-import agzam4.AgzamMod;
 import agzam4.render.Text;
 import agzam4.utils.Prefs;
 import arc.Core;
-import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Align;
