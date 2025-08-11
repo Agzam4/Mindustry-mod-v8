@@ -48,7 +48,6 @@ public class AgzamMod extends Mod {
 	 * Messge limit
 	 */
 
-	
 	int pauseRandomNum = 0;
 	
 	public static final int modRandom = Mathf.random(100, 999);
