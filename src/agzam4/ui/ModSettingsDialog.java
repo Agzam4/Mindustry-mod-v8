@@ -227,6 +227,7 @@ public class ModSettingsDialog extends Table {
 //		addKeyBind(table, KeyBinds.clearSelection);
 		
 		category(table, "afk");
+		check(table, "afk.auto-afk-mode", b -> Afk.autoAI = b);
 		
 		try {
 			Afk.afkAvalible = true;
@@ -235,7 +236,6 @@ public class ModSettingsDialog extends Table {
 					Core.settings.put("agzam4mod.afk-start", t);
 				}).tooltip(Bungle.afk("automessage-start-tooltip")).width(Core.scene.getWidth()/2f).row();
 				addCheck(table, "afk.afk-ping");
-				check(table, "afk.auto-afk-mode", b -> Afk.autoAI = b);
 				table.labelWrap(() -> Strings.format(Bungle.afk("default-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
 
 				table.labelWrap(() -> Strings.format(Bungle.afk("custom-names"), Afk.baseName(), Afk.ruName())).growX().colspan(4).pad(10).padBottom(4).row();
