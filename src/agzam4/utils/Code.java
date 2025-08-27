@@ -67,6 +67,11 @@ public class Code {
 		line("ucontrol mine #OreX #OreY 5 0 0");
 	}
 
+	public void approachAndMine(int x, int y) {
+		line(Strings.format("ucontrol approach @ @ 5 0 0", x, y));
+		line(Strings.format("ucontrol mine @ @ 5 0 0", x, y));
+	}
+
 	public void ulocateOre(String ore) {
 		line("ulocate ore core true " + ore + " #OreX #OreY #Found building");
 	}
@@ -178,7 +183,7 @@ public class Code {
 //		code.append('\n');
 		marks.add("line#" + marks.size);
 	}
-	
+
 	public void markLast(String mark) {
 		marks.set(marks.size-1, mark);
 	}

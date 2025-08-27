@@ -9,6 +9,7 @@ import arc.*;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.Mathf;
+import arc.math.geom.Position;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
@@ -50,6 +51,7 @@ public class ProcessorGenerator {
 	static StringBuilder commentMessage = new StringBuilder();
 
 	private static boolean generateComment = true;
+	private static boolean cacheOrePositions = true;
 	
 	public static void draw() {
 		if(selectedType == DELIVERY) {
@@ -165,6 +167,21 @@ public class ProcessorGenerator {
 								needOre[i.id] = b;
 							}).row();
 						});
+
+						Table st = new Table();
+						st.defaults().pad(10).growX();
+						var check = st.check(Bungle.dialog("utils.processor-generator.cache-ores"), cacheOrePositions, b -> {
+							cacheOrePositions = b;
+						});
+						check.growX().row();
+						op.add(st).row();
+						
+//						if(Vars.mobile) {
+					        Vars.ui.addDescTooltip(check.get(), Bungle.dialog("utils.processor-generator.cache-ores.tooltip"));
+//						} else {
+//							check.tooltip(null);
+//						}
+						
 						
 						op.button("@ok", () -> {
 							boolean selected = false;
@@ -423,7 +440,78 @@ public class ProcessorGenerator {
 		Vars.control.input.useSchematic(Code.createBuildPlan(code, comment, links, generateComment));		
 	}
 
+	private static String createCacheMineCode(UnitType type) {
+		Position pos = Vars.player.closestCore();
+		if(pos == null) pos = Vars.player;
+		
+		Code code = new Code();
+		code.ubind(type);
+		code.ulocateCore();
+		code.uItemStack();
+		if(type.canBoost) code.boost(true);
+//		Blocks
+		code.jump("equal #Items #ItemsCapacity", "mark-toCore");
+//		code.jump("greaterThan #Items 0", "mark-mine");
+		
+		code.uSensorItems("#unitItem");
+		code.jump("equal #unitItem null", +2);
+		code.jump("notEqual #unitItem #mineItem", "mark-toCore");
+		
+		Seq<Item> ores = new Seq<>();
+		for (int i = 0; i < needOre.length; i++) {
+			Item item = Vars.content.item(i);
+			if(needOre[i] && type.mineTier >= item.hardness) ores.add(item);
+		}
+		if(ores.size <= 0) return "";
+
+		code.set("#mineItem", ores.get(0));
+		code.sensorItems("#MinCount", ores.get(0));
+		for (int i = 1; i < ores.size; i++) {
+			code.sensorItems("#ItemsCount", ores.get(i));
+			code.jump("greaterThan #ItemsCount #MinCount", +3);
+			code.set("#mineItem", ores.get(i));
+			code.set("#MinCount", "#ItemsCount");
+		}
+//		code.markLast("set-last");
+
+		boolean needMark = true;
+
+		commentMessage.append("[gold]Auto generated mine processor[]\n");
+		commentMessage.append("[accent]Unit: []" + type.emoji() + " " + type.localizedName);
+		commentMessage.append("\n[accent]Items: []");
+		for (int i = 0; i < ores.size; i++) {
+			Item ore = ores.get(i);
+			Tile tile = MyIndexer.findClosestOre(pos, ore, type.mineFloor, type.mineWalls);
+			code.jump("notEqual #mineItem @" + ore.name, +3);
+			if(needMark) {
+				code.markLast("mark-mine");
+				needMark = false;
+			}
+			
+			code.approachAndMine(tile.x, tile.y); // x2
+			
+			commentMessage.append(Strings.format("\n@ at @ [stat]@,@[]", ore.emoji(), tile.floor().emoji(), tile.x, tile.y));
+		}
+		code.end();
+		
+		if(type.flying) {
+			code.approachToCore(); // TODO: pathfind
+		} else {
+			code.pathfindToCore();
+
+		}
+		code.markLast("mark-toCore");
+		code.itemDrop("#Core");
+
+		commentMessage.append("\n[lightgray]Agzam's mod");
+		
+		String _code = code.toString();
+		return _code;
+	}
+	
 	private static String createMineCode(UnitType type) {
+		if(cacheOrePositions) return createCacheMineCode(type);
+		
 		Code code = new Code();
 		code.ubind(type);
 		code.ulocateCore();
@@ -440,12 +528,12 @@ public class ProcessorGenerator {
 		if(ores.size <= 0) return "";
 
 		code.set("#mineItem", ores.get(0));
-		code.sensorItems("#minCount", ores.get(0));
+		code.sensorItems("#MinCount", ores.get(0));
 		for (int i = 1; i < ores.size; i++) {
 			code.sensorItems("#ItemsCount", ores.get(i));
-			code.jump("greaterThan #ItemsCount #minCount", +3);
+			code.jump("greaterThan #ItemsCount #MinCount", +3);
 			code.set("#mineItem", ores.get(i));
-			code.set("#minCount", "#ItemsCount");
+			code.set("#MinCount", "#ItemsCount");
 		}
 		code.uSensorItems("#unitItem");
 		code.jump("equal #unitItem null", +2);
