@@ -315,11 +315,11 @@ public class ModSettingsDialog extends Table {
 		table.row();
 		
 
-//		table.table(t -> {
-//			t.button(Iconc.terminal + " Debug", Styles.defaultt, () -> {
-//				Vars.ui.showInfo(Strings.format("Scale: [accent]@[]", Scl.scl()));
-//			}).growX().fillX().height(54f).marginLeft(10).padRight(5f);
-//		}).growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
+		table.table(t -> {
+			t.button(Iconc.terminal + " Debug info", Styles.defaultt, () -> {
+				Vars.ui.showInfo(Strings.format("Scale: [accent]@[]", Scl.scl()));
+			}).growX().fillX().height(54f).marginLeft(10).padRight(5f);
+		}).growX().fillX().pad(6).colspan(4).padTop(0).padBottom(10);
 //		addCategory(table, "mobile-ui");
 		
 //		table.table(Tex.button, t -> {
