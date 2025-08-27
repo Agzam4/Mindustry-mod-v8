@@ -219,6 +219,7 @@ public class ProcessorGenerator {
 			Table st = new Table();
 			st.defaults().pad(10).growX();
 			addCategory(st, "settings");
+			generateComment = true;
 			st.check(Bungle.dialog("utils.processor-generator.generate-comments"), true, b -> {
 				generateComment = b;
 			}).growX().row();
@@ -262,6 +263,7 @@ public class ProcessorGenerator {
 		});
 		
 		Events.on(SceneTileTap.class, e -> {
+			if(selectedType != DELIVERY) return;
 			
 			@Nullable Tile tile = e.tile;
 
