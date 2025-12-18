@@ -2,6 +2,9 @@ apply plugin: "java"
 
 version '1.0'
 
+// Gradle Version: 8.9
+// Java Home: jdk-17
+
 //compile java 16 code, targeting java 8
 java{
     targetCompatibility = 8
@@ -19,7 +22,7 @@ repositories{
 
 ext{
     //the build number that this mod is made for
-    mindustryVersion = 'v154'
+    mindustryVersion = 'v154.2'
     jabelVersion = "0.7.0"
     sdkRoot = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
 }
