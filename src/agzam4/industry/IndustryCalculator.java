@@ -779,7 +779,7 @@ public class IndustryCalculator {
 					if(gCrafter.outputItem.item == item) cps = gCrafter.outputItem.amount;
 				}
 				if(gCrafter.outputItems != null) {
-					for (int oi = 0; oi < rs.length; oi++) {
+					for (int oi = 0; oi < gCrafter.outputItems.length; oi++) {
 						if(gCrafter.outputItems[oi].item == item) {
 							cps = gCrafter.outputItems[oi].amount;
 							break;
@@ -819,7 +819,7 @@ public class IndustryCalculator {
 					if(gCrafter.outputLiquid.liquid == liquid) cps = gCrafter.outputItem.amount;
 				}
 				if(gCrafter.outputLiquids != null) {
-					for (int ol = 0; ol < rs.length; ol++) {
+					for (int ol = 0; ol < gCrafter.outputLiquids.length; ol++) {
 						if(gCrafter.outputLiquids[ol].liquid == liquid) {
 							cps = gCrafter.outputLiquids[ol].amount;
 							break;
