@@ -8,7 +8,9 @@ import static mindustry.Vars.net;
 import static mindustry.Vars.player;
 import static mindustry.Vars.ui;
 
+import java.nio.ByteBuffer;
 import agzam4.ModWork;
+import agzam4.io.ByteBufferIO;
 import agzam4.utils.Prefs;
 import arc.Core;
 import arc.Events;
@@ -22,19 +24,44 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.scene.ui.Label.LabelStyle;
 import arc.scene.ui.TextField.TextFieldStyle;
-import arc.struct.Seq;
-import arc.util.Align;
-import arc.util.Reflect;
-import arc.util.Strings;
-import arc.util.Time;
+import arc.struct.*;
+import arc.util.*;
 import mindustry.Vars;
+import mindustry.ctype.UnlockableContent;
 import mindustry.game.EventType.ClientChatEvent;
 import mindustry.gen.*;
+import mindustry.graphics.Pal;
 import mindustry.input.Binding;
 import mindustry.ui.Fonts;
 
 public class CustomChatFragment extends Table {
 
+	private static byte suggestionsId = 0;
+
+	private static ObjectMap<Byte, Object[]> suggestions = new ObjectMap<>();
+	private static ObjectMap<String, Byte> suggestionsIds = new ObjectMap<>();
+	private Object[] currentSuggestions = null;
+	private String suggestionsPrefix = "";
+	private String suggestionsFilter = "";
+	private int suggestionsSelect = -1;
+	private long keyCooldown = 0;
+	private long nextKeyCooldown = 0;
+	
+	private static CustomChatFragment instance = null;
+	
+	public static Object[] getSuggestionsArray(byte id, int size) {
+		Object[] arr = suggestions.get(id);
+		if(arr == null || arr.length != size) {
+			arr = new Object[size];
+			suggestions.put(id, arr);
+		}
+		return arr;
+	}
+	
+	public static void updateSuggestionsArray() {
+		instance.updateCurrentSuggestions();
+	}
+	
 	private static final int messagesShown = 10;
 
 	public static final Seq<Color> messageColors = loadColors();
@@ -66,9 +93,11 @@ public class CustomChatFragment extends Table {
 	private float textspacing = Scl.scl(10);
 	private int historyPos = 0;
 	private int scrollPos = 0;
-
+	
+	
 	public CustomChatFragment() {
 		super();
+		instance = this;
 		
 		font = Prefs.settings.bool("outline-chat") ? Fonts.outline : Fonts.def;
 		
@@ -82,7 +111,7 @@ public class CustomChatFragment extends Table {
         
         history.insert(0, "");
         setup();
-		
+        
 		visible(() -> {
 			if(!net.active() && messages.size > 0){
 				clearMessages();
@@ -99,6 +128,31 @@ public class CustomChatFragment extends Table {
 				toggle();
 			}
 			if(shown){
+				if(currentSuggestions != null && suggestionsPrefix.length() > 0) {
+					if(input.keyTap(Binding.chatMode)){
+						String add = currentSuggestions[suggestionsSelect].toString();
+						int space = add.indexOf(' ', 1);
+						if(space != -1) add = add.substring(0, space);
+						chatfield.setText(suggestionsPrefix + add);
+						chatfield.setCursorPosition(chatfield.getText().length());
+						return;
+					}
+					if(Time.millis() > keyCooldown || (input.keyTap(Binding.chatHistoryPrev) || input.keyTap(Binding.chatHistoryNext))) {
+						keyCooldown = Time.millis() + nextKeyCooldown;
+						nextKeyCooldown = 150;
+						for (int i = 0; i < currentSuggestions.length; i++) {
+							if(input.keyDown(Binding.chatHistoryPrev)){
+								suggestionsSelect++;
+							}
+							if(input.keyDown(Binding.chatHistoryNext)){
+								suggestionsSelect--;
+							}
+							suggestionsSelect = Mathf.mod(suggestionsSelect, currentSuggestions.length);
+							if(filterSuggestion(currentSuggestions[suggestionsSelect])) break;
+						}
+					}
+					return;
+				}
 				if(input.keyTap(Binding.chatHistoryPrev) && historyPos < history.size - 1){
 					if(historyPos == 0){
 						String message = chatfield.getText();
@@ -121,41 +175,20 @@ public class CustomChatFragment extends Table {
 		});
 	}
 
-	//    private static final int messagesShown = 10;
-	//    private Seq<String> messages = new Seq<>();
-	//    private float fadetime;
-	//    private boolean shown = false;
-	//    private TextField chatfield;
-	//    private Label fieldlabel = new Label(">");
-	//    private ChatMode mode = ChatMode.normal;
-	//    private Font font;
-	//    private GlyphLayout layout = new GlyphLayout();
-	//    private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
-	//    private Color shadowColor = new Color(0, 0, 0, 0.5f);
-	//    private float textspacing = Scl.scl(10);
-	//    private Seq<String> history = new Seq<>();
-	//    private int historyPos = 0;
-	//    private int scrollPos = 0;
-
-	//    public ChatFragment(){
-	//        super();
-	//
-	//        setFillParent(true);
-	//        font = Fonts.def;
-	//
-	//
-	//
-	//        history.insert(0, "");
-	//        setup();
-	//    }
+	private boolean filterSuggestion(Object obj) {
+		boolean or = false;
+		if(obj instanceof UnlockableContent content) {
+			or = or || content.localizedName.toLowerCase().startsWith(suggestionsFilter.toLowerCase());
+		}
+		return or || obj.toString().toLowerCase().startsWith(suggestionsFilter.toLowerCase());
+	}
 
 	public void build(Group parent){
 		scene.add(this);
 	}
 
 	public void clearMessages(){
-//		messages.clear();
-//		history.clear();
+		suggestions.clear();
 		if(history.isEmpty()) history.insert(0, "");
 	}
 
@@ -165,12 +198,10 @@ public class CustomChatFragment extends Table {
 		fieldlabel.setStyle(fieldlabel.getStyle());
 
 		chatfield = new TextField("", new TextFieldStyle(scene.getStyle(TextFieldStyle.class)));
-//		chatfield.setStyle(new TextFieldStyle(scene.getStyle(TextFieldStyle.class)));
-//		chatfield.setMaxLength(Vars.maxTextLength);
 		chatfield.getStyle().background = null;
 		chatfield.getStyle().fontColor = Color.white;
 		chatfield.setStyle(chatfield.getStyle());
-
+		
 		chatfield.typed(this::handleType);
 
 		bottom().left().marginBottom(offsety).marginLeft(offsetx * 2).add(fieldlabel).padBottom(6f);
@@ -183,6 +214,10 @@ public class CustomChatFragment extends Table {
 	}
 
 	boolean tips = false;
+
+	private float suggestionsWidth = 0;
+	private float suggestionsHeight = 0;
+	
 	//no mobile support.
 	private void handleType(char c){
 		int cursor = chatfield.getCursorPosition();
@@ -197,6 +232,95 @@ public class CustomChatFragment extends Table {
 				}
 			}
 		}
+		
+		if(chatfield.getText().startsWith("/")) {
+			try {
+
+				updateCurrentSuggestions();
+				
+				String command = chatfield.getText();
+				if(!command.endsWith(" ")) return;
+				int index = command.indexOf(' ');
+				if(index == -1) return;
+				
+				String type = command.substring(1, index);
+				
+				int tmp = 0;
+				for (int i = index+1; i < command.length(); i++) if(command.charAt(i) == ' ') tmp++;
+
+				String[] args = new String[tmp];
+				
+				int argId = 0;
+				tmp = index+1;
+				
+				
+				for (int i = index+1; i < command.length(); i++) {
+					if(command.charAt(i) == ' ') {
+						args[argId++] = command.substring(tmp, i);
+						tmp = i+1;
+					}
+				}
+				
+				byte id = suggestionsId++;
+				suggestionsIds.put(command.substring(0, command.lastIndexOf(' ')), id);
+
+				/**
+				 * id
+				 * type
+				 * amount of arguments
+				 * arguments...
+				 */
+				var res = ByteBuffer.allocate(2 + (args.length+1) * Byte.MAX_VALUE);
+				res.put(id);
+				ByteBufferIO.writeString(res, type);
+				res.put((byte) args.length);
+				for (int i = 0; i < args.length; i++) {
+					ByteBufferIO.writeString(res, args[i]);
+				}
+				Call.serverBinaryPacketUnreliable("agzam4.cmd-sug", res.array());
+			} catch (Exception e) {
+				Log.err(e);
+			}
+		}
+	}
+
+	private void updateCurrentSuggestions() {
+		String command = chatfield.getText();
+		int space = command.lastIndexOf(' ');
+		if(space != -1) {
+			String cmd = command.substring(0, space);
+			Byte id = suggestionsIds.get(cmd);
+			if(id != null) {
+				var suggestions = CustomChatFragment.suggestions.get(id.byteValue());
+				if(suggestions != null) {
+					boolean hasNull = false;
+					for (int i = 0; i < suggestions.length; i++) {
+						if(suggestions[i] != null) continue;
+						hasNull = true;
+						break;
+					}
+					if(!hasNull) {
+						currentSuggestions = suggestions;
+						suggestionsPrefix = cmd + " ";
+						suggestionsFilter = command.substring(space+1);
+						suggestionsWidth = 0;
+						nextKeyCooldown = 300;
+						if(currentSuggestions.length == 0) return;
+						suggestionsSelect = Mathf.mod(suggestionsSelect, currentSuggestions.length);
+						for (int i = 0; i < currentSuggestions.length; i++) {
+							if(filterSuggestion(currentSuggestions[suggestionsSelect])) break;
+							suggestionsSelect++;
+							suggestionsSelect = Mathf.mod(suggestionsSelect, currentSuggestions.length);
+						}
+						return;
+					}
+				}
+			}
+		}
+		currentSuggestions = null;
+		suggestionsFilter = "";
+		suggestionsPrefix = "";
+		suggestionsWidth = 0;
 	}
 
 	protected void rect(float x, float y, float w, float h){
@@ -248,6 +372,69 @@ public class CustomChatFragment extends Table {
 			Draw.alpha(opacity * shadowColor.a);
 
 			font.getCache().draw();
+		}
+		
+		if(shown) {
+			var suggestions = currentSuggestions;
+			if(suggestions != null) {
+				float x = fieldlabel.getRight();
+				
+				if(suggestionsWidth == 0) {
+					suggestionsHeight = 0;
+					for (int i = 0; i < suggestions.length; i++) {
+						if(!filterSuggestion(suggestions[i])) continue;
+						layout.setText(font, suggestions[i].toString(), Color.white, scene.getWidth(), Align.bottomLeft, false);
+						suggestionsWidth = Math.max(suggestionsWidth, layout.width);
+						suggestionsHeight += chatfield.getHeight();
+					}
+				}
+
+				layout.setText(font, suggestionsPrefix, Color.white, scene.getWidth(), Align.bottomLeft, false);
+
+				x += layout.width;
+
+				float sy = chatfield.y + scene.marginBottom + chatfield.getHeight();
+
+				Draw.color(Color.black, opacity * shadowColor.a);
+				rect(x, sy, suggestionsWidth + fontoffsetx*2, suggestionsHeight);
+				
+//				Draw.color(Pal.accent, opacity);
+//				rect(x, sy, fontoffsetx, suggestionsHeight);
+//				rect(x + suggestionsWidth + fontoffsetx*2, sy, fontoffsetx, suggestionsHeight);
+//				rect(x, sy, suggestionsWidth + fontoffsetx*2, fontoffsetx);
+//				rect(x, sy + suggestionsHeight, suggestionsWidth + fontoffsetx*2, fontoffsetx);
+				
+				for (int i = 0; i < suggestions.length; i++) {
+					if(!filterSuggestion(suggestions[i])) continue;
+					String text = suggestions[i] instanceof UnlockableContent unlock ? unlock.name + (" " + unlock.localizedName + " " + unlock.emoji()) : suggestions[i].toString();
+					
+					layout.setText(font, text, Color.white, scene.getWidth(), Align.bottomLeft, false);
+					font.getCache().clear();
+					font.getCache().setColor(suggestionsSelect == i ? Pal.accent : Color.white);
+
+					if(suggestionsSelect == i) {
+						Draw.color(Pal.darkerGray, opacity);
+						rect(x, sy, suggestionsWidth + fontoffsetx*2, chatfield.getHeight() - 1);
+					}
+					
+					int space = text.indexOf(' ');
+					if(space == -1) font.getCache().addText(text, x + fontoffsetx, sy + chatfield.getHeight() - (chatfield.getHeight() - layout.height)/2f, layout.width, Align.bottomLeft, false);
+					else {
+						GlyphLayout prelayout = font.getCache().addText(text.substring(0, space), x + fontoffsetx, sy + chatfield.getHeight() - (chatfield.getHeight() - layout.height)/2f, layout.width, Align.bottomLeft, false);
+						float w = prelayout.width;
+						font.getCache().draw();
+						
+						font.getCache().clear();
+						font.getCache().setColor(Color.lightGray);
+						font.getCache().addText(text.substring(space), x + fontoffsetx + w, sy + chatfield.getHeight() - (chatfield.getHeight() - layout.height)/2f, layout.width, Align.bottomLeft, false);
+					}
+					
+
+					font.getCache().draw();
+					
+					sy += chatfield.getHeight();
+				}
+			}
 		}
 
 		Draw.color();
@@ -371,6 +558,7 @@ public class CustomChatFragment extends Table {
 
 	public void updateCursor(){
 		chatfield.setCursorPosition(chatfield.getText().length());
+		updateCurrentSuggestions();
 	}
 
 	public boolean shown(){

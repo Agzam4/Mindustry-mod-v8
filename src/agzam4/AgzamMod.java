@@ -10,6 +10,7 @@ import arc.math.Mathf;
 import arc.scene.event.*;
 import arc.util.Log;
 import mindustry.Vars;
+import mindustry.ctype.ContentType;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.input.Binding;
@@ -17,23 +18,20 @@ import mindustry.mod.Mod;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.Fonts;
 import mindustry.world.Tile;
+
+import java.nio.ByteBuffer;
+
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
 import agzam4.events.SceneTileTap;
-import agzam4.gameutils.Afk;
-import agzam4.gameutils.CursorTracker;
-import agzam4.gameutils.DamageNumbers;
-import agzam4.gameutils.FireRange;
-import agzam4.gameutils.UnitsVisibility;
-import agzam4.gameutils.WaveViewer;
+import agzam4.gameutils.*;
 import agzam4.industry.IndustryCalculator;
+import agzam4.io.ByteBufferIO;
 import agzam4.render.Text;
 import agzam4.render.light.LightRenderer;
-import agzam4.ui.MobileUI;
-import agzam4.ui.ModSettingsDialog;
-import agzam4.ui.ModStyles;
+import agzam4.ui.*;
 import agzam4.ui.mapeditor.MapEditorDialog;
-import agzam4.uiOverride.UiOverride;
+import agzam4.uiOverride.*;
 import agzam4.utils.*;
 
 public class AgzamMod extends Mod {
@@ -106,6 +104,31 @@ public class AgzamMod extends Mod {
             }
         });
 
+		Vars.netClient.addBinaryPacketHandler("agzam4.cmd-sug", (bs) -> {
+			try {
+				var buffer = ByteBuffer.wrap(bs);
+
+				byte id = buffer.get();
+				int offset = Short.toUnsignedInt(buffer.getShort());
+				int size = Byte.toUnsignedInt(buffer.get());
+				int totalSize = Short.toUnsignedInt(buffer.getShort());
+
+				Object[] ss = CustomChatFragment.getSuggestionsArray(id, totalSize);
+				for (int i = 0; i < size; i++) {
+					byte type = buffer.get();
+					if(type == -1) {
+						ss[i+offset] = ByteBufferIO.readString(buffer);
+					} else {
+						short cid = buffer.getShort();
+						ss[i+offset] = Vars.content.getByID(ContentType.values()[Byte.toUnsignedInt(type)], cid);
+					}
+				}
+				CustomChatFragment.updateSuggestionsArray();
+			} catch (Exception e) {
+				Log.err(e);
+			}
+		});
+		
 		ModSettingsDialog.updateCategory();
 		
 		if(Debug.debug) {
