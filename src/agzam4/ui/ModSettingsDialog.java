@@ -1,7 +1,5 @@
 package agzam4.ui;
 
-import static arc.Core.settings;
-
 import agzam4.*;
 import agzam4.UpdateInfo.CheckUpdatesInterval;
 import agzam4.debug.Debug;
@@ -25,14 +23,11 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
-import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.*;
-import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable;
-import mindustry.ui.dialogs.SettingsMenuDialog.StringProcessor;
-import mindustry.ui.dialogs.SettingsMenuDialog.SettingsTable.SliderSetting;
+import mindustry.ui.dialogs.SettingsMenuDialog.*;
 import mindustry.world.Block;
 import mindustry.world.meta.BuildVisibility;
 
