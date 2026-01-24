@@ -39,6 +39,7 @@ import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.heat.HeatProducer;
+import mindustry.world.blocks.logic.MemoryBlock.MemoryBuild;
 import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.consumers.Consume;
 
@@ -121,6 +122,7 @@ public class IndustryCalculator {
 		
 		if(building.team == Vars.player.team() && Prefs.settings.bool("show-blocks-tooltip")) {
 			Block block = building.block;
+
 			if(building instanceof ConstructBuild) {
 				ConstructBuild cb = (ConstructBuild) building;
 				buildTooltip.line(cb.current, "[white]" + cb.current.localizedName.toUpperCase());
@@ -145,6 +147,14 @@ public class IndustryCalculator {
 					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed + "/" + craftSpeedMultiplier);
 					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
 				}
+
+				if(building instanceof MemoryBuild) {
+					MemoryBuild mb = (MemoryBuild) building;
+					for (int i = 0; i < mb.memory.length; i++) {
+						if(mb.memory[i] != 0) buildTooltip.line("[gray]" + i + " .[white]" + mb.memory[i]);
+					}
+				}
+				
 //				buildTooltip.color(Pal.accent);
 
 				if(craftSpeed > 0) {
