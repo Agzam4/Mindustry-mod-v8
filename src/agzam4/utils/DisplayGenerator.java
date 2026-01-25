@@ -1,5 +1,10 @@
 package agzam4.utils;
 
+import agzam4.io.GifIO;
+import agzam4.utils.animationgen.GifGenerator;
+import agzam4.utils.code.Code;
+import arc.files.Fi;
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.scene.ui.layout.Table;
@@ -13,6 +18,7 @@ import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.logic.LogicBlock;
 import mindustry.world.blocks.logic.LogicBlock.LogicLink;
+import mindustry.world.blocks.logic.LogicDisplay;
 
 public class DisplayGenerator {
 
@@ -20,7 +26,7 @@ public class DisplayGenerator {
 	// 176x176
 	
 	public static void show() {
-		Vars.platform.showMultiFileChooser(file -> {
+		Cons<Fi> cons = file -> {
 			BaseDialog dialog = new BaseDialog(Bungle.dialog("utils.select-display"));
 			dialog.title.setColor(Color.white);
 			dialog.titleTable.remove();
@@ -33,19 +39,13 @@ public class DisplayGenerator {
 				p.add(t).row();
 
 	            t.button(Blocks.logicDisplay.emoji() + " " + Blocks.logicDisplay.localizedName, Styles.defaultt, () -> {
-	                Pixmap pixmap = new Pixmap(file);
-	                create(pixmap, 80);
-	                pixmap.dispose();
+	                create(file, 80);
 	            	dialog.hide();
-	        		PlayerUtils.hide();
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 
 	            t.button(Blocks.largeLogicDisplay.emoji() + " " + Blocks.largeLogicDisplay.localizedName, Styles.defaultt, () -> {
-	                Pixmap pixmap = new Pixmap(file);
-	                create(pixmap, 176);
-	                pixmap.dispose();
+	                create(file, 176);
 	            	dialog.hide();
-	        		PlayerUtils.hide();
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 	            
 	            t.button("@back", Styles.defaultt, () -> {
@@ -54,8 +54,30 @@ public class DisplayGenerator {
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 			});
 			dialog.show();
-		}, "png", "jpg", "jpeg");
+		};
+		
+		if(GifGenerator.avalible()) Vars.platform.showMultiFileChooser(cons, "png", "jpg", "jpeg", "gif");
+		else Vars.platform.showMultiFileChooser(cons, "png", "jpg", "jpeg", "gif");
 	}
+
+	private static void create(Fi file, int size) {
+    	if(file.extension().equals("gif")) {
+    		try {
+        		LogicDisplay display = (LogicDisplay) (size == 80 ? Blocks.logicDisplay : Blocks.largeLogicDisplay);
+        		GifGenerator.scheme(GifIO.readGifFrames(file, display.displaySize), display);
+        		PlayerUtils.hide();	
+			} catch (Throwable e) {
+				Vars.ui.showException(e);
+			}	
+    		return;
+    	}
+    	
+        Pixmap pixmap = new Pixmap(file);
+        create(pixmap, 80);
+        pixmap.dispose();
+		PlayerUtils.hide();		
+	}
+	
 
 	public static void create(Pixmap pixmap, int size) {
 		int rgb[][] = new int[size][size];
@@ -105,7 +127,11 @@ public class DisplayGenerator {
 		Code nCode = null;
 		codes.add(nCode);
 		
-		Seq<Stile> seq = new Seq<Schematic.Stile>(); // LogicBlock.compress(code, links)
+		buildScheme(codes, size);
+	}
+
+	private static void buildScheme(Seq<Code> codes, int size) {
+		Seq<Stile> tiles = new Seq<Schematic.Stile>(); // LogicBlock.compress(code, links)
 		
 		int bsize = size == 80 ? 2 : 4;
 		int d = size == 80 ? 0 : -1;
@@ -123,10 +149,10 @@ public class DisplayGenerator {
 					}
 					Code c = codes.get(index++);
 					if(c == null) {
-						seq.add(new Stile(Blocks.message, x, y, "[gold]Auto generated images processor\n[lightgray]Agzam's mod", (byte) 0));
+						tiles.add(new Stile(Blocks.message, x, y, "[gold]Auto generated images processor\n[lightgray]Agzam's mod", (byte) 0));
 					} else {
 						LogicLink link = new LogicLink(-x, -y, "agzamMod-delivery-autolink-" + index, false);
-						seq.add(new Stile(Blocks.microProcessor, x, y, 
+						tiles.add(new Stile(Blocks.microProcessor, x, y, 
 								LogicBlock.compress(c.toString(), new Seq<>(new LogicLink[] {link})), (byte) 0));
 					}
 				}
@@ -135,31 +161,13 @@ public class DisplayGenerator {
 			if(index >= codes.size) break;
 		}
 		wh += bsize;
-		seq.add(new Stile(size == 80 ? Blocks.logicDisplay : Blocks.largeLogicDisplay, 0, 0, null, (byte) 0));
+		tiles.add(new Stile(size == 80 ? Blocks.logicDisplay : Blocks.largeLogicDisplay, 0, 0, null, (byte) 0));
 		
-		Schematic schematic = new Schematic(seq, new StringMap(), wh+1, wh+1);
+		Schematic schematic = new Schematic(tiles, new StringMap(), wh+1, wh+1);
 		
-		Vars.control.input.useSchematic(schematic);
-		
-//		return new Schematic(seq, new StringMap(), 1, generateComment  ? 2 : 1);
-		
-		
-//		StringBuilder commentMessage = new StringBuilder();
-//		commentMessage.append("[gold]Auto generated images processor[]");
-//		commentMessage.append("\n[lightgray]Agzam's mod");
-//
-//		LogicLink link = new LogicLink(0, -5, "", true);
-//
-//		String _code = code.toString();
-//        Core.app.setClipboardText(_code);
-//		addCode(_code, commentMessage.toString(), new Seq<>(new LogicLink[]{link}));
-		
-
-//		link = new LogicLink(to.centerX(), to.centerY(),
-//				"agzamMod-delivery-autolink", false);
+		Vars.control.input.useSchematic(schematic);		
 	}
 	
-//	private static void addCode(String code, String comment, Seq<LogicLink> links) {
-//		Vars.control.input.useSchematic(Code.createBuildPlan(code, comment, links, true));		
-//	}
+	
+	
 }
