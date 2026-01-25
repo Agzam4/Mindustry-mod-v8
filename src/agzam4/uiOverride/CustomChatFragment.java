@@ -44,6 +44,7 @@ public class CustomChatFragment extends Table {
 	private String suggestionsPrefix = "";
 	private String suggestionsFilter = "";
 	private int suggestionsSelect = -1;
+	private int suggestionsAmount = -1;
 	private long keyCooldown = 0;
 	private long nextKeyCooldown = 0;
 	
@@ -128,7 +129,7 @@ public class CustomChatFragment extends Table {
 				toggle();
 			}
 			if(shown){
-				if(currentSuggestions != null && suggestionsPrefix.length() > 0) {
+				if(needSuggestions()) {
 					if(input.keyTap(Binding.chatMode)){
 						String add = currentSuggestions[suggestionsSelect].toString();
 						int space = add.indexOf(' ', 1);
@@ -175,12 +176,17 @@ public class CustomChatFragment extends Table {
 		});
 	}
 
+	private boolean needSuggestions() {
+		Log.info("[needSuggestions] @ @ @", currentSuggestions, suggestionsPrefix, suggestionsAmount);
+		return currentSuggestions != null && suggestionsPrefix.length() > 0 && suggestionsAmount > 0;
+	}
+
 	private boolean filterSuggestion(Object obj) {
-		boolean or = false;
+		if(obj.toString().toLowerCase().startsWith(suggestionsFilter.toLowerCase())) return true;
 		if(obj instanceof UnlockableContent content) {
-			or = or || content.localizedName.toLowerCase().startsWith(suggestionsFilter.toLowerCase());
+			return content.localizedName.toLowerCase().contains(suggestionsFilter.toLowerCase());
 		}
-		return or || obj.toString().toLowerCase().startsWith(suggestionsFilter.toLowerCase());
+		return false;
 	}
 
 	public void build(Group parent){
@@ -312,6 +318,13 @@ public class CustomChatFragment extends Table {
 							suggestionsSelect++;
 							suggestionsSelect = Mathf.mod(suggestionsSelect, currentSuggestions.length);
 						}
+
+						suggestionsAmount = 0;
+						for (int i = 0; i < currentSuggestions.length; i++) {
+							if(!filterSuggestion(currentSuggestions[suggestionsSelect])) continue;
+							suggestionsAmount++;
+						}
+						
 						return;
 					}
 				}
@@ -321,6 +334,7 @@ public class CustomChatFragment extends Table {
 		suggestionsFilter = "";
 		suggestionsPrefix = "";
 		suggestionsWidth = 0;
+		suggestionsAmount = 0;
 	}
 
 	protected void rect(float x, float y, float w, float h){
@@ -383,7 +397,7 @@ public class CustomChatFragment extends Table {
 					suggestionsHeight = 0;
 					for (int i = 0; i < suggestions.length; i++) {
 						if(!filterSuggestion(suggestions[i])) continue;
-						layout.setText(font, suggestions[i].toString(), Color.white, scene.getWidth(), Align.bottomLeft, false);
+						layout.setText(font, suggestionToString(suggestions[i]), Color.white, scene.getWidth(), Align.bottomLeft, false);
 						suggestionsWidth = Math.max(suggestionsWidth, layout.width);
 						suggestionsHeight += chatfield.getHeight();
 					}
@@ -406,7 +420,7 @@ public class CustomChatFragment extends Table {
 				
 				for (int i = 0; i < suggestions.length; i++) {
 					if(!filterSuggestion(suggestions[i])) continue;
-					String text = suggestions[i] instanceof UnlockableContent unlock ? unlock.name + (" " + unlock.localizedName + " " + unlock.emoji()) : suggestions[i].toString();
+					String text = suggestionToString(suggestions[i]);
 					
 					layout.setText(font, text, Color.white, scene.getWidth(), Align.bottomLeft, false);
 					font.getCache().clear();
@@ -442,6 +456,10 @@ public class CustomChatFragment extends Table {
 		if(fadetime > 0 && !shown) {
 			fadetime -= Time.delta / 180f;
 		}
+	}
+
+	private String suggestionToString(Object suggestion) {
+		return suggestion instanceof UnlockableContent unlock ? unlock.name + (" " + unlock.localizedName + " " + unlock.emoji()) : suggestion.toString();
 	}
 
 	private void sendMessage(){
