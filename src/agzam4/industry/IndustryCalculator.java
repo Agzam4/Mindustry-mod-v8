@@ -31,6 +31,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.Building;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.logic.LExecutor;
 import mindustry.type.*;
 import mindustry.ui.Fonts;
 import mindustry.world.*;
@@ -39,6 +40,8 @@ import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.heat.HeatProducer;
+import mindustry.world.blocks.logic.LogicBlock;
+import mindustry.world.blocks.logic.LogicBlock.LogicBuild;
 import mindustry.world.blocks.logic.MemoryBlock.MemoryBuild;
 import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.consumers.Consume;
@@ -151,7 +154,14 @@ public class IndustryCalculator {
 				if(building instanceof MemoryBuild) {
 					MemoryBuild mb = (MemoryBuild) building;
 					for (int i = 0; i < mb.memory.length; i++) {
-						if(mb.memory[i] != 0) buildTooltip.line("[gray]" + i + " .[white]" + mb.memory[i]);
+						if(mb.memory[i] != 0) buildTooltip.line("[gray]" + i + ". [white]" + mb.memory[i]);
+					}
+				}
+				if(building instanceof LogicBuild) {
+					LogicBuild mb = (LogicBuild) building;
+					
+					if(mb.executor.graphicsBuffer.size > 0) {
+						buildTooltip.line("[gray]Draw buffer: [white]" + mb.executor.graphicsBuffer.size + "/" + LExecutor.maxGraphicsBuffer);
 					}
 				}
 				
