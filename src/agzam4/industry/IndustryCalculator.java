@@ -40,8 +40,8 @@ import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.heat.HeatProducer;
-import mindustry.world.blocks.logic.LogicBlock;
 import mindustry.world.blocks.logic.LogicBlock.LogicBuild;
+import mindustry.world.blocks.logic.LogicDisplay.LogicDisplayBuild;
 import mindustry.world.blocks.logic.MemoryBlock.MemoryBuild;
 import mindustry.world.blocks.power.HeaterGenerator;
 import mindustry.world.consumers.Consume;
@@ -151,6 +151,11 @@ public class IndustryCalculator {
 					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
 				}
 
+				if(building instanceof LogicDisplayBuild) {
+					LogicDisplayBuild ldb = (LogicDisplayBuild) building;
+					buildTooltip.line("[gray]Commands buffer: [white]" + ldb.commands.size);
+					buildTooltip.line("[gray]Operations: [white]" + ldb.operations);
+				}
 				if(building instanceof MemoryBuild) {
 					MemoryBuild mb = (MemoryBuild) building;
 					for (int i = 0; i < mb.memory.length; i++) {
@@ -159,6 +164,10 @@ public class IndustryCalculator {
 				}
 				if(building instanceof LogicBuild) {
 					LogicBuild mb = (LogicBuild) building;
+					
+					if(mb.executor.counter != null) {
+						buildTooltip.line("[gray]Line: [white]" + Mathf.round((float) (mb.executor.counter.numval)));
+					}
 					
 					if(mb.executor.graphicsBuffer.size > 0) {
 						buildTooltip.line("[gray]Draw buffer: [white]" + mb.executor.graphicsBuffer.size + "/" + LExecutor.maxGraphicsBuffer);
