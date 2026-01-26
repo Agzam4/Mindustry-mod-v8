@@ -68,4 +68,8 @@ public class PlayerUtils {
 	public static void hide() {
 		utilsDialog.hide();
 	}
+
+	public static void dispose() {
+		utilsDialog.reset();
+	}
 }

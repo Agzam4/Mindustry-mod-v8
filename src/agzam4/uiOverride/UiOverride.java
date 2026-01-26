@@ -32,13 +32,7 @@ public class UiOverride {
 			Vars.ui.chatfrag = customChatFragment;
 			Vars.ui.chatfrag.build(Core.scene.root);
 		} else {
-			if(customChatFragment != null) {
-				Core.scene.root.removeChild(customChatFragment);
-				Core.scene.root.removeChild(customChatFragment.chatfrag);
-			}
-			Core.scene.root.removeChild(Vars.ui.chatfrag);
-			Vars.ui.chatfrag = oldChatFragment;
-			Vars.ui.chatfrag.build(Core.scene.root);
+			remove();
 		}
 		
 
@@ -57,6 +51,20 @@ public class UiOverride {
 //			Vars.ui.chatfrag.build(Core.scene.root);
 //		}
 		
+	}
+	
+	public static void remove() {
+		if(customChatFragment != null) {
+			Core.scene.root.removeChild(customChatFragment);
+			Core.scene.root.removeChild(customChatFragment.chatfrag);
+		}
+		Core.scene.root.removeChild(Vars.ui.chatfrag);
+		Vars.ui.chatfrag = oldChatFragment;
+		Vars.ui.chatfrag.build(Core.scene.root);
+	}
+
+	public static void dispose() {
+		remove();
 	}
 
 }

@@ -20,6 +20,7 @@ import mindustry.ui.Fonts;
 import mindustry.world.Tile;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import agzam4.ModWork.KeyBinds;
 import agzam4.debug.Debug;
@@ -106,24 +107,8 @@ public class AgzamMod extends Mod {
 
 		Vars.netClient.addBinaryPacketHandler("agzam4.cmd-sug", (bs) -> {
 			try {
-				var buffer = ByteBuffer.wrap(bs);
-
-				byte id = buffer.get();
-				int offset = Short.toUnsignedInt(buffer.getShort());
-				int size = Byte.toUnsignedInt(buffer.get());
-				int totalSize = Short.toUnsignedInt(buffer.getShort());
-
-				Object[] ss = CustomChatFragment.getSuggestionsArray(id, totalSize);
-				for (int i = 0; i < size; i++) {
-					byte type = buffer.get();
-					if(type == -1) {
-						ss[i+offset] = ByteBufferIO.readString(buffer);
-					} else {
-						short cid = buffer.getShort();
-						ss[i+offset] = Vars.content.getByID(ContentType.values()[Byte.toUnsignedInt(type)], cid);
-					}
-				}
-				CustomChatFragment.updateSuggestionsArray();
+				Suggestions.accept(bs);
+				CustomChatFragment.updateSuggestions();
 			} catch (Exception e) {
 				Log.err(e);
 			}
@@ -235,6 +220,8 @@ public class AgzamMod extends Mod {
 		UnitsVisibility.dispose();
 		Events.clear();
 		LightRenderer.unapply();
+		PlayerUtils.dispose();
+		UiOverride.dispose();
 		KeyBinds.dispose();
 	}
 
