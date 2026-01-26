@@ -3,8 +3,6 @@ package agzam4.ui.mapeditor;
 import arc.util.Disposable;
 import mindustry.Vars;
 import mindustry.content.Blocks;
-import mindustry.editor.DrawOperation;
-import mindustry.editor.OperationStack;
 import mindustry.gen.TileOp;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
