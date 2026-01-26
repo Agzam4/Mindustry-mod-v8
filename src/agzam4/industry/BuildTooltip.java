@@ -128,4 +128,7 @@ public class BuildTooltip implements IndustryElement {
 		return line == 0;
 	}
 
+	public int size() {
+		return line;
+	}
 }

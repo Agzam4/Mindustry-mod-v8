@@ -1,8 +1,6 @@
 package agzam4.industry;
 
 import static agzam4.ModWork.*;
-
-import agzam4.AgzamMod;
 import agzam4.Events;
 import agzam4.ModWork;
 import agzam4.debug.Debug;
@@ -18,8 +16,11 @@ import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.input.KeyCode;
 import arc.math.Mathf;
+import arc.math.geom.Geometry;
 import arc.math.geom.Point2;
 import arc.scene.ui.layout.*;
+import arc.struct.IntQueue;
+import arc.struct.IntSet;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
@@ -39,6 +40,7 @@ import mindustry.world.blocks.ConstructBlock.ConstructBuild;
 import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.production.*;
+import mindustry.world.blocks.production.Drill.DrillBuild;
 import mindustry.world.blocks.heat.HeatProducer;
 import mindustry.world.blocks.logic.LogicBlock.LogicBuild;
 import mindustry.world.blocks.logic.LogicDisplay.LogicDisplayBuild;
@@ -94,9 +96,11 @@ public class IndustryCalculator {
 	public static void drawUi() {
 		
 		buildTooltip.rebuild();
-		
+
 		final float mouseX = Core.input.mouseWorldX();
 		final float mouseY = Core.input.mouseWorldY();
+		float drawX = mouseX;
+		float drawY = mouseY;
 //		MyDraw.textColor(debug, mouseX, mouseY, 0, 0, 1f, 1, Align.center);
 		
 		Tile tile = Vars.world.tileWorld(mouseX, mouseY);
@@ -133,22 +137,79 @@ public class IndustryCalculator {
 					buildTooltip.line(item, "[white]" + amount);
 				});
 			}
+
+			if(building instanceof DrillBuild drill && drill.dominantItem != null) {
+				IntQueue ores = new IntQueue(128);
+				IntSet positions = new IntSet(128);
+				if(drill.tile != null) drill.tile.getLinkedTilesAs(block, t -> {
+					if(t.drop() != drill.dominantItem) return;
+					ores.addLast(t.pos());
+					positions.add(t.pos());
+				});
+//				center.getLinkedTilesAs(block, t -> {
+//					if(t == null) return;
+//					if(t.drop() != drill.dominantItem) return;
+//				});
+				Draw.z(Layer.playerName);
+				var draker = Tmp.c1.set(drill.dominantItem.color).lerp(Color.black, .5f);
+				float top = mouseY, right = mouseX;
+				for (int i = 0; i < 128 && !ores.isEmpty(); i++) {
+					Tile ore = Vars.world.tile(ores.removeFirst());
+					if(ore == null) continue;
+			        Draw.color(drill.dominantItem.color, .75f);
+			        Fill.rect(ore.worldx(), ore.worldy(), Vars.tilesize, Vars.tilesize);
+			        
+			        right = Math.max(right, ore.worldx()+2f);
+			        top = Math.max(top, ore.worldy()-Vars.tilesize+2f);
+
+			        for (int a = 0; a < 4; a++) {
+						Tile near = Vars.world.tile(ore.x + Geometry.d4x[a], ore.y + Geometry.d4y[a]);
+						if(near == null || near.drop() != drill.dominantItem) {
+					        Draw.color(draker);
+					        Fill.rect(
+					        		(ore.worldx() + near.worldx())/2f, 
+					        		(ore.worldy() + near.worldy())/2f, 
+					        		a%2==0 ? 1 : Vars.tilesize+1, a%2==0 ? Vars.tilesize+1 : 1);
+					        continue;
+						}
+						if(positions.contains(near.pos())) continue;
+						
+						if(positions.size > 128) continue;
+						ores.addLast(near.pos());
+						positions.add(near.pos());
+					}
+			        for (int a = 0; a < 4; a++) {
+						Tile near = Vars.world.tile(ore.x + Geometry.d8edge[a].x, ore.y + Geometry.d8edge[a].y);
+						if(near == null || near.drop() != drill.dominantItem) continue;
+						if(positions.contains(near.pos())) continue;
+						
+						if(positions.size > 128) continue;
+						ores.addLast(near.pos());
+						positions.add(near.pos());
+					}
+				}
+				drawX = right;
+				drawY = top;
+			}
+
+			final float tootlipX = drawX;
+			final float tootlipY = drawY;
 			
 			ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
 				if(building instanceof ConstructBuild) {
 					Draw.z(Layer.playerName);
-					buildTooltip.draw(mouseX, mouseY);
+					buildTooltip.draw(tootlipX, tootlipY);
 					return;
 				}
 				
 //					return;
-
+				
 //				StringBuilder info = new StringBuilder(block.emoji() + " " + block.localizedName.toUpperCase());
 				buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
 				
 				if(Debug.debug) {
-					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed + "/" + craftSpeedMultiplier);
-					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
+//					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed + "/" + craftSpeedMultiplier);
+//					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
 				}
 
 				if(building instanceof LogicDisplayBuild) {
@@ -194,9 +255,10 @@ public class IndustryCalculator {
 					buildTooltip.line("[red]" + Iconc.waves + " [lightgray]" + ModWork.round(heat) + Bungle.core("unit.persecond"));
 					addHeatCrafters(buildTooltip, block, heat);
 				}
+				if(buildTooltip.size() <= 1) return;
 						
 				Draw.z(Layer.playerName);
-				buildTooltip.draw(mouseX, mouseY);
+				buildTooltip.draw(tootlipX, tootlipY);
 			});
 		}
 	}
