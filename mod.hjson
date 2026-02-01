@@ -1,11 +1,11 @@
 {
-  displayName: "Agzam's Mod"
-  name: "agzam4mod"
-  author: "Agzam4"
-  main: "agzam4.AgzamMod"
-  description: "Additional functionality"
-  version: 154.2.a
-  minGameVersion: 154
-  java: true
-  hidden: true
+    displayName: "Agzam's Mod"
+    name: "agzam4mod"
+    author: "Agzam4"
+    main: "agzam4.AgzamMod"
+    description: "Additional functionality"
+    version: 154.3.a
+    minGameVersion: 154
+    java: true
+    hidden: true
 }
