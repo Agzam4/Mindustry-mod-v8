@@ -108,7 +108,7 @@ public class AgzamMod extends Mod {
 		Vars.netClient.addBinaryPacketHandler("agzam4.cmd-sug", (bs) -> {
 			try {
 				Suggestions.accept(bs);
-				CustomChatFragment.updateSuggestions();
+				CustomChatFragment.updateSuggestions(false);
 			} catch (Exception e) {
 				Log.err(e);
 			}

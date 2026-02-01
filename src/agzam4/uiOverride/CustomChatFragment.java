@@ -37,9 +37,9 @@ public class CustomChatFragment extends Table {
 	public static long nextKeyCooldown;
 	public static long keyCooldown;
 	
-	public static void updateSuggestions() {
+	public static void updateSuggestions(boolean force) {
 		suggestionsHeight = 0;
-		if(Suggestions.update(instance.chatfield.getText())) {
+		if(Suggestions.update(instance.chatfield.getText(), force)) {
 			suggestionsWidth = 0;
 			nextKeyCooldown = 300;
 		} else {
@@ -195,7 +195,7 @@ public class CustomChatFragment extends Table {
 				}
 			}
 		}
-		updateSuggestions();
+		updateSuggestions(true);
 	}
 
 	protected void rect(float x, float y, float w, float h){
@@ -419,7 +419,7 @@ public class CustomChatFragment extends Table {
 
 	public void updateCursor(){
 		chatfield.setCursorPosition(chatfield.getText().length());
-		updateSuggestions();
+		updateSuggestions(false);
 	}
 
 	public boolean shown(){

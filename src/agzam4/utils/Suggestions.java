@@ -88,12 +88,14 @@ public class Suggestions {
 	 * @param text - empty means commands list suggestions<br>/command [args...]
 	 * @return id of suggestions
 	 */
-	private static byte suggestionsId(final String text) {
+	private static byte suggestionsId(final String text, final boolean force) {
 		Byte b = suggestionsIds.get(text);
-		if(b != null && suggestionsKeys.get(b).equals(text)) return b; // suggestions id found, stored key not wrong, return it
+		
+		boolean correct = b != null && suggestionsKeys.get(b).equals(text);
+		if(!force && correct) return b; // suggestions id found, stored key not wrong, return it
 		
 		// Request suggestion from server
-		byte id = createId(text); // Creating id only at request
+		byte id = force && correct ? b : createId(text); // Creating id only at request
 		Log.info("Request suggestion from server");
 		
 		if(text.isEmpty()) { // Request commands list suggestions
@@ -145,7 +147,7 @@ public class Suggestions {
 		return id;
 	}
 	
-	public static boolean update(String command) {
+	public static boolean update(String command, boolean force) {
 		if(!command.startsWith("/")) { // Suggestions only for commands
 			clearCurrent();
 			return false;
@@ -153,10 +155,9 @@ public class Suggestions {
 		
 		int space = command.lastIndexOf(' ');
 		if(space == -1) { // No space -> commands list suggestions
-			byte id = suggestionsId(""); // Searching
+			byte id = suggestionsId("", force && command.length() == 1); // Searching
 			
 			var list = suggestions.get(id);
-			Log.info("[list]: #@ @", id, Arrays.toString(list));
 			if(loaded(list)) {
 				current = list;
 				suggestionsPrefix  = "/";
@@ -166,9 +167,8 @@ public class Suggestions {
 			}
 		} else { // Space found -> argument list suggestions
 			String prefix = command.substring(0, space+1);
-			byte id = suggestionsId(prefix);
+			byte id = suggestionsId(prefix, force && command.endsWith(" "));
 			var list = Suggestions.suggestions.get(id);
-			Log.info("[list]: #@ @", id, Arrays.toString(list));
 			if(loaded(list)) {
 				current = list;
 				suggestionsPrefix = prefix;
@@ -183,24 +183,19 @@ public class Suggestions {
 	}
 
 	private static void filter() {
-		Log.info("[filter]: @", has());
 		if(current.length == 0) return;
-		
 		if(currentMask == null || currentMask.length != current.length) currentMask = new boolean[current.length];
-		
 		select = Mathf.mod(select, current.length);
 		for (int i = 0; i < current.length; i++) {
 			if(filterSuggestion(current[select])) break;
 			select++;
 			select = Mathf.mod(select, current.length);
 		}
-
 		amount = 0;
 		for (int i = 0; i < current.length; i++) {
 			currentMask[i] = filterSuggestion(current[i]);
 			if(currentMask[i]) amount++;
 		}		
-		Log.info("[has]: @", has());
 	}
 
 	/**
@@ -262,9 +257,8 @@ public class Suggestions {
 	}
 
 	public static boolean has() {
-		return current != null && suggestionsPrefix.length() > 0 && amount > 0;
+		return current != null && suggestionsPrefix.length() > 0 && amount > 1;
 	}
-	
 
 	public static void next() {
 		for (int i = 0; i < current.length; i++) {
