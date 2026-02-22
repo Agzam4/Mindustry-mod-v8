@@ -205,6 +205,7 @@ public class Suggestions {
 	 * @see #suggestionsFilter
 	 */
 	private static boolean filterSuggestion(Object obj) {
+		if(obj.toString().equalsIgnoreCase(suggestionsFilter)) return false;
 		if(obj.toString().toLowerCase().startsWith(suggestionsFilter.toLowerCase())) return true;
 		if(obj instanceof UnlockableContent content) {
 			return content.localizedName.toLowerCase().startsWith(suggestionsFilter.toLowerCase());
@@ -257,7 +258,7 @@ public class Suggestions {
 	}
 
 	public static boolean has() {
-		return current != null && suggestionsPrefix.length() > 0 && amount > 1;
+		return current != null && suggestionsPrefix.length() > 0 && amount > 0;
 	}
 
 	public static void next() {
