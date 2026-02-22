@@ -167,8 +167,8 @@ public class IndustryCalculator {
 						if(near == null || near.drop() != drill.dominantItem) {
 					        Draw.color(draker);
 					        Fill.rect(
-					        		(ore.worldx() + near.worldx())/2f, 
-					        		(ore.worldy() + near.worldy())/2f, 
+					        		(ore.worldx()) + Geometry.d4x[a]*Vars.tilesize/2f, 
+					        		(ore.worldy()) + Geometry.d4y[a]*Vars.tilesize/2f, 
 					        		a%2==0 ? 1 : Vars.tilesize+1, a%2==0 ? Vars.tilesize+1 : 1);
 					        continue;
 						}
