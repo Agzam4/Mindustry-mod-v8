@@ -14,6 +14,7 @@ import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
 import mindustry.game.Schematic.Stile;
+import mindustry.ui.FileChooser;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.logic.LogicBlock;
@@ -33,7 +34,7 @@ public class DisplayGeneratorTriangular {
 
 	
 	public static void show() {
-		Vars.platform.showMultiFileChooser(file -> {
+		FileChooser.open("png", "jpg", "jpeg").submit(file -> {
 			BaseDialog dialog = new BaseDialog(Bungle.dialog("utils.select-display"));
 			dialog.titleTable.remove();
 			dialog.closeOnBack();
@@ -70,7 +71,7 @@ public class DisplayGeneratorTriangular {
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 			});
 			dialog.show();
-		}, "png", "jpg", "jpeg");
+		});
 	}
 
 	public static void create(Pixmap pixmap, int size) {

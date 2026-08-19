@@ -14,6 +14,7 @@ import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
 import mindustry.game.Schematic.Stile;
+import mindustry.ui.FileChooser;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.logic.LogicBlock;
@@ -56,8 +57,8 @@ public class DisplayGenerator {
 			dialog.show();
 		};
 		
-		if(GifGenerator.avalible()) Vars.platform.showMultiFileChooser(cons, "png", "jpg", "jpeg", "gif");
-		else Vars.platform.showMultiFileChooser(cons, "png", "jpg", "jpeg", "gif");
+		if(GifGenerator.avalible()) FileChooser.open("png", "jpg", "jpeg", "gif").submit(cons);
+		else FileChooser.open("png", "jpg", "jpeg", "gif").submit(cons);
 	}
 
 	private static void create(Fi file, int size) {
@@ -73,7 +74,7 @@ public class DisplayGenerator {
     	}
     	
         Pixmap pixmap = new Pixmap(file);
-        create(pixmap, 80);
+        create(pixmap, size);
         pixmap.dispose();
 		PlayerUtils.hide();		
 	}
