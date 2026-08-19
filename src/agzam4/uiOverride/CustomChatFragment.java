@@ -4,14 +4,16 @@ import static arc.Core.*;
 import static mindustry.Vars.*;
 
 import agzam4.ModWork;
+import agzam4.chat.suggestions.Suggestions;
+import agzam4.chat.suggestions.SuggestionsOverlay;
 import agzam4.utils.Prefs;
-import agzam4.utils.Suggestions;
 import arc.Core;
 import arc.Events;
 import arc.Input.TextInput;
 import arc.func.Boolp;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
+import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.scene.Group;
 import arc.scene.ui.*;
@@ -23,31 +25,43 @@ import arc.util.*;
 import mindustry.Vars;
 import mindustry.game.EventType.ClientChatEvent;
 import mindustry.gen.*;
-import mindustry.graphics.Pal;
 import mindustry.input.Binding;
 import mindustry.ui.Fonts;
 
 public class CustomChatFragment extends Table {
 
 	private static CustomChatFragment instance = null;
-
-	private static float suggestionsWidth = 0;
-	private static float suggestionsHeight = 0;
-	
-	public static long nextKeyCooldown;
-	public static long keyCooldown;
-	
-	public static void updateSuggestions(boolean force) {
-		suggestionsHeight = 0;
-		if(Suggestions.update(instance.chatfield.getText(), force)) {
-			suggestionsWidth = 0;
-			nextKeyCooldown = 300;
-		} else {
-			suggestionsWidth = 0;
-		}
-	}
 	
 	private static final int messagesShown = 10;
+    private Seq<String> messages = new Seq<>();
+    public TextField chatfield;
+    public Label ghostField = new Label("Ghost text");
+    
+    public Label fieldlabel = new Label(">");
+    public GlyphLayout layout = new GlyphLayout();
+    private Seq<String> history = new Seq<>();
+    
+    private static SuggestionsOverlay suggestions;
+
+    public static Font font;
+    private float fadetime;
+    private boolean shown = false;
+    private ChatMode mode = ChatMode.normal;
+    public float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
+    public Color shadowColor = new Color(0, 0, 0, 0.5f);
+    private float textspacing = Scl.scl(10);
+    private int historyPos = 0;
+    private int scrollPos = 0;
+	private boolean lastFrameHadFocus;
+	public boolean preventHideOnEscape = false;
+
+	public float opacity;
+	
+	public static void updateSuggestions(boolean force) {
+		if(suggestions == null) return;
+		suggestions.updateSuggestions(force);
+	}
+	
 
 	public static final Seq<Color> messageColors = loadColors();
 	public static String colorTrigger = ModWork.settingDef("messages-gradient-trigger", "");
@@ -62,28 +76,12 @@ public class CustomChatFragment extends Table {
 		return pal;
 	}
 
-	private Seq<String> messages = new Seq<>();
-	private TextField chatfield;
-	private Label fieldlabel;
-	private GlyphLayout layout;
-	private Seq<String> history;
-	
-	public static Font font = Fonts.outline;
-
-	private float fadetime;
-	private boolean shown = false;
-	private ChatMode mode = ChatMode.normal;
-	private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
-	private Color shadowColor = new Color(0, 0, 0, 0.5f);
-	private float textspacing = Scl.scl(10);
-	private int historyPos = 0;
-	private int scrollPos = 0;
 	
 	
 	public CustomChatFragment() {
 		super();
 		instance = this;
-		
+		suggestions = new SuggestionsOverlay(this);
 		font = Prefs.settings.bool("outline-chat") ? Fonts.outline : Fonts.def;
 		
 		messages = Reflect.get(UiOverride.oldChatFragment, "messages");
@@ -97,11 +95,14 @@ public class CustomChatFragment extends Table {
         history.insert(0, "");
         setup();
         
+        
 		visible(() -> {
 			if(!net.active() && messages.size > 0){
 				clearMessages();
+				Log.info("clear");
 
 				if(shown){
+					Log.info("hide");
 					hide();
 				}
 			}
@@ -109,23 +110,21 @@ public class CustomChatFragment extends Table {
 		});
 		
 		update(() -> {
-			if(net.active() && input.keyTap(Binding.chat) && (scene.getKeyboardFocus() == chatfield || scene.getKeyboardFocus() == null || ui.minimapfrag.shown()) && !ui.consolefrag.shown()){
-				toggle();
+			preventHideOnEscape = true;
+			if(shown && input.keyTap(KeyCode.escape)) {
+				return; 
 			}
+			    
+
+            boolean hasOtherFocus = (scene.getKeyboardFocus() != null && !chatfield.hasKeyboard()) && !(ui.minimapfrag.shown() && !(scene.getKeyboardFocus() instanceof TextField));
+
+            if(net.active() && input.keyTap(Binding.chat) && !hasOtherFocus && !lastFrameHadFocus && !ui.consolefrag.shown()){
+            	Log.info("toggle!");
+                toggle();
+            }
+            
 			if(shown){
-				if(Suggestions.has()) {
-					if(input.keyTap(Binding.chatMode)){
-						chatfield.setText(Suggestions.apply());
-						chatfield.setCursorPosition(chatfield.getText().length());
-					}
-					if(Time.millis() > keyCooldown || (input.keyTap(Binding.chatHistoryPrev) || input.keyTap(Binding.chatHistoryNext))) {
-						keyCooldown = Time.millis() + nextKeyCooldown;
-						nextKeyCooldown = 150;
-						if(input.keyDown(Binding.chatHistoryNext)) Suggestions.next();
-						if(input.keyDown(Binding.chatHistoryPrev)) Suggestions.prev();
-					}
-					return;
-				}
+				if(suggestions.handleUpdate()) return;
 				
 				if(input.keyTap(Binding.chatHistoryPrev) && historyPos < history.size - 1){
 					if(historyPos == 0){
@@ -167,11 +166,25 @@ public class CustomChatFragment extends Table {
 		chatfield.getStyle().background = null;
 		chatfield.getStyle().fontColor = Color.white;
 		chatfield.setStyle(chatfield.getStyle());
-		
+
+		ghostField.getStyle().background = null;
+		ghostField.getStyle().fontColor = Color.gray;
+
 		chatfield.typed(this::handleType);
 
 		bottom().left().marginBottom(offsety).marginLeft(offsetx * 2).add(fieldlabel).padBottom(6f);
-		add(chatfield).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
+		
+
+	    Stack fieldStack = new Stack();
+	    fieldStack.add(ghostField);
+	    fieldStack.add(chatfield);
+
+	    bottom().left().marginBottom(offsety).marginLeft(offsetx * 2).add(fieldlabel).padBottom(6f);
+	    add(fieldStack).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
+
+	    
+//		add(ghostField).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
+//		add(chatfield).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
         
 		if(Vars.mobile){
 			marginBottom(105f);
@@ -195,17 +208,24 @@ public class CustomChatFragment extends Table {
 				}
 			}
 		}
+		// Update suggestions
+		if(cursor < 1) {
+			suggestions.hide();
+			return;
+		}
+		suggestions.position = cursor;
+		suggestions.show();
 		updateSuggestions(true);
 	}
 
-	protected void rect(float x, float y, float w, float h){
+	public void rect(float x, float y, float w, float h){
 		//prevents texture bindings; the string lookup is irrelevant as it is only called <10 times per frame, and maps are very fast anyway
 		Draw.rect("whiteui", x + w/2f, y + h/2f, w, h);
 	}
 
 	@Override
 	public void draw(){
-		float opacity = Core.settings.getInt("chatopacity") / 100f;
+		opacity = Core.settings.getInt("chatopacity") / 100f;
 		float textWidth = Math.min(Core.graphics.getWidth()/1.5f, Scl.scl(700f));
 
 		Draw.color(shadowColor);
@@ -220,7 +240,6 @@ public class CustomChatFragment extends Table {
 
 		chatfield.visible = shown;
 		fieldlabel.visible = shown;
-
 		Draw.color(shadowColor);
 		Draw.alpha(shadowColor.a * opacity);
 
@@ -250,60 +269,7 @@ public class CustomChatFragment extends Table {
 		}
 		
 		if(shown) {
-			var suggestions = Suggestions.current;
-			if(suggestions != null) {
-				float x = fieldlabel.getRight();
-				
-				if(suggestionsWidth == 0) {
-					suggestionsHeight = 0;
-					for (int i = 0; i < suggestions.length; i++) {
-						if(!Suggestions.matched(i)) continue;
-						layout.setText(font, Suggestions.string(i), Color.white, scene.getWidth(), Align.bottomLeft, false);
-						suggestionsWidth = Math.max(suggestionsWidth, layout.width);
-						suggestionsHeight += chatfield.getHeight();
-					}
-				}
-
-				layout.setText(font, Suggestions.suggestionsPrefix, Color.white, scene.getWidth(), Align.bottomLeft, false);
-
-				x += layout.width;
-
-				float sy = chatfield.y + scene.marginBottom + chatfield.getHeight();
-
-				Draw.color(Color.black, opacity * shadowColor.a);
-				rect(x, sy, suggestionsWidth + fontoffsetx*2, suggestionsHeight);
-				
-				for (int i = 0; i < suggestions.length; i++) {
-					if(!Suggestions.matched(i)) continue;
-					String text = Suggestions.string(i);
-					
-					layout.setText(font, text, Color.white, scene.getWidth(), Align.bottomLeft, false);
-					font.getCache().clear();
-					font.getCache().setColor(Suggestions.select == i ? Pal.accent : Color.white);
-
-					if(Suggestions.select == i) {
-						Draw.color(Pal.darkerGray, opacity);
-						rect(x, sy, suggestionsWidth + fontoffsetx*2, chatfield.getHeight() - 1);
-					}
-					
-					int space = text.indexOf(' ');
-					if(space == -1) font.getCache().addText(text, x + fontoffsetx, sy + chatfield.getHeight() - (chatfield.getHeight() - layout.height)/2f, layout.width, Align.bottomLeft, false);
-					else {
-						GlyphLayout prelayout = font.getCache().addText(text.substring(0, space), x + fontoffsetx, sy + chatfield.getHeight() - (chatfield.getHeight() - layout.height)/2f, layout.width, Align.bottomLeft, false);
-						float w = prelayout.width;
-						font.getCache().draw();
-						
-						font.getCache().clear();
-						font.getCache().setColor(Color.lightGray);
-						font.getCache().addText(text.substring(space), x + fontoffsetx + w, sy + chatfield.getHeight() - (chatfield.getHeight() - layout.height)/2f, layout.width, Align.bottomLeft, false);
-					}
-					
-
-					font.getCache().draw();
-					
-					sy += chatfield.getHeight();
-				}
-			}
+			suggestions.draw();
 		}
 
 		Draw.color();
@@ -312,12 +278,33 @@ public class CustomChatFragment extends Table {
 			fadetime -= Time.delta / 180f;
 		}
 	}
+	
+    //ping format: "x,y [text]"
+    private void checkPing(String message){
+        int comma = message.indexOf(',');
+        if(comma != -1){
+            int space = message.indexOf(' ', comma + 1);
+            //handle a space after the comma
+            boolean extra = false;
+            if(space == comma + 1){
+                extra = true;
+                space = message.indexOf(' ', comma + 2);
+            }
+            if(space != -1){
+                int x = Strings.parseInt(message, 10, -1, 0, comma), y = Strings.parseInt(message, 10, -1, comma + 1 + (extra ? 1 : 0), space);
+                if(world.tiles.in(x, y)){
+                    Call.pingLocation(player, x * tilesize, y * tilesize, message.substring(space).trim());
+                }
+            }
+        }
+    }
 
 	private void sendMessage(){
 		String message = chatfield.getText();
 		clearChatInput();
 
 		message = message.trim();
+		checkPing(message);
 
 		//avoid sending empty messages
 		if(message.isEmpty()) return;
@@ -383,6 +370,10 @@ public class CustomChatFragment extends Table {
 	}
 
 	public void hide(){
+		if(suggestions.active) {
+			suggestions.hide();
+			return;
+		}
 		scene.setKeyboardFocus(null);
 		shown = false;
 		clearChatInput();

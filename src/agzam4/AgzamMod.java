@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import agzam4.ModWork.KeyBinds;
+import agzam4.chat.suggestions.Suggestions;
 import agzam4.debug.Debug;
 import agzam4.events.SceneTileTap;
 import agzam4.gameutils.*;

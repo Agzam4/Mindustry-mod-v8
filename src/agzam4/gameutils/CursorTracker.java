@@ -95,8 +95,8 @@ public class CursorTracker {
 					if(p.unit().mining()) {
 						if(p.unit().mineTile() != null) {
 							cursor = drill;
-							nx = p.unit().mineTile().drawx();
-							ny = p.unit().mineTile().drawy();
+//							nx = p.unit().mineTile().drawx();
+//							ny = p.unit().mineTile().drawy();
 						}
 					}
 				}

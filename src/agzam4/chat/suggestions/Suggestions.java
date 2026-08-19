@@ -1,4 +1,4 @@
-package agzam4.utils;
+package agzam4.chat.suggestions;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
