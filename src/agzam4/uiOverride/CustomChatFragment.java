@@ -25,8 +25,10 @@ import arc.util.*;
 import mindustry.Vars;
 import mindustry.game.EventType.ClientChatEvent;
 import mindustry.gen.*;
+import mindustry.graphics.Pal;
 import mindustry.input.Binding;
 import mindustry.ui.Fonts;
+import mindustry.ui.Styles;
 
 public class CustomChatFragment extends Table {
 
@@ -35,7 +37,6 @@ public class CustomChatFragment extends Table {
 	private static final int messagesShown = 10;
     private Seq<String> messages = new Seq<>();
     public TextField chatfield;
-    public Label ghostField = new Label("Ghost text");
     
     public Label fieldlabel = new Label(">");
     public GlyphLayout layout = new GlyphLayout();
@@ -54,6 +55,8 @@ public class CustomChatFragment extends Table {
     private int scrollPos = 0;
 	private boolean lastFrameHadFocus;
 	public boolean preventHideOnEscape = false;
+	
+	public Stack fieldStack = new Stack();
 
 	public float opacity;
 	
@@ -119,7 +122,6 @@ public class CustomChatFragment extends Table {
             boolean hasOtherFocus = (scene.getKeyboardFocus() != null && !chatfield.hasKeyboard()) && !(ui.minimapfrag.shown() && !(scene.getKeyboardFocus() instanceof TextField));
 
             if(net.active() && input.keyTap(Binding.chat) && !hasOtherFocus && !lastFrameHadFocus && !ui.consolefrag.shown()){
-            	Log.info("toggle!");
                 toggle();
             }
             
@@ -161,35 +163,30 @@ public class CustomChatFragment extends Table {
 		fieldlabel.setStyle(new LabelStyle(fieldlabel.getStyle()));
 		fieldlabel.getStyle().font = font;
 		fieldlabel.setStyle(fieldlabel.getStyle());
+        fieldlabel.getStyle().background = null;
 
 		chatfield = new TextField("", new TextFieldStyle(scene.getStyle(TextFieldStyle.class)));
-		chatfield.getStyle().background = null;
-		chatfield.getStyle().fontColor = Color.white;
-		chatfield.setStyle(chatfield.getStyle());
+        chatfield.setMaxLength(Vars.maxTextLength);
+        chatfield.getStyle().background = null;
+        chatfield.getStyle().fontColor = Color.white;
+        chatfield.setStyle(chatfield.getStyle());
 
-		ghostField.getStyle().background = null;
-		ghostField.getStyle().fontColor = Color.gray;
+        chatfield.typed(this::handleType);
 
-		chatfield.typed(this::handleType);
 
-		bottom().left().marginBottom(offsety).marginLeft(offsetx * 2).add(fieldlabel).padBottom(6f);
-		
 
-	    Stack fieldStack = new Stack();
-	    fieldStack.add(ghostField);
+
+	    fieldStack.add(suggestions.ghostField);
 	    fieldStack.add(chatfield);
 
-	    bottom().left().marginBottom(offsety).marginLeft(offsetx * 2).add(fieldlabel).padBottom(6f);
-	    add(fieldStack).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
+        bottom().left().marginBottom(offsety).marginLeft(offsetx * 2).add(fieldlabel).padBottom(6f);
+        add(fieldStack).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
 
-	    
-//		add(ghostField).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
-//		add(chatfield).padBottom(offsety).padLeft(offsetx).growX().padRight(offsetx).height(28);
+        if(Vars.mobile){
+            marginBottom(105f);
+            marginRight(240f);
+        }
         
-		if(Vars.mobile){
-			marginBottom(105f);
-			marginRight(240f);
-		}
 	}
 
 	boolean tips = false;
@@ -214,7 +211,6 @@ public class CustomChatFragment extends Table {
 			return;
 		}
 		suggestions.position = cursor;
-		suggestions.show();
 		updateSuggestions(true);
 	}
 
@@ -231,15 +227,16 @@ public class CustomChatFragment extends Table {
 		Draw.color(shadowColor);
 
 		if(shown){
-			rect(offsetx, chatfield.y + scene.marginBottom, chatfield.getWidth() + 15f, chatfield.getHeight() - 1);
+			rect(offsetx, fieldStack.y + scene.marginBottom, fieldStack.getWidth() + 15f, fieldStack.getHeight() - 1);
 		}
 
 		super.draw();
 
 		float spacing = chatspace;
 
-		chatfield.visible = shown;
+		fieldStack.visible = shown;
 		fieldlabel.visible = shown;
+		
 		Draw.color(shadowColor);
 		Draw.alpha(shadowColor.a * opacity);
 

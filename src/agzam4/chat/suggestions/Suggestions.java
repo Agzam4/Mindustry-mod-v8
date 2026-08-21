@@ -15,6 +15,12 @@ import mindustry.gen.Call;
 
 public class Suggestions {
 
+	public static final int visibleSuggestions = 10; // XXX: Is filtered arrays must have that size and updates on "next/prev"
+	public static int visibleStart = 0; // first index of "visible" range
+
+	/** Selected suggestions (null-terminated) **/
+	public static @Nullable int[] visible = new int[visibleSuggestions+1];
+	
 	private static byte suggestionsId = 0;
 
 	private static ObjectMap<Byte, Object[]> suggestions = new ObjectMap<>(); // TODO: to Object[byte][]
@@ -30,8 +36,8 @@ public class Suggestions {
 
 	/** Selected suggestions **/
 	public static @Nullable Object[] current = null;
-	/** Selected suggestions mask (Is suggestions matched) **/
-	private static @Nullable boolean[] currentMask = null;
+	/** Index in virtual array of matched suggestions (-1 if not matched) **/
+	private static @Nullable int[] currentIndex = null;
 	/** Amount of matched suggestions in {@link #current} **/
 	private static int amount = 0;
 	
@@ -163,6 +169,7 @@ public class Suggestions {
 				suggestionsPrefix  = "/";
 				suggestionsFilter = command.substring(1);
 				filter();
+				updateVisible();
 				return true;
 			}
 		} else { // Space found -> argument list suggestions
@@ -174,6 +181,7 @@ public class Suggestions {
 				suggestionsPrefix = prefix;
 				suggestionsFilter = command.substring(space+1);
 				filter();
+				updateVisible();
 				return true;
 			}
 		}
@@ -184,18 +192,65 @@ public class Suggestions {
 
 	private static void filter() {
 		if(current.length == 0) return;
-		if(currentMask == null || currentMask.length != current.length) currentMask = new boolean[current.length];
+		if(currentIndex == null || currentIndex.length != current.length) currentIndex = new int[current.length];
 		select = Mathf.mod(select, current.length);
 		for (int i = 0; i < current.length; i++) {
 			if(filterSuggestion(current[select])) break;
 			select++;
 			select = Mathf.mod(select, current.length);
 		}
+		
 		amount = 0;
 		for (int i = 0; i < current.length; i++) {
-			currentMask[i] = filterSuggestion(current[i]);
-			if(currentMask[i]) amount++;
-		}		
+			boolean ok = filterSuggestion(current[i]);
+			currentIndex[i] =ok ? amount++ : -1;
+		}
+	}
+	
+	private static void updateVisible() {
+		if(amount == 0) return;
+		Log.info("=== Update visible ===");
+		Log.info("select: @/@", visibleStart, select);
+		
+		if(select < visibleStart) {
+			visibleStart = select;
+			Log.info("> Start shifted");
+		}
+		
+		int index = 0;
+		int end = visibleStart;
+		
+		for (int i = 0; i < current.length; i++) {
+			if(!isMatched(i)) continue;
+			if(i < visibleStart) continue;
+
+			Log.info("@. @ (@)", index, string(i), i);
+			visible[index++] = i;
+			end = i;
+			
+			if(index+1 >= visible.length) break;
+		}
+		visible[index] = -1;
+		
+		if(end < select && index > 0) {
+			Log.info("> End shifting");
+			int shift = 0;
+			for (int i = select; i >= 0; i--) {
+				if(!isMatched(i)) continue;
+				visible[--index] = i;
+				if(index <= 0) break;
+			}
+			visibleStart = visible[0];
+			Log.info(">> Start shifted to @", visibleStart);
+			
+//			if(shift > 0 && shift <= visible.length) {
+//				visibleStart = visible[shift];
+//				Log.info(">> Start shifted to @", visibleStart);
+//				filter();
+//				return;
+//			}
+		}
+		
 	}
 
 	/**
@@ -236,9 +291,12 @@ public class Suggestions {
 		amount = 0;
 	}
 
-	public static boolean matched(int index) {
-		return currentMask[index];
-//		return filterSuggestion(current[index]);
+	public static boolean isMatched(int index) {
+		return currentIndex[index] != -1;
+	}
+	
+	public static int matchedIndex(int index) {
+		return currentIndex[index];
 	}
 
 	public static boolean matchedf(int index) {
@@ -264,15 +322,17 @@ public class Suggestions {
 	public static void next() {
 		for (int i = 0; i < current.length; i++) {
 			select = Mathf.mod(select-1, current.length);
-			if(matched(select)) break;
+			if(isMatched(select)) break;
 		}
+		updateVisible();
 	}
 
 	public static void prev() {
 		for (int i = 0; i < current.length; i++) {
 			select = Mathf.mod(select+1, current.length);
-			if(matched(select)) break;
+			if(isMatched(select)) break;
 		}
+		updateVisible();
 	}
 	
 }
