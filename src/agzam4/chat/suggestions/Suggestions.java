@@ -234,7 +234,6 @@ public class Suggestions {
 		
 		if(end < select && index > 0) {
 			Log.info("> End shifting");
-			int shift = 0;
 			for (int i = select; i >= 0; i--) {
 				if(!isMatched(i)) continue;
 				visible[--index] = i;
@@ -242,13 +241,27 @@ public class Suggestions {
 			}
 			visibleStart = visible[0];
 			Log.info(">> Start shifted to @", visibleStart);
-			
-//			if(shift > 0 && shift <= visible.length) {
-//				visibleStart = visible[shift];
-//				Log.info(">> Start shifted to @", visibleStart);
-//				filter();
-//				return;
-//			}
+		}
+
+		if(index+1 < visible.length && index > 0) {
+			Log.info("> Search extra before");
+			index = visible.length;
+			visible[--index] = -1;
+			for (int i = end; i >= 0; i--) {
+				if(!isMatched(i)) continue;
+				Log.info("Found: @. @ (@)", index, string(i), i);
+				visible[--index] = i;
+				visibleStart = i;
+				if(index <= 0) break;
+			}
+			if(index > 0) {
+				for (int d = index; d < visible.length; d++) {
+					visible[d-index] = visible[d];
+				}
+				Log.info("index: @", index);
+//				updateVisible();
+			}
+			Log.info(">> Start shifted to @ @", visibleStart, Arrays.toString(visible));
 		}
 		
 	}
