@@ -56,8 +56,13 @@ public class DisplayGenerator {
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 	            
 
-	            t.button(Blocks.logicDisplay.emoji() + " [BETA] " + Blocks.logicDisplay.localizedName, Styles.defaultt, () -> {
+	            t.button(Blocks.logicDisplay.emoji() + " [LITE] " + Blocks.logicDisplay.localizedName, Styles.defaultt, () -> {
 	                createBeta(file, 80);
+	            	dialog.hide();
+	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
+	            
+	            t.button(Blocks.largeLogicDisplay.emoji() + " [LITE] " + Blocks.largeLogicDisplay.localizedName, Styles.defaultt, () -> {
+	            	createBeta(file, 176);
 	            	dialog.hide();
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 	            
@@ -110,7 +115,7 @@ public class DisplayGenerator {
 	}
 	
 	public static void createBeta(Pixmap pixmap, int size) {
-		var shapes = DisplayGeneratorShapes.decompose(pixmap, size);
+		var shapes = DisplayGeneratorShapes.decompose(pixmap, size, 900/2 - 900/255);
 //		int rgb[][] = new int[size][size];
 //		for (int y = 0; y < size; y++) {
 //			for (int x = 0; x < size; x++) {
@@ -124,11 +129,18 @@ public class DisplayGenerator {
 		Code code = new Code();
 		code.getLink("#Display", 0);
 		code.jump("equal #Display null", -1);
+		
+		code.sensor("#Lock", "@operations", "#Display");
+		code.jump("notEqual #Lock 0", -3);
+		
 		int count = maxCount;
 
+		int buffer = 0;
 		for (int i = 0; i < shapes.size; i++) {
 			if(count <= 3) {
+				// New display
 				if(code != null) {
+					code.drawflush("#Display");
 					codes.add(code);
 				}
 				code = new Code();
@@ -144,7 +156,7 @@ public class DisplayGenerator {
 //					w++;
 //				
 			var shape = shapes.get(i);
-			
+
 			code.color(shape.r, shape.g, shape.b, 255);
 			count--;
 			
@@ -152,10 +164,16 @@ public class DisplayGenerator {
 			if(shape instanceof Tri tri) code.drawTriangle(tri.xs, tri.ys);
 			if(shape instanceof Poly rect) code.drawPoly((int)rect.x,(int)rect.y, (int)rect.sides, (int)rect.radius, (int)rect.rotation);
 			count--;
-
-			code.drawflush("#Display");
-			count--;
+			
+			buffer+=2;
+			if(buffer >= 255) {
+				code.drawflush("#Display");
+				count--;
+				buffer = 0;
+			}
+//			count--;
 		}
+		code.drawflush("#Display");
 		if(code != null) codes.add(code);
 		
 		Code nCode = null;

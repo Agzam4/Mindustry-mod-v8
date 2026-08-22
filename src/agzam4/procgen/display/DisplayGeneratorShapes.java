@@ -9,6 +9,10 @@ public class DisplayGeneratorShapes {
 	private static final int poolSize = 24;
 	private static final int minArea = 4;
 	private static final int minSides = 3, maxSides = 8;
+	private static final int spotSamples = 4;
+	private static final int cleanupThreshold = 60;
+	private static final int maxCleanupRun = 16;
+	private static final int cleanupRunColorTol = 120;
 
 	public static Seq<Draw> decompose(Pixmap pixmap, int size) {
 		return decompose(pixmap, size, 350);
@@ -20,10 +24,16 @@ public class DisplayGeneratorShapes {
 
 		for(int y = 0; y < size; y++){
 			for(int x = 0; x < size; x++){
-				int rgb = pixmap.get(x*pixmap.width/size, y*pixmap.height/size);
-				sr[x][y] = (rgb >> 16) & 0xFF;
-				sg[x][y] = (rgb >> 8) & 0xFF;
-				sb[x][y] = rgb & 0xFF;
+				int rgba = pixmap.get(x*pixmap.width/size, y*pixmap.height/size);
+
+		        int r = ((rgba & 0xff000000) >>> 24);
+		        int g = ((rgba & 0x00ff0000) >>> 16);
+		        int b = ((rgba & 0x0000ff00) >>> 8);
+		        int a = ((rgba & 0x000000ff));
+		        
+				sr[x][y] = r;
+				sg[x][y] = g;
+				sb[x][y] = b;
 				avgR += sr[x][y];
 				avgG += sg[x][y];
 				avgB += sb[x][y];
@@ -44,6 +54,16 @@ public class DisplayGeneratorShapes {
 
 		Seq<Draw> drawn = new Seq<>();
 
+		Rect base = new Rect();
+		base.x = 0;
+		base.y = 0;
+		base.w = size;
+		base.h = size;
+		base.r = bgR;
+		base.g = bgG;
+		base.b = bgB;
+		drawn.add(base);
+
 		float startRadius = size*0.45f;
 		for(int it = 0; it < iterations; it++){
 			float progress = iterations <= 1 ? 0 : (float)it/(iterations - 1);
@@ -51,7 +71,13 @@ public class DisplayGeneratorShapes {
 
 			Candidate best = null;
 			for(int i = 0; i < poolSize; i++){
-				Candidate c = randomCandidate(maxRadius, size);
+				Candidate c;
+				if(i%2 == 0){
+					c = randomCandidate(maxRadius, size, Mathf.random(size - 1), Mathf.random(size - 1));
+				}else{
+					int[] spot = hotSpot(sr, sg, sb, cr, cg, cb, size);
+					c = randomCandidate(maxRadius, size, spot[0], spot[1]);
+				}
 				evaluate(c, sr, sg, sb, cr, cg, cb);
 				if(c.improvement <= 0) continue;
 				if(best == null || c.improvement > best.improvement) best = c;
@@ -65,13 +91,15 @@ public class DisplayGeneratorShapes {
 			drawn.add(best.draw);
 		}
 
+//		cleanup(drawn, sr, sg, sb, cr, cg, cb, size);
+
 		for(Draw d : drawn){
 			d.flipY(size);
 		}
 		return drawn;
 	}
 
-	private static Candidate randomCandidate(float maxRadius, int size){
+	private static Candidate randomCandidate(float maxRadius, int size, int cx, int cy){
 		Candidate c = new Candidate();
 		int type = Mathf.random(2);
 
@@ -79,8 +107,8 @@ public class DisplayGeneratorShapes {
 			Rect r = new Rect();
 			r.w = Mathf.random(2, Math.max(2, (int)maxRadius));
 			r.h = Mathf.random(2, Math.max(2, (int)maxRadius));
-			r.x = Mathf.random(0, size - r.w);
-			r.y = Mathf.random(0, size - r.h);
+			r.x = Mathf.clamp(cx - r.w/2, 0, size - r.w);
+			r.y = Mathf.clamp(cy - r.h/2, 0, size - r.h);
 			c.draw = r;
 			c.n = 4;
 			c.vx[0] = r.x;        c.vy[0] = r.y;
@@ -91,7 +119,6 @@ public class DisplayGeneratorShapes {
 			Tri t = new Tri();
 			t.xs = new int[3];
 			t.ys = new int[3];
-			float cx = Mathf.random(size), cy = Mathf.random(size);
 			float base = Mathf.random(360f);
 			float rad = Mathf.random(2f, maxRadius);
 			for(int k = 0; k < 3; k++){
@@ -106,8 +133,8 @@ public class DisplayGeneratorShapes {
 			c.n = 3;
 		}else{
 			Poly p = new Poly();
-			p.x = Mathf.random(size);
-			p.y = Mathf.random(size);
+			p.x = cx;
+			p.y = cy;
 			p.radius = Mathf.random(2f, maxRadius);
 			p.sides = Mathf.random(minSides, maxSides);
 			p.rotation = Mathf.random(360f);
@@ -195,6 +222,68 @@ public class DisplayGeneratorShapes {
 			else if(s != sign) return false;
 		}
 		return true;
+	}
+
+	private static int errAt(int x, int y, int[][] sr, int[][] sg, int[][] sb,
+			int[][] cr, int[][] cg, int[][] cb){
+		return Math.abs(cr[x][y] - sr[x][y])
+			+ Math.abs(cg[x][y] - sg[x][y])
+			+ Math.abs(cb[x][y] - sb[x][y]);
+	}
+
+	private static int[] hotSpot(int[][] sr, int[][] sg, int[][] sb,
+			int[][] cr, int[][] cg, int[][] cb, int size){
+		int bx = Mathf.random(size - 1), by = Mathf.random(size - 1);
+		int best = errAt(bx, by, sr, sg, sb, cr, cg, cb);
+		for(int i = 1; i < spotSamples; i++){
+			int x = Mathf.random(size - 1), y = Mathf.random(size - 1);
+			int e = errAt(x, y, sr, sg, sb, cr, cg, cb);
+			if(e > best){
+				best = e;
+				bx = x;
+				by = y;
+			}
+		}
+		return new int[]{bx, by};
+	}
+
+	private static void cleanup(Seq<Draw> drawn, int[][] sr, int[][] sg, int[][] sb,
+			int[][] cr, int[][] cg, int[][] cb, int size){
+		for(int y = 0; y < size; y++){
+			for(int x = 0; x < size; ){
+				if(errAt(x, y, sr, sg, sb, cr, cg, cb) <= cleanupThreshold){
+					x++;
+					continue;
+				}
+				Rect r = new Rect();
+				r.x = x;
+				r.y = y;
+				r.w = 1;
+				r.h = 1;
+				while(r.w < maxCleanupRun && x + r.w < size
+						&& errAt(x + r.w, y, sr, sg, sb, cr, cg, cb) > cleanupThreshold
+						&& Math.abs(sr[x + r.w][y] - sr[r.x][y]) + Math.abs(sg[x + r.w][y] - sg[r.x][y])
+							+ Math.abs(sb[x + r.w][y] - sb[r.x][y]) <= cleanupRunColorTol){
+					r.w++;
+				}
+				long sumR = 0, sumG = 0, sumB = 0;
+				for(int i = 0; i < r.w; i++){
+					sumR += sr[x + i][y];
+					sumG += sg[x + i][y];
+					sumB += sb[x + i][y];
+				}
+				r.r = (int)(sumR/r.w);
+				r.g = (int)(sumG/r.w);
+				r.b = (int)(sumB/r.w);
+				for(int i = 0; i < r.w; i++){
+					cr[x + i][y] = r.r;
+					cg[x + i][y] = r.g;
+					cb[x + i][y] = r.b;
+				}
+				drawn.add(r);
+				x += r.w;
+			}
+		}
 	}
 
 	public static abstract class Draw {

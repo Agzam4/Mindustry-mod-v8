@@ -170,6 +170,9 @@ public class Code {
 		line("draw poly " + x + " " + y + " " + sides + " " + radius + " " + rotation + " 0");
 	}
 
+	public void control(String type, String var, String value) {
+		line("control " + type + " " + var + " " + value + " 0 0 0");
+	}
 
 	public void drawflush(String display) {
 		line("drawflush " + display);
@@ -253,6 +256,5 @@ public class Code {
 	public int size() {
 		return code.size;
 	}
-
 
 }
