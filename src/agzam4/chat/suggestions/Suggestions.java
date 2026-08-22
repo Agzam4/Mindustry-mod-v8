@@ -15,11 +15,14 @@ import mindustry.gen.Call;
 
 public class Suggestions {
 
-	public static final int visibleSuggestions = 10; // XXX: Is filtered arrays must have that size and updates on "next/prev"
+	public static final int maxVisibleSuggestions = 10; // XXX: Is filtered arrays must have that size and updates on "next/prev"
 	public static int visibleStart = 0; // first index of "visible" range
 
 	/** Selected suggestions (null-terminated) **/
-	public static @Nullable int[] visible = new int[visibleSuggestions+1];
+	public static @Nullable int[] visible = new int[maxVisibleSuggestions+1];
+	public static int visibleAmount = 0;
+	/** Matching elements before {@code visibleStart} */
+	public static int visibleOffset = 0;
 	
 	private static byte suggestionsId = 0;
 
@@ -39,7 +42,7 @@ public class Suggestions {
 	/** Index in virtual array of matched suggestions (-1 if not matched) **/
 	private static @Nullable int[] currentIndex = null;
 	/** Amount of matched suggestions in {@link #current} **/
-	private static int amount = 0;
+	public static int amount = 0;
 	
 	/** Index of selected suggestion in {@link #current}**/
 	public static int select = -1;
@@ -207,63 +210,38 @@ public class Suggestions {
 		}
 	}
 	
+	
+	private static int indexOf(int matchedIndex, int def) {
+		for (int i = 0; i < currentIndex.length; i++) {
+			if(currentIndex[i] == -1) continue;
+			if(currentIndex[i] == matchedIndex) return i;
+		}
+		return def;
+	}
+	
 	private static void updateVisible() {
 		if(amount == 0) return;
-		Log.info("=== Update visible ===");
-		Log.info("select: @/@", visibleStart, select);
 		
-		if(select < visibleStart) {
-			visibleStart = select;
-			Log.info("> Start shifted");
-		}
+		if(select < visibleStart) visibleStart = select;
 		
+		int selectIndex = matchedIndex(select);
+		int minimum = indexOf(selectIndex-maxVisibleSuggestions+1, 0);
+		
+		int maximim = indexOf(Math.min(selectIndex+(maxVisibleSuggestions-1), amount-1), -1); // go forward and clamp
+		maximim = indexOf(maximim-(maxVisibleSuggestions-1), 0); // go back
+
+		if(visibleStart < minimum) visibleStart = minimum;
+		if(visibleStart > maximim) visibleStart = maximim;
+
 		int index = 0;
-		int end = visibleStart;
-		
-		for (int i = 0; i < current.length; i++) {
+		for (int i = visibleStart; i < current.length; i++) {
 			if(!isMatched(i)) continue;
-			if(i < visibleStart) continue;
-
-			Log.info("@. @ (@)", index, string(i), i);
 			visible[index++] = i;
-			end = i;
-			
-			if(index+1 >= visible.length) break;
+			if(index >= maxVisibleSuggestions) break;
 		}
-		visible[index] = -1;
-		
-		if(end < select && index > 0) {
-			Log.info("> End shifting");
-			for (int i = select; i >= 0; i--) {
-				if(!isMatched(i)) continue;
-				visible[--index] = i;
-				if(index <= 0) break;
-			}
-			visibleStart = visible[0];
-			Log.info(">> Start shifted to @", visibleStart);
-		}
-
-		if(index+1 < visible.length && index > 0) {
-			Log.info("> Search extra before");
-			index = visible.length;
-			visible[--index] = -1;
-			for (int i = end; i >= 0; i--) {
-				if(!isMatched(i)) continue;
-				Log.info("Found: @. @ (@)", index, string(i), i);
-				visible[--index] = i;
-				visibleStart = i;
-				if(index <= 0) break;
-			}
-			if(index > 0) {
-				for (int d = index; d < visible.length; d++) {
-					visible[d-index] = visible[d];
-				}
-				Log.info("index: @", index);
-//				updateVisible();
-			}
-			Log.info(">> Start shifted to @ @", visibleStart, Arrays.toString(visible));
-		}
-		
+		visible[index] = -1; // -1 terminator (array is maxVisibleSuggestions+1 sized)
+		visibleAmount = index;
+		if(visibleAmount > 0) visibleOffset = matchedIndex(visible[0]);
 	}
 
 	/**
@@ -318,7 +296,11 @@ public class Suggestions {
 	
 	public static String string(int index) {
 		var suggestion = current[index];
-		return suggestion instanceof UnlockableContent unlock ? unlock.name + (" " + unlock.localizedName + " " + unlock.emoji()) : suggestion.toString();
+		return (
+				suggestion instanceof UnlockableContent unlock ? 
+						unlock.name + ((unlock.name == unlock.localizedName ? "" : " " + unlock.localizedName) + " " + unlock.emoji()) 
+						: suggestion.toString()
+				);
 	}
 
 	public static String apply() {
@@ -326,6 +308,10 @@ public class Suggestions {
 		int space = add.indexOf(' ', 1);
 		if(space != -1) add = add.substring(0, space);
 		return suggestionsPrefix + add;
+	}
+
+	public static String suggestionsPrefix() {
+		return suggestionsPrefix;
 	}
 
 	public static boolean has() {

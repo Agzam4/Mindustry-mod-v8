@@ -50,6 +50,7 @@ public class CustomChatFragment extends Table {
     private ChatMode mode = ChatMode.normal;
     public float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
     public Color shadowColor = new Color(0, 0, 0, 0.5f);
+    public Color suggestionsColor = new Color(0, 0, 0, 0.8f);
     private float textspacing = Scl.scl(10);
     private int historyPos = 0;
     private int scrollPos = 0;
