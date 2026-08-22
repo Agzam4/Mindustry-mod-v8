@@ -25,10 +25,8 @@ import arc.util.*;
 import mindustry.Vars;
 import mindustry.game.EventType.ClientChatEvent;
 import mindustry.gen.*;
-import mindustry.graphics.Pal;
 import mindustry.input.Binding;
 import mindustry.ui.Fonts;
-import mindustry.ui.Styles;
 
 public class CustomChatFragment extends Table {
 

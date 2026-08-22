@@ -1,5 +1,7 @@
 package agzam4.utils;
 
+import agzam4.procgen.ProcessorGenerator;
+import agzam4.procgen.display.DisplayGenerator;
 import arc.graphics.Color;
 import arc.scene.ui.layout.Table;
 import mindustry.content.*;

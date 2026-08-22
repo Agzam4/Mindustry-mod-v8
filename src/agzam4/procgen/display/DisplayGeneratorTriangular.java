@@ -1,8 +1,10 @@
-package agzam4.utils;
+package agzam4.procgen.display;
 
 import java.awt.Polygon;
 import java.util.Comparator;
 
+import agzam4.utils.Bungle;
+import agzam4.utils.PlayerUtils;
 import agzam4.utils.code.Code;
 import arc.graphics.Pixmap;
 import arc.math.Mathf;

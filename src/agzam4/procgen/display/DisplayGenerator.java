@@ -1,7 +1,13 @@
-package agzam4.utils;
+package agzam4.procgen.display;
 
 import agzam4.io.GifIO;
-import agzam4.utils.animationgen.GifGenerator;
+import agzam4.procgen.ProcessorGenerator;
+import agzam4.procgen.display.DisplayGeneratorShapes.Poly;
+import agzam4.procgen.display.DisplayGeneratorShapes.Rect;
+import agzam4.procgen.display.DisplayGeneratorShapes.Tri;
+import agzam4.procgen.display.gif.GifGenerator;
+import agzam4.utils.Bungle;
+import agzam4.utils.PlayerUtils;
 import agzam4.utils.code.Code;
 import arc.files.Fi;
 import arc.func.Cons;
@@ -49,6 +55,12 @@ public class DisplayGenerator {
 	            	dialog.hide();
 	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
 	            
+
+	            t.button(Blocks.logicDisplay.emoji() + " [BETA] " + Blocks.logicDisplay.localizedName, Styles.defaultt, () -> {
+	                createBeta(file, 80);
+	            	dialog.hide();
+	            }).growX().pad(10).padBottom(4).wrapLabel(false).row();
+	            
 	            t.button("@back", Styles.defaultt, () -> {
 	            	dialog.hide();
 	        		PlayerUtils.hide();
@@ -77,6 +89,79 @@ public class DisplayGenerator {
         create(pixmap, size);
         pixmap.dispose();
 		PlayerUtils.hide();		
+	}
+	
+
+	private static void createBeta(Fi file, int size) {
+//    	if(file.extension().equals("gif")) {
+//    		try {
+//        		LogicDisplay display = (LogicDisplay) (size == 80 ? Blocks.logicDisplay : Blocks.largeLogicDisplay);
+//        		GifGenerator.scheme(GifIO.readGifFrames(file, display.displaySize), display);
+//        		PlayerUtils.hide();	
+//			} catch (Throwable e) {
+//				Vars.ui.showException(e);
+//			}	
+//    		return;
+//    	}
+        Pixmap pixmap = new Pixmap(file);
+        createBeta(pixmap, size);
+        pixmap.dispose();
+		PlayerUtils.hide();		
+	}
+	
+	public static void createBeta(Pixmap pixmap, int size) {
+		var shapes = DisplayGeneratorShapes.decompose(pixmap, size);
+//		int rgb[][] = new int[size][size];
+//		for (int y = 0; y < size; y++) {
+//			for (int x = 0; x < size; x++) {
+//				rgb[x][y] = pixmap.get(x*pixmap.width/size, y*pixmap.height/size);
+//			}
+//		}
+		Seq<Code> codes = new Seq<Code>();
+
+		final int maxCount = 999-2;
+		
+		Code code = new Code();
+		code.getLink("#Display", 0);
+		code.jump("equal #Display null", -1);
+		int count = maxCount;
+
+		for (int i = 0; i < shapes.size; i++) {
+			if(count <= 3) {
+				if(code != null) {
+					codes.add(code);
+				}
+				code = new Code();
+				code.getLink("#Display", 0);
+				code.jump("equal #Display null", -1);
+				count = maxCount;
+			}
+//				int w = 1;
+//				for (int sx = x+1; sx < size; sx++) {
+//					if(rgb[sx][y] != rgb[x][y]) {
+//						break;
+//					}
+//					w++;
+//				
+			var shape = shapes.get(i);
+			
+			code.color(shape.r, shape.g, shape.b, 255);
+			count--;
+			
+			if(shape instanceof Rect rect) code.drawRect(rect.x, rect.y, rect.w, rect.h);
+			if(shape instanceof Tri tri) code.drawTriangle(tri.xs, tri.ys);
+			if(shape instanceof Poly rect) code.drawPoly((int)rect.x,(int)rect.y, (int)rect.sides, (int)rect.radius, (int)rect.rotation);
+			count--;
+
+			code.drawflush("#Display");
+			count--;
+		}
+		if(code != null) codes.add(code);
+		
+		Code nCode = null;
+		codes.add(nCode);
+		
+		buildScheme(codes, size);
 	}
 	
 

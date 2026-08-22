@@ -1,4 +1,4 @@
-package agzam4.utils.animationgen;
+package agzam4.procgen.display.gif;
 
 import agzam4.io.GifIO;
 import agzam4.utils.code.Code;

@@ -1,4 +1,4 @@
-package agzam4.utils.animationgen;
+package agzam4.procgen.display.gif;
 
 public class DrawRect {
 

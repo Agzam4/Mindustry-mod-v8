@@ -1,10 +1,12 @@
-package agzam4.utils;
+package agzam4.procgen;
 
 import agzam4.*;
 import agzam4.Events;
 import agzam4.events.SceneTileTap;
 import agzam4.industry.IndustryCalculator;
 import agzam4.render.MyDraw;
+import agzam4.utils.Bungle;
+import agzam4.utils.PlayerUtils;
 import agzam4.utils.code.Code;
 import arc.*;
 import arc.graphics.Color;

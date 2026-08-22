@@ -29,6 +29,7 @@ import agzam4.events.SceneTileTap;
 import agzam4.gameutils.*;
 import agzam4.industry.IndustryCalculator;
 import agzam4.io.ByteBufferIO;
+import agzam4.procgen.ProcessorGenerator;
 import agzam4.render.Text;
 import agzam4.render.light.LightRenderer;
 import agzam4.ui.*;
