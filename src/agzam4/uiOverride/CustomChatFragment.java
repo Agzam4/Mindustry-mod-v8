@@ -194,6 +194,7 @@ public class CustomChatFragment extends Table {
 	
 	//no mobile support.
 	private void handleType(char c){
+		if(c == '\t') return;
 		int cursor = chatfield.getCursorPosition();
 		if(c == ':') {
 			int index = chatfield.getText().lastIndexOf(':', cursor - 2);
