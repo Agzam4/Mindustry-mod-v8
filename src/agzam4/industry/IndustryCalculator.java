@@ -1,10 +1,14 @@
 package agzam4.industry;
 
 import static agzam4.ModWork.*;
+
+
 import agzam4.Events;
 import agzam4.ModWork;
 import agzam4.debug.Debug;
 import agzam4.debug.ObjectInspector;
+import agzam4.flow.metric.Collectors;
+import agzam4.flow.metric.PowerMetrics;
 import agzam4.render.MyDraw;
 import agzam4.render.Text;
 import agzam4.utils.Bungle;
@@ -64,6 +68,8 @@ public class IndustryCalculator {
 	static BalanceFragment balanceFragment;
 	
 	public static void init() {
+		Collectors.init();
+		
 		balanceFragment = new BalanceFragment();
 		balanceFragment.build();
 
@@ -534,6 +540,9 @@ public class IndustryCalculator {
 			balanceFragment.element.line(Bungle.calculator("header.plans"));
 		}
 
+		Collectors.buildingCollector.reset();
+		
+
 		Seq<Tile> selected_ = new Seq<>();
 		
 		for (int s = 0; s < selected.size; s++) {
@@ -552,6 +561,7 @@ public class IndustryCalculator {
 			Building building = tile.build;
 			Block block = tile.block();
 			if(building == null) continue;
+			Collectors.buildingCollector.collect(block, building);
 			
 			count.put(block, count.get(block, 0)+1);
 			
@@ -635,6 +645,9 @@ public class IndustryCalculator {
 		} else {
 		}
 
+		balanceFragment.element.line(Icon.power.getRegion(), "[BETA] " + Collectors.buildingCollector.metric(PowerMetrics.class).power);
+		balanceFragment.element.color(Pal.engine);
+		
 		if(power != 0) {
 			balanceFragment.element.line(Icon.power.getRegion(), (power > 0 ? "[green]" : "[scarlet]") + ModWork.round(power) + Bungle.core("unit.persecond"));
 			balanceFragment.element.color(Pal.engine);
