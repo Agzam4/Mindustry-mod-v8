@@ -10,7 +10,6 @@ import arc.math.Mathf;
 import arc.scene.event.*;
 import arc.util.Log;
 import mindustry.Vars;
-import mindustry.ctype.ContentType;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.input.Binding;
@@ -19,16 +18,12 @@ import mindustry.mod.Mods.LoadedMod;
 import mindustry.ui.Fonts;
 import mindustry.world.Tile;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import agzam4.ModWork.KeyBinds;
 import agzam4.chat.suggestions.Suggestions;
 import agzam4.debug.Debug;
 import agzam4.events.SceneTileTap;
 import agzam4.gameutils.*;
 import agzam4.industry.IndustryCalculator;
-import agzam4.io.ByteBufferIO;
 import agzam4.procgen.ProcessorGenerator;
 import agzam4.render.Text;
 import agzam4.render.light.LightRenderer;

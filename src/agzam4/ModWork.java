@@ -151,6 +151,7 @@ public class ModWork {
 		return seq;
 	}
 
+	@Deprecated
 	public static void getCraftSpeed(Building building, Cons2<Float, Float> cons) {
 		Block block = building.block; // TODO: cache block's craft speed
 		float craftSpeed = 1f;
@@ -199,6 +200,7 @@ public class ModWork {
 	}
 
 
+	@Deprecated
 	public static float getCraftSpeed(Block block, int x, int y, Object config) {
 		if(block.consumers.length == 0) return 0;
 		boolean hasConsumer = false;
@@ -364,6 +366,7 @@ public class ModWork {
 	}
 
 
+	@Deprecated
 	public static void consumeItems(Consume consume, Building building, float craftSpeed, Cons2<Item, Float> cons) {
 		if(building.block instanceof WallCrafter crafter) {
 			craftSpeed *= 60f/crafter.boostItemUseTime;
@@ -412,6 +415,7 @@ public class ModWork {
 		}
 	}
 
+	@Deprecated
 	public static void produceItems(Building building, float craftSpeed, Cons2<Item, Float> cons) {
 		if(building instanceof DrillBuild drill) cons.get(drill.dominantItem, drill.lastDrillSpeed*60*drill.timeScale());
 		if(building.block instanceof GenericCrafter crafter) {
@@ -431,7 +435,8 @@ public class ModWork {
 			}
 		}
 	}
-	
+
+	@Deprecated
 	public static void consumeLiquids(Consume consume, Building building, float craftSpeedMultiplier, Cons2<Liquid, Float> cons) {
 		if(consume instanceof ConsumeLiquid liquid) {
 			float lps = liquid.amount*building.timeScale()*craftSpeedMultiplier*60f;
@@ -450,10 +455,12 @@ public class ModWork {
 		}
 	}
 
+	@Deprecated
 	public static void consumePower(Consume consume, Building building, Cons<Float> cons) {
 		if(consume instanceof ConsumePower power) cons.get(power.usage * 60f * building.timeScale());
 	}
 
+	@Deprecated
 	public static float consumeHeat(Building building, float craftSpeed) {
 		if(building instanceof HeatConductorBuild) return 0;
 		if(building instanceof HeatCrafterBuild crafterBuild && building.block instanceof HeatCrafter crafter) {
@@ -463,6 +470,7 @@ public class ModWork {
 		return 0;
 	}
 
+	@Deprecated
 	public static void produceLiquids(Building building, float craftSpeed, Cons2<Liquid, Float> con) {
 		if(building instanceof PumpBuild pump && building.block instanceof Pump pb) {
 			if(pump.liquidDrop != null) {
@@ -483,17 +491,20 @@ public class ModWork {
 		}
 	}
 
+	@Deprecated
 	public static void producePower(Building building, float craftSpeed, Cons<Float> con) {
 		if(building instanceof GeneratorBuild generator) con.get(generator.getPowerProduction() * 60 * building.timeScale());
 	}
 
+	@Deprecated
 	public static void produceHeat(Building building, float craftSpeed, Cons<Float> con) {
 		if(building instanceof HeatConductorBuild) return;
 		if(building instanceof HeatBlock heatBlock) con.get(heatBlock.heat());
 	}
 	
 	
-	
+
+	@Deprecated
 	public static void produceBlock(Block block, int x, int y, Object config, float craftSpeed,
 			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons, Cons<Float> heatCons) {
 		if(block instanceof Drill drill) {
@@ -602,6 +613,7 @@ public class ModWork {
         return new ItemStack(itemArray.peek(), oreCount.get(itemArray.peek(), 0));
     }
 
+	@Deprecated
 	public static void consumeBlock(Block block, int x, int y, Object config, float craftSpeed,
 			Cons2<Item, Float> itemCons, Cons2<Liquid, Float> liquidCons, Cons<Float> powerCons, Cons<Float> heatCons) {
 		

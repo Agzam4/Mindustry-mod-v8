@@ -1,10 +1,14 @@
 package agzam4.industry;
 
 import static agzam4.ModWork.*;
+
+import java.util.Arrays;
+
 import agzam4.Events;
 import agzam4.ModWork;
 import agzam4.debug.Debug;
 import agzam4.debug.ObjectInspector;
+import agzam4.flow.metric.Collectors;
 import agzam4.render.MyDraw;
 import agzam4.render.Text;
 import agzam4.utils.Bungle;
@@ -37,8 +41,6 @@ import mindustry.type.*;
 import mindustry.ui.Fonts;
 import mindustry.world.*;
 import mindustry.world.blocks.ConstructBlock.ConstructBuild;
-import mindustry.world.blocks.defense.turrets.*;
-import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.production.Drill.DrillBuild;
 import mindustry.world.blocks.heat.HeatProducer;
@@ -46,28 +48,50 @@ import mindustry.world.blocks.logic.LogicBlock.LogicBuild;
 import mindustry.world.blocks.logic.LogicDisplay.LogicDisplayBuild;
 import mindustry.world.blocks.logic.MemoryBlock.MemoryBuild;
 import mindustry.world.blocks.power.HeaterGenerator;
-import mindustry.world.consumers.Consume;
 
 public class IndustryCalculator {
 
-	private static final Seq<Drill> drills = ModWork.getBlocks(Drill.class);
-	private static final Seq<Pump> pumps = ModWork.getBlocks(Pump.class);
-	private static final Seq<HeaterGenerator> heatGenerators = ModWork.getBlocks(HeaterGenerator.class);
-	private static final Seq<HeatProducer> heatProducers = ModWork.getBlocks(HeatProducer.class);
+	private static Seq<Drill> drills = ModWork.getBlocks(Drill.class);
+	private static Seq<Pump> pumps = ModWork.getBlocks(Pump.class);
+	private static Seq<HeaterGenerator> heatGenerators = ModWork.getBlocks(HeaterGenerator.class);
+	private static Seq<HeatProducer> heatProducers = ModWork.getBlocks(HeatProducer.class);
 	
-	private static final Seq<Block>[] crafters = createCrafters();
-	private static final Seq<Block>[] liquidCrafters = createLiquidCrafters();
-	
+	private static Seq<Block>[] crafters = createCrafters();
+	private static Seq<Block>[] liquidCrafters = createLiquidCrafters();
 	
 	public static boolean[] hasLiquid = new boolean[Vars.content.liquids().size]; // that can be got using pumps
 	
-	static BalanceFragment balanceFragment;
+	private static BalanceFragment balanceFragment;
+	public static AveragedItemsMetrics items;
+	public static AveragedLiquidsMetrics liquids;
 	
 	public static void init() {
+		{
+			items = new AveragedItemsMetrics(60);
+			liquids = new AveragedLiquidsMetrics(60);
+			Collectors.items = items;
+			Collectors.liquids = liquids;
+			Collectors.init();
+		}
+		
 		balanceFragment = new BalanceFragment();
 		balanceFragment.build();
+		
+		Events.on(DataPatchLoadEvent.class, e -> {
+			
+		});
 
 		Events.on(WorldLoadEndEvent.class, e -> {
+			if(hasLiquid.length != Vars.content.liquids().size) hasLiquid = new boolean[Vars.content.liquids().size]; // that can be got using pumps
+
+			drills = ModWork.getBlocks(Drill.class);
+			pumps = ModWork.getBlocks(Pump.class);
+			heatGenerators = ModWork.getBlocks(HeaterGenerator.class);
+			heatProducers = ModWork.getBlocks(HeatProducer.class);
+
+			crafters = createCrafters();
+			liquidCrafters = createLiquidCrafters();
+			
 			for (int i = 0; i < hasLiquid.length; i++) {
 				hasLiquid[i] = false;
 			}
@@ -422,23 +446,22 @@ public class IndustryCalculator {
 		return selected;
 	}
 
-	public static float itemsBalance[] = new float[Vars.content.items().size];
-	private static float liquidBalance[] = new float[Vars.content.liquids().size];
-
-	private static float itemsBalanceTotal[] = new float[Vars.content.items().size];
-	private static float liquidBalanceTotal[] = new float[Vars.content.liquids().size];
-	private static boolean itemsWarn[] = new boolean[Vars.content.items().size];
+//	public static float itemsBalance[] = new float[Vars.content.items().size];
+//	private static float liquidBalance[] = new float[Vars.content.liquids().size];
+//
+//	private static float itemsBalanceTotal[] = new float[Vars.content.items().size];
+//	private static float liquidBalanceTotal[] = new float[Vars.content.liquids().size];
+//	private static boolean itemsWarn[] = new boolean[Vars.content.items().size];
+//	
+//	private static float itemsBalanceFixed[] = new float[Vars.content.items().size];
+//	private static float liquidBalanceFixed[] = new float[Vars.content.liquids().size];
 	
-	private static float itemsBalanceFixed[] = new float[Vars.content.items().size];
-	private static float liquidBalanceFixed[] = new float[Vars.content.liquids().size];
-	
-
 	private static int blockRequirements[] = new int[Vars.content.items().size];
 
-	private static float airDps = 0;
-	private static float groundDps = 0;
-	private static float power = 0;
-	private static float heat = 0;
+//	private static float airDps = 0;
+//	private static float groundDps = 0;
+//	private static float power = 0;
+//	private static float heat = 0;
 
 	static Seq<Tile> selected_ = new Seq<>();
 	
@@ -447,39 +470,46 @@ public class IndustryCalculator {
 	private static void calcBalance() {
 //		StringBuilder info = new StringBuilder();
 		
-		for (int i = 0; i < itemsBalance.length; i++) {
-			itemsBalance[i] = 0;
-			itemsWarn[i] = false;
+		if(blockRequirements.length != Vars.content.items().size) {
+			blockRequirements = new int[Vars.content.items().size];
 		}
-		for (int i = 0; i < liquidBalance.length; i++) {
-			liquidBalance[i] = 0;
-		}
-
-		for (int i = 0; i < blockRequirements.length; i++) {
-			blockRequirements[i] = 0;
-		}
+		Arrays.fill(blockRequirements, 0);
 		
-		if(selected.size == 0) {
-			for (int i = 0; i < itemsBalance.length; i++) {
-				itemsBalanceFixed[i] = itemsBalanceTotal[i] = 0;
-			}
-			for (int i = 0; i < liquidBalance.length; i++) {
-				liquidBalanceFixed[i] = liquidBalanceTotal[i] = 0;
-			}
-			updates = 0;
-		}
+//		for (int i = 0; i < itemsBalance.length; i++) {
+//			itemsBalance[i] = 0;
+//			itemsWarn[i] = false;
+//		}
+//		for (int i = 0; i < liquidBalance.length; i++) {
+//			liquidBalance[i] = 0;
+//		}
+//
+//		for (int i = 0; i < blockRequirements.length; i++) {
+//			blockRequirements[i] = 0;
+//		}
+//		
+//		if(selected.size == 0) {
+//			for (int i = 0; i < itemsBalance.length; i++) {
+//				itemsBalanceFixed[i] = itemsBalanceTotal[i] = 0;
+//			}
+//			for (int i = 0; i < liquidBalance.length; i++) {
+//				liquidBalanceFixed[i] = liquidBalanceTotal[i] = 0;
+//			}
+//			updates = 0;
+//		}
+//
+//		airDps = 0;
+//		groundDps = 0;
+//		power = 0;
+//		heat = 0;
 
-		airDps = 0;
-		groundDps = 0;
-		power = 0;
-		heat = 0;
+//		Cons<Float> heatProduce = hps -> heat += hps;
+//		Cons<Float> heatConsume = hps -> heat -= hps;
+//		
+//		Cons<Float> powerProduce = pps -> power += pps;
+//		Cons<Float> powerConsume = pps -> power -= pps;
 
-		Cons<Float> heatProduce = hps -> heat += hps;
-		Cons<Float> heatConsume = hps -> heat -= hps;
+		Collectors.collectors.reset();
 		
-		Cons<Float> powerProduce = pps -> power += pps;
-		Cons<Float> powerConsume = pps -> power -= pps;
-
 		balanceFragment.element.rebuild();
 		
 		boolean buildPlans = false;
@@ -491,17 +521,19 @@ public class IndustryCalculator {
 					for (var r : buildPlan.block.requirements) blockRequirements[r.item.id] += r.amount * Vars.state.rules.buildCostMultiplier;
 				}
 				if(buildPlan.breaking) return;
-				float craftSpeed = ModWork.getCraftSpeed(buildPlan.block, buildPlan.x, buildPlan.y, buildPlan.config);
-				ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-						buildPlan.config, craftSpeed, 
-						(item, ips) -> itemsBalance[item.id] -= ips,
-						(liquid, lps) -> liquidBalance[liquid.id] -= lps,
-						powerConsume, heatConsume);
-				ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
-						buildPlan.config, craftSpeed, 
-						(item, ips) -> itemsBalance[item.id] += ips,
-						(liquid, lps) -> liquidBalance[liquid.id] += lps,
-						powerProduce, heatProduce);
+				Collectors.collectors.collector(buildPlan.block).from(buildPlan);
+				
+//				float craftSpeed = ModWork.getCraftSpeed(buildPlan.block, buildPlan.x, buildPlan.y, buildPlan.config);
+//				ModWork.consumeBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
+//						buildPlan.config, craftSpeed, 
+//						(item, ips) -> itemsBalance[item.id] -= ips,
+//						(liquid, lps) -> liquidBalance[liquid.id] -= lps,
+//						powerConsume, heatConsume);
+//				ModWork.produceBlock(buildPlan.block, buildPlan.x, buildPlan.y, 
+//						buildPlan.config, craftSpeed, 
+//						(item, ips) -> itemsBalance[item.id] += ips,
+//						(liquid, lps) -> liquidBalance[liquid.id] += lps,
+//						powerProduce, heatProduce);
 			};
 			if(Vars.player.unit() != null) {
 				if(Vars.player.unit().plans != null) {
@@ -552,132 +584,202 @@ public class IndustryCalculator {
 			Building building = tile.build;
 			Block block = tile.block();
 			if(building == null) continue;
-			
+			Collectors.collectors.collector(block).from(building); //(block, building);
 			count.put(block, count.get(block, 0)+1);
 			
-			if(building instanceof BaseTurretBuild && block instanceof BaseTurret) {
-				BaseTurretBuild baseTurretBuild = (BaseTurretBuild) building;
-				float dps = baseTurretBuild.estimateDps();
-				BaseTurret baseTurret = (BaseTurret) block;
-				if(baseTurret.coolant != null && block instanceof ReloadTurret && building.liquids != null) {
-					Liquid liquid = building.liquids.current();
-					if(building.liquids.get(liquid) > 0.01f) {
-						ReloadTurret reloadTurret = (ReloadTurret) block;
-						float reload = reloadTurret.reload;
-						float maxUsed = baseTurret.coolant.amount;
-						float multiplier = baseTurret.coolantMultiplier;
-						
-						// reload, coolant.amount, coolantMultiplier
-	                    float reloadRate = 1f + maxUsed * multiplier * liquid.heatCapacity;
-	                    float standardReload = reload;
-	                    float result = standardReload / (reload / reloadRate);
-						dps *= result;//efficiency(building);
-					}
-				}
-				dps *= building.team().rules().blockDamageMultiplier*Vars.state.rules.blockDamageMultiplier;
-				if(block instanceof Turret) {
-					Turret turret = (Turret) block;
-					if(turret.targetAir) airDps += dps;
-					if(turret.targetGround) groundDps += dps;
-				} else {
-					airDps += dps;
-					groundDps += dps;
-				}
+//			if(building instanceof BaseTurretBuild && block instanceof BaseTurret) {
+//				BaseTurretBuild baseTurretBuild = (BaseTurretBuild) building;
+//				float dps = baseTurretBuild.estimateDps();
+//				BaseTurret baseTurret = (BaseTurret) block;
+//				if(baseTurret.coolant != null && block instanceof ReloadTurret && building.liquids != null) {
+//					Liquid liquid = building.liquids.current();
+//					if(building.liquids.get(liquid) > 0.01f) {
+//						ReloadTurret reloadTurret = (ReloadTurret) block;
+//						float reload = reloadTurret.reload;
+//						float maxUsed = baseTurret.coolant.amount;
+//						float multiplier = baseTurret.coolantMultiplier;
+//						
+//						// reload, coolant.amount, coolantMultiplier
+//	                    float reloadRate = 1f + maxUsed * multiplier * liquid.heatCapacity;
+//	                    float standardReload = reload;
+//	                    float result = standardReload / (reload / reloadRate);
+//						dps *= result;//efficiency(building);
+//					}
+//				}
+//				dps *= building.team().rules().blockDamageMultiplier*Vars.state.rules.blockDamageMultiplier;
+//				if(block instanceof Turret) {
+//					Turret turret = (Turret) block;
+//					if(turret.targetAir) airDps += dps;
+//					if(turret.targetGround) groundDps += dps;
+//				} else {
+//					airDps += dps;
+//					groundDps += dps;
+//				}
+//			}
+
+//			ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
+//				ModWork.produceItems(building, craftSpeed, (item, ips) -> {
+//					itemsBalance[item.id] += ips;
+//					if(building.items != null) {
+//						if(building.items.get(item) >= building.getMaximumAccepted(item)) {
+//							itemsWarn[item.id] = true;
+//						}
+//					}
+//				});
+//
+//				ModWork.produceLiquids(building, craftSpeed, (liquid, lps) -> {
+//					liquidBalance[liquid.id] += lps;
+//				});
+//
+//				ModWork.producePower(building, craftSpeed, powerProduce);
+//				ModWork.produceHeat(building, craftSpeed, heatProduce);
+//				
+//				for (int c = 0; c < block.consumers.length; c++) {
+//					Consume consume = block.consumers[c];
+//					ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> {
+//						itemsBalance[item.id] -= ips;
+//					});
+//					ModWork.consumeLiquids(consume, building, craftSpeedMultiplier, (liquid, lps) -> {
+//						liquidBalance[liquid.id] -= lps;
+//					});
+//					ModWork.consumePower(consume, building, powerConsume);
+//				}
+//				heat -= ModWork.consumeHeat(building, craftSpeed);
+//			});
+		}
+
+//		for (int i = 0; i < itemsBalance.length; i++) {
+//			itemsBalanceTotal[i] += itemsBalance[i];
+//		}
+//		for (int i = 0; i < liquidBalance.length; i++) {
+//			liquidBalanceTotal[i] += liquidBalance[i];
+//		}
+//
+//		if(updates%60 == 0 && updates > 0) {
+//			for (int i = 0; i < itemsBalance.length; i++) {
+//				itemsBalanceFixed[i] = itemsBalanceTotal[i]/60f;
+//				itemsBalanceTotal[i] = 0;//itemsBalance[i];
+//			}
+//			for (int i = 0; i < liquidBalance.length; i++) {
+//				liquidBalanceFixed[i] = liquidBalanceTotal[i]/60f;
+//				liquidBalanceTotal[i] = 0;//liquidBalance[i];
+//			}
+//		} else {
+//		}
+
+		{
+//			balanceFragment.element.line("=== [BETA] ===");
+			if(Collectors.power.power != 0) {
+				balanceFragment.element.line(Icon.power.getRegion(), (Collectors.power.power > 0 ? "[green]" : "[scarlet]") + ModWork.round(Collectors.power.power) + Bungle.core("unit.persecond"));
+				balanceFragment.element.color(Pal.engine);
 			}
+//			if(heat != 0) {
+//				balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + Bungle.core("unit.persecond"));
+//				if(heat < 0) addHeatCrafters(balanceFragment.element, null, -heat);
+//			}
+			if(Collectors.combat.airDps != 0 || Collectors.combat.groundDps != 0) {
+				balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(Collectors.combat.airDps) + " " + Bungle.calculator("line.air-dps"));
+				balanceFragment.element.line(Icon.modeAttack.getRegion(), "[olive]" + ModWork.round(Collectors.combat.groundDps)  + " " + Bungle.calculator("line.ground-dps"));
+			}
+			
+			
+//			balanceFragment.element.line(Icon.power.getRegion(), " " + Collectors.power.power);
+//			balanceFragment.element.color(Pal.engine);
+//			balanceFragment.element.line(Icon.power.getRegion(), " [sky]" + Collectors.combat.airDps);
+//			balanceFragment.element.line(Icon.power.getRegion(), " [olive]" + Collectors.combat.groundDps);
 
-			ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
-				ModWork.produceItems(building, craftSpeed, (item, ips) -> {
-					itemsBalance[item.id] += ips;
-					if(building.items != null) {
-						if(building.items.get(item) >= building.getMaximumAccepted(item)) {
-							itemsWarn[item.id] = true;
-						}
-					}
-				});
-
-				ModWork.produceLiquids(building, craftSpeed, (liquid, lps) -> {
-					liquidBalance[liquid.id] += lps;
-				});
-
-				ModWork.producePower(building, craftSpeed, powerProduce);
-				ModWork.produceHeat(building, craftSpeed, heatProduce);
+			for (int i = 0; i < Collectors.items.size(); i++) {
+				Item item = Vars.content.item(i);
+				float ips = Collectors.items.balance[i];
+				boolean warn = Collectors.items.overflow[i];
 				
-				for (int c = 0; c < block.consumers.length; c++) {
-					Consume consume = block.consumers[c];
-					ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> {
-						itemsBalance[item.id] -= ips;
-					});
-					ModWork.consumeLiquids(consume, building, craftSpeedMultiplier, (liquid, lps) -> {
-						liquidBalance[liquid.id] -= lps;
-					});
-					ModWork.consumePower(consume, building, powerConsume);
+//				if(updates < 60) ips = itemsBalance[i];
+				if(ips == 0) {
+					if(warn) {
+						balanceFragment.element.line(item, "[yellow]0" + Bungle.core("unit.persecond") + " " + Iconc.warning);
+//						info.append();
+					}
+					continue;
 				}
-				heat -= ModWork.consumeHeat(building, craftSpeed);
-			});
-		}
-
-		for (int i = 0; i < itemsBalance.length; i++) {
-			itemsBalanceTotal[i] += itemsBalance[i];
-		}
-		for (int i = 0; i < liquidBalance.length; i++) {
-			liquidBalanceTotal[i] += liquidBalance[i];
-		}
-
-		if(updates%60 == 0 && updates > 0) {
-			for (int i = 0; i < itemsBalance.length; i++) {
-				itemsBalanceFixed[i] = itemsBalanceTotal[i]/60f;
-				itemsBalanceTotal[i] = 0;//itemsBalance[i];
-			}
-			for (int i = 0; i < liquidBalance.length; i++) {
-				liquidBalanceFixed[i] = liquidBalanceTotal[i]/60f;
-				liquidBalanceTotal[i] = 0;//liquidBalance[i];
-			}
-		} else {
-		}
-
-		if(power != 0) {
-			balanceFragment.element.line(Icon.power.getRegion(), (power > 0 ? "[green]" : "[scarlet]") + ModWork.round(power) + Bungle.core("unit.persecond"));
-			balanceFragment.element.color(Pal.engine);
-		}
-		if(heat != 0) {
-			balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + Bungle.core("unit.persecond"));
-			if(heat < 0) addHeatCrafters(balanceFragment.element, null, -heat);
-		}
-		if(airDps != 0 || groundDps != 0) {
-			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(airDps) + " " + Bungle.calculator("line.air-dps"));
-			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[olive]" + ModWork.round(groundDps)  + " " + Bungle.calculator("line.ground-dps"));
-		}
-
-		for (int i = 0; i < itemsBalance.length; i++) {
-			Item item = Vars.content.item(i);
-			float ips = itemsBalanceFixed[i];
-			if(updates < 60) ips = itemsBalance[i];
-			if(ips == 0) {
-				if(itemsWarn[i]) {
-					balanceFragment.element.line(item, "[yellow]0" + Bungle.core("unit.persecond") + " " + Iconc.warning);
-//					info.append();
+				if(ips < 0) {
+					addItemInfo(balanceFragment.element, null, item, ips, warn);
+				} else {
+					balanceFragment.element.line(item, " [green]+" + ModWork.round(ips) + Bungle.core("unit.persecond") + (warn ? (" [yellow]" + Iconc.warning) : ""));
 				}
-				continue;
 			}
-			if(ips < 0) {
-				addItemInfo(balanceFragment.element, null, item, ips, itemsWarn[i]);
-			} else {
-				balanceFragment.element.line(item, " [green]+" + ModWork.round(ips) + Bungle.core("unit.persecond") + (itemsWarn[i] ? (" [yellow]" + Iconc.warning) : ""));
+
+			for (int i = 0; i < Collectors.liquids.size(); i++) {
+				Liquid liquid = Vars.content.liquid(i);
+				float lps = Collectors.liquids.balance[i];
+//				if(updates < 60) lps = liquidBalance[i];
+				if(lps == 0) continue;
+				if(lps < 0) {
+					addLiquidInfo(balanceFragment.element, null, liquid, lps, false);
+				} else {
+					balanceFragment.element.line(liquid, " [green]+" + ModWork.round(lps) + Bungle.core("unit.persecond"));
+//					info.append("\n[white]" + liquid.emoji() + " [green]+" + ModWork.round(lps) + "/sec");
+				}
 			}
+
+//			count.each((block, c) -> {
+//				balanceFragment.element.line(block, "[white]x" + c);
+//				balanceFragment.element.color(Color.white);
+//			});
+//			for (int i = 0; i < blockRequirements.length; i++) {
+//				int r = blockRequirements[i];
+//				if(r == 0) continue;
+//				balanceFragment.element.line(Vars.content.item(i), r > 0 ? "[red]-"+r : "[green]+"+-r);
+//				balanceFragment.element.color(Color.white);
+//			}
+			
+//			balanceFragment.element.line("=== [NORM] ===");
 		}
 		
-		for (int i = 0; i < liquidBalance.length; i++) {
-			Liquid liquid = Vars.content.liquid(i);
-			float lps = liquidBalanceFixed[i];
-			if(updates < 60) lps = liquidBalance[i];
-			if(lps == 0) continue;
-			if(lps < 0) {
-				addLiquidInfo(balanceFragment.element, null, liquid, lps, false);
-			} else {
-				balanceFragment.element.line(liquid, " [green]+" + ModWork.round(lps) + Bungle.core("unit.persecond"));
-//				info.append("\n[white]" + liquid.emoji() + " [green]+" + ModWork.round(lps) + "/sec");
-			}
-		}
+		
+		
+//		if(power != 0) {
+//			balanceFragment.element.line(Icon.power.getRegion(), (power > 0 ? "[green]" : "[scarlet]") + ModWork.round(power) + Bungle.core("unit.persecond"));
+//			balanceFragment.element.color(Pal.engine);
+//		}
+//		if(heat != 0) {
+//			balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + Bungle.core("unit.persecond"));
+//			if(heat < 0) addHeatCrafters(balanceFragment.element, null, -heat);
+//		}
+//		if(airDps != 0 || groundDps != 0) {
+//			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(airDps) + " " + Bungle.calculator("line.air-dps"));
+//			balanceFragment.element.line(Icon.modeAttack.getRegion(), "[olive]" + ModWork.round(groundDps)  + " " + Bungle.calculator("line.ground-dps"));
+//		}
+//		
+//		for (int i = 0; i < itemsBalance.length; i++) {
+//			Item item = Vars.content.item(i);
+//			float ips = itemsBalanceFixed[i];
+//			if(updates < 60) ips = itemsBalance[i];
+//			if(ips == 0) {
+//				if(itemsWarn[i]) {
+//					balanceFragment.element.line(item, "[yellow]0" + Bungle.core("unit.persecond") + " " + Iconc.warning);
+////					info.append();
+//				}
+//				continue;
+//			}
+//			if(ips < 0) {
+//				addItemInfo(balanceFragment.element, null, item, ips, itemsWarn[i]);
+//			} else {
+//				balanceFragment.element.line(item, " [green]+" + ModWork.round(ips) + Bungle.core("unit.persecond") + (itemsWarn[i] ? (" [yellow]" + Iconc.warning) : ""));
+//			}
+//		}
+		
+//		for (int i = 0; i < liquidBalance.length; i++) {
+//			Liquid liquid = Vars.content.liquid(i);
+//			float lps = liquidBalanceFixed[i];
+//			if(updates < 60) lps = liquidBalance[i];
+//			if(lps == 0) continue;
+//			if(lps < 0) {
+//				addLiquidInfo(balanceFragment.element, null, liquid, lps, false);
+//			} else {
+//				balanceFragment.element.line(liquid, " [green]+" + ModWork.round(lps) + Bungle.core("unit.persecond"));
+////				info.append("\n[white]" + liquid.emoji() + " [green]+" + ModWork.round(lps) + "/sec");
+//			}
+//		}
 
 		count.each((block, c) -> {
 			balanceFragment.element.line(block, "[white]x" + c);
@@ -691,34 +793,9 @@ public class IndustryCalculator {
 			balanceFragment.element.color(Color.white);
 		}
 		
-//		for (int s = 0; s < selected.size; s++) {
-//			Tile tile = selected.get(s);
-//			Building building = tile.build;
-//			Block block = tile.block();
-//		}
-		
-		
-		updates++;
-		
-//		balanceFragment.setText(info.toString());
+//		updates++;
 	}
 	
-//	static int tileX(float cursorX){
-//        Vec2 vec = Core.input.mouseWorld(cursorX, 0);
-//        if(selectedBlock()){
-//            vec.sub(block.offset, block.offset);
-//        }
-//        return World.toTile(vec.x);
-//    }
-//
-//	static int tileY(float cursorY){
-//        Vec2 vec = Core.input.mouseWorld(0, cursorY);
-//        if(selectedBlock()){
-//            vec.sub(block.offset, block.offset);
-//        }
-//        return World.toTile(vec.y);
-//    }
-    
 	private static void addItemInfo(IndustryElement element, @Nullable Block block, Item item, float ips, boolean warn) {
 		if(ips < 0) {
 			element.line(item, " [scarlet]" + ModWork.round(ips) + Bungle.core("unit.persecond") + (warn ? " [yellow]" + Iconc.warning : ""));
