@@ -1,4 +1,4 @@
-package agzam4.flow.metric;
+package agzam4.flow.metric.metrics;
 
 import arc.struct.ObjectMap;
 
@@ -7,7 +7,7 @@ public class Metrics {
 	private ObjectMap<Class<?>, Metric> metrics = new ObjectMap<>();
 
 	public Metrics metric(Metric metric) {
-		metrics.put(metric.getClass(), metric);
+		metrics.put(metric.key(), metric);
 		return this;
 	}
 	

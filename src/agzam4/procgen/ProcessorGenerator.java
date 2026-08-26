@@ -321,7 +321,7 @@ public class ProcessorGenerator {
 				op.defaults().left().pad(5);
 
 				items.each(i -> {
-					selected[i.item.id] = IndustryCalculator.selected().size == 0 || IndustryCalculator.itemsBalance[i.item.id] < 0;
+					selected[i.item.id] = IndustryCalculator.selected().size == 0 || IndustryCalculator.items.getReal(i.item) < 0;
 					op.check(i.item.emoji() + " " + i.item.localizedName, selected[i.item.id], b -> {
 						selected[i.item.id] = b;
 					}).row();

@@ -2,7 +2,6 @@ package agzam4.flow.metric;
 
 import arc.func.Cons;
 import arc.struct.ObjectMap;
-import arc.util.Log;
 
 public class ClassRegistry<V> {
 
@@ -16,17 +15,19 @@ public class ClassRegistry<V> {
         cache.clear();
     }
 
+    public boolean registrated(Class<?> c) {
+        return registry.containsKey(c);
+    }
+
     public V get(Class<?> c) {
         if(c == null) return null;
         if(cache.containsKey(c)) return cache.get(c);
         V value = findNearest(c);
-		Log.info("found: @", value);
         cache.put(c, value);
         return value;
     }
 
     private V findNearest(Class<?> c) {
-		Log.info("findNearest: @ / @", c, registry.keys().toSeq());
         if(registry.containsKey(c)) return registry.get(c);
 
         if (iterfaces) {
