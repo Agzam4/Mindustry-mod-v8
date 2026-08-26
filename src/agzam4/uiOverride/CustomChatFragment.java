@@ -30,8 +30,6 @@ import mindustry.ui.Fonts;
 
 public class CustomChatFragment extends Table {
 
-	private static CustomChatFragment instance = null;
-	
 	private static final int messagesShown = 10;
     private Seq<String> messages = new Seq<>();
     public TextField chatfield;
@@ -82,7 +80,6 @@ public class CustomChatFragment extends Table {
 	
 	public CustomChatFragment() {
 		super();
-		instance = this;
 		suggestions = new SuggestionsOverlay(this);
 		font = Prefs.settings.bool("outline-chat") ? Fonts.outline : Fonts.def;
 		

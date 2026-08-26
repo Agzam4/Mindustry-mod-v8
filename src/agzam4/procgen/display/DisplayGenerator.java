@@ -1,7 +1,6 @@
 package agzam4.procgen.display;
 
 import agzam4.io.GifIO;
-import agzam4.procgen.ProcessorGenerator;
 import agzam4.procgen.display.DisplayGeneratorShapes.Poly;
 import agzam4.procgen.display.DisplayGeneratorShapes.Rect;
 import agzam4.procgen.display.DisplayGeneratorShapes.Tri;

@@ -6,6 +6,7 @@ public class Awt {
 
 	public static boolean avalible = false;
 	
+	@SuppressWarnings("deprecation")
 	public static boolean avalible() {
 		return Package.getPackage("java.awt") != null;
 	}
