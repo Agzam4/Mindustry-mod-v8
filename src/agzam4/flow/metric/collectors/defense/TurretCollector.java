@@ -1,4 +1,4 @@
-package agzam4.flow.metric.collectorsold.defense;
+package agzam4.flow.metric.collectors.defense;
 
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.blocks.defense.turrets.Turret.TurretBuild;

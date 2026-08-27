@@ -1,4 +1,4 @@
-package agzam4.flow.metric.collectorsold.defense;
+package agzam4.flow.metric.collectors.defense;
 
 import mindustry.Vars;
 import mindustry.type.Liquid;

@@ -2,12 +2,12 @@ package agzam4.flow.metric;
 
 import agzam4.debug.Debug;
 import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.defense.BaseTurretCollector;
+import agzam4.flow.metric.collectors.defense.ReloadTurretCollector;
 import agzam4.flow.metric.collectors.production.AttributeCrafterCollector;
 import agzam4.flow.metric.collectors.production.DrillCollector;
 import agzam4.flow.metric.collectors.production.GenericCrafterCollector;
 import agzam4.flow.metric.collectors.production.HeatCrafterCollector;
-import agzam4.flow.metric.collectorsold.defense.BaseTurretCollector;
-import agzam4.flow.metric.collectorsold.defense.ReloadTurretCollector;
 import agzam4.flow.metric.metrics.CombatMetrics;
 import agzam4.flow.metric.metrics.HeatMetric;
 import agzam4.flow.metric.metrics.ItemsMetric;

@@ -1,4 +1,4 @@
-package agzam4.flow.metric.collectorsold.defense;
+package agzam4.flow.metric.collectors.defense;
 
 import agzam4.flow.metric.collectors.BaseCollector;
 import agzam4.flow.metric.metrics.CombatMetrics;
