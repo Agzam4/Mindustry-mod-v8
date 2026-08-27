@@ -2,6 +2,10 @@ package agzam4.flow.metric;
 
 import agzam4.debug.Debug;
 import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.production.AttributeCrafterCollector;
+import agzam4.flow.metric.collectors.production.DrillCollector;
+import agzam4.flow.metric.collectors.production.GenericCrafterCollector;
+import agzam4.flow.metric.collectors.production.HeatCrafterCollector;
 import agzam4.flow.metric.collectorsold.defense.BaseTurretCollector;
 import agzam4.flow.metric.collectorsold.defense.ReloadTurretCollector;
 import agzam4.flow.metric.metrics.CombatMetrics;
@@ -18,6 +22,14 @@ import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.defense.turrets.ReloadTurret;
 import mindustry.world.blocks.defense.turrets.ReloadTurret.ReloadTurretBuild;
+import mindustry.world.blocks.production.AttributeCrafter;
+import mindustry.world.blocks.production.AttributeCrafter.AttributeCrafterBuild;
+import mindustry.world.blocks.production.Drill;
+import mindustry.world.blocks.production.Drill.DrillBuild;
+import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.blocks.production.GenericCrafter.GenericCrafterBuild;
+import mindustry.world.blocks.production.HeatCrafter;
+import mindustry.world.blocks.production.HeatCrafter.HeatCrafterBuild;
 
 public class Collectors {
 	
@@ -37,10 +49,17 @@ public class Collectors {
 		collectors.metric(combat);
 		collectors.metric(heat);
 		
+//		Blocks
+		
 		collectors.register(Block.class, new BaseCollector<Block, Building>());
 		collectors.register(BaseTurret.class, new BaseTurretCollector<BaseTurret, BaseTurretBuild>());
 		collectors.register(ReloadTurret.class, new ReloadTurretCollector<ReloadTurret, ReloadTurretBuild>());
 		collectors.register(BaseTurret.class, new BaseTurretCollector<BaseTurret, BaseTurretBuild>());
+
+		collectors.register(GenericCrafter.class, new GenericCrafterCollector<GenericCrafter, GenericCrafterBuild>());
+		collectors.register(Drill.class, new DrillCollector<Drill, DrillBuild>());
+		collectors.register(HeatCrafter.class, new HeatCrafterCollector<HeatCrafter, HeatCrafterBuild>());
+		collectors.register(AttributeCrafter.class, new AttributeCrafterCollector<AttributeCrafter, AttributeCrafterBuild>());
 		
 		collectors.build();
 		

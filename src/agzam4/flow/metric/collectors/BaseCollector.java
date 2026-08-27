@@ -56,14 +56,14 @@ public class BaseCollector<T extends Block, B extends Building> {
 	protected void collect(B building) {
 		// TODO: remove:
 		ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
-			ModWork.produceItems(building, craftSpeed, (item, ips) -> {
-				items.add(item, ips);
-				if(building.items != null) {
-					if(building.items.get(item) >= building.getMaximumAccepted(item)) {
-						items.warn(item);
-					}
-				}
-			});
+//			ModWork.produceItems(building, craftSpeed, (item, ips) -> {
+//				items.add(item, ips);
+//				if(building.items != null) {
+//					if(building.items.get(item) >= building.getMaximumAccepted(item)) {
+//						items.warn(item);
+//					}
+//				}
+//			});
 			ModWork.produceLiquids(building, craftSpeed, (liquid, lps) -> liquids.add(liquid, lps));
 			ModWork.produceHeat(building, craftSpeed, h -> heat.heat += h);
 
