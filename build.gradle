@@ -58,7 +58,9 @@ tasks.register('jarAndroid'){
 
         if(!platformRoot) throw new GradleException("No android.jar found. Ensure that you have an Android platform installed.")
 
-		def buildToolsRoot = new File("$sdkRoot/build-tools/").listFiles().sort().reverse().find{ f -> new File(f, isWindows ? "d8.bat" : "d8").exists() }
+		// 36.1.0/
+		def buildToolsRoot = new File("$sdkRoot/build-tools/").listFiles().sort().find{ f -> new File(f, isWindows ? "d8.bat" : "d8").exists() }
+		// .reverse()
         
         def d8 = isWindows ? "d8.bat" : "d8"
         if(buildToolsRoot) d8 = new File(buildToolsRoot, isWindows ? "d8.bat" : "d8").absolutePath
@@ -73,6 +75,7 @@ tasks.register('jarAndroid'){
 
         //dex and desugar files - this requires d8 in your PATH
         def command = "$d8 $dependencies --min-api 21 --output ${projectName}Android.jar ${projectName}Desktop.jar"
+        println "platform: $platformRoot"
         println "execute: $command"
         println "build: $buildDir"
         command.execute(null, buildDir).waitForProcessOutput(System.out, System.err)
