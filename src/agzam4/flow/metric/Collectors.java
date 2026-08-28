@@ -8,6 +8,8 @@ import agzam4.flow.metric.collectors.production.AttributeCrafterCollector;
 import agzam4.flow.metric.collectors.production.DrillCollector;
 import agzam4.flow.metric.collectors.production.GenericCrafterCollector;
 import agzam4.flow.metric.collectors.production.HeatCrafterCollector;
+import agzam4.flow.metric.collectors.production.PumpCollector;
+import agzam4.flow.metric.collectors.production.SolidPumpCollector;
 import agzam4.flow.metric.metrics.CombatMetrics;
 import agzam4.flow.metric.metrics.HeatMetric;
 import agzam4.flow.metric.metrics.ItemsMetric;
@@ -30,6 +32,10 @@ import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.GenericCrafter.GenericCrafterBuild;
 import mindustry.world.blocks.production.HeatCrafter;
 import mindustry.world.blocks.production.HeatCrafter.HeatCrafterBuild;
+import mindustry.world.blocks.production.Pump;
+import mindustry.world.blocks.production.Pump.PumpBuild;
+import mindustry.world.blocks.production.SolidPump;
+import mindustry.world.blocks.production.SolidPump.SolidPumpBuild;
 
 public class Collectors {
 	
@@ -60,6 +66,9 @@ public class Collectors {
 		collectors.register(Drill.class, new DrillCollector<Drill, DrillBuild>());
 		collectors.register(HeatCrafter.class, new HeatCrafterCollector<HeatCrafter, HeatCrafterBuild>());
 		collectors.register(AttributeCrafter.class, new AttributeCrafterCollector<AttributeCrafter, AttributeCrafterBuild>());
+
+		collectors.register(Pump.class, new PumpCollector<Pump, PumpBuild>());
+		collectors.register(SolidPump.class, new SolidPumpCollector<SolidPump, SolidPumpBuild>());
 		
 		collectors.build();
 		
