@@ -67,18 +67,18 @@ public class Collectors {
 			ObjectSet<Class<?>> classes = ObjectSet.with();
 			ObjectSet<Class<?>> interfaces = ObjectSet.with();
 			
-			Vars.content.blocks().forEach(b -> {
-				if(!b.destructible && !b.update) return;
+			for (Block b : Vars.content.blocks()) {
+				if(!b.destructible && !b.update) continue;
 //				Blocks
 				Class<?> cls = b.getClass();
-				if(collectors.registrated(cls)) return;
+				if(collectors.registrated(cls)) continue;
 				while (true) {
 					if(!cls.toString().contains("$")) classes.add(cls);
 					interfaces.addAll(cls.getInterfaces());
 					cls = cls.getSuperclass();
-					if(cls == Object.class) return;
+					if(cls == Object.class) break;
 				}
-			});
+			}
 
 			Log.info("=== classes ===\n@", classes.toSeq().sort((s1,s2)->s1.toString().compareTo(s2.toString())).toString("\n"));
 			Log.info("=== interfaces ===\n@", interfaces.toSeq().toString("\n"));

@@ -17,7 +17,8 @@ public class Metrics {
 	}
 	
 	public void reset() {
-		metrics.values().forEach(Metric::reset);
+		//for-each, not forEach(): game's MapIterator.forEach crashes on Android (missing Iterable$-CC)
+		for (Metric metric : metrics.values()) metric.reset();
 	}
 	
 }

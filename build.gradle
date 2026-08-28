@@ -54,7 +54,8 @@ tasks.register('jarAndroid'){
     doLast{
         if(!sdkRoot || !new File(sdkRoot).exists()) throw new GradleException("No valid Android SDK found. Ensure that ANDROID_HOME is set to your Android SDK directory.")
 
-        def platformRoot = new File("$sdkRoot/platforms/").listFiles().sort().reverse().find{ f -> new File(f, "android.jar").exists() }
+		// .reverse()
+        def platformRoot = new File("$sdkRoot/platforms/").listFiles().sort().find{ f -> new File(f, "android.jar").exists() }
 
         if(!platformRoot) throw new GradleException("No android.jar found. Ensure that you have an Android platform installed.")
 
@@ -74,7 +75,13 @@ tasks.register('jarAndroid'){
        	def buildDir = new File(project.buildDir, "libs")
 
         //dex and desugar files - this requires d8 in your PATH
-        def command = "$d8 $dependencies --min-api 21 --output ${projectName}Android.jar ${projectName}Desktop.jar"
+        // NOTE: min-api must match the game's own dexing (21). Mindustry Android is built at min-sdk 21, so its
+        // interface default methods (e.g. arc.ApplicationListener) are desugared into *$-CC classes. A mod dexed
+        // at a higher min-api skips that desugaring and crashes with AbstractMethodError at runtime.
+        // Corollary: don't call core-lib default methods (Iterable.forEach etc.) from mod code - their -CC helpers
+        // are never shipped (NoClassDefFoundError: Failed resolution of: Ljava/lang/Iterable$-CC;).
+        final def minApi = 21
+        def command = "$d8 $dependencies --min-api $minApi --output ${projectName}Android.jar ${projectName}Desktop.jar"
         println "platform: $platformRoot"
         println "execute: $command"
         println "build: $buildDir"
