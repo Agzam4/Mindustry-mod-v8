@@ -9,5 +9,16 @@ public class HeatCrafterCollector<T extends HeatCrafter, B extends HeatCrafterBu
 	public float craftSpeed(B building) {
 		return 60f / block(building).craftTime * building.efficiencyScale();
 	}
+
+	@Override
+	protected void consume(B building) {
+		super.consume(building);
+		consumeHeat(building);
+	}
+
+	protected void consumeHeat(B building) {
+		super.consume(building);
+		heat.sub(building.heatRequirement() * block(building).maxEfficiency);
+	}
 	
 }
