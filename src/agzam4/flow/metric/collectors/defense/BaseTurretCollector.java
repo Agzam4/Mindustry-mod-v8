@@ -1,11 +1,11 @@
 package agzam4.flow.metric.collectors.defense;
 
-import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.BlockCollector;
 import agzam4.flow.metric.metrics.CombatMetrics;
 import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 
-public class BaseTurretCollector<T extends BaseTurret, B extends BaseTurretBuild> extends BaseCollector<T, B> {
+public class BaseTurretCollector<T extends BaseTurret, B extends BaseTurretBuild> extends BlockCollector<T, B> {
 
 	public CombatMetrics combat;
 	

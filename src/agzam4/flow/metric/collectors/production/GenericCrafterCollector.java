@@ -1,12 +1,12 @@
 package agzam4.flow.metric.collectors.production;
 
-import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.BlockCollector;
 import mindustry.type.ItemStack;
 import mindustry.type.LiquidStack;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.GenericCrafter.GenericCrafterBuild;
 
-public class GenericCrafterCollector<T extends GenericCrafter, B extends GenericCrafterBuild> extends BaseCollector<T, B> {
+public class GenericCrafterCollector<T extends GenericCrafter, B extends GenericCrafterBuild> extends BlockCollector<T, B> {
 	
 	@Override
 	protected void produce(B building) {

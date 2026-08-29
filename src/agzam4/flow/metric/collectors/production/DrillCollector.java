@@ -1,10 +1,10 @@
 package agzam4.flow.metric.collectors.production;
 
-import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.BlockCollector;
 import mindustry.world.blocks.production.Drill;
 import mindustry.world.blocks.production.Drill.DrillBuild;
 
-public class DrillCollector<T extends Drill, B extends DrillBuild> extends BaseCollector<T, B> {
+public class DrillCollector<T extends Drill, B extends DrillBuild> extends BlockCollector<T, B> {
 	
 	@Override
 	protected void produce(B building) {

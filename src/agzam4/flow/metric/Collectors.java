@@ -1,7 +1,8 @@
 package agzam4.flow.metric;
 
 import agzam4.debug.Debug;
-import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.BlockCollector;
+import agzam4.flow.metric.collectors.consumers.ConsumeItemsCollector;
 import agzam4.flow.metric.collectors.defense.BaseTurretCollector;
 import agzam4.flow.metric.collectors.defense.ReloadTurretCollector;
 import agzam4.flow.metric.collectors.heat.HeatProducerCollector;
@@ -42,6 +43,7 @@ import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.production.Pump.PumpBuild;
 import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.blocks.production.SolidPump.SolidPumpBuild;
+import mindustry.world.consumers.ConsumeItems;
 
 public class Collectors {
 	
@@ -61,7 +63,7 @@ public class Collectors {
 		collectors.metric(combat);
 		collectors.metric(heat);
 		
-		collectors.register(Block.class, new BaseCollector<Block, Building>());
+		collectors.register(Block.class, new BlockCollector<Block, Building>());
 		
 		// defense
 		collectors.register(BaseTurret.class, new BaseTurretCollector<BaseTurret, BaseTurretBuild>());
@@ -83,6 +85,10 @@ public class Collectors {
 
 		// heat
 		collectors.register(HeatProducer.class, new HeatProducerCollector<HeatProducer, HeatProducerBuild>());
+		
+		
+		collectors.register(ConsumeItems.class, new ConsumeItemsCollector<ConsumeItems>());
+		
 		
 		collectors.build();
 		

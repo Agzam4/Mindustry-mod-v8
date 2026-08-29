@@ -1,6 +1,7 @@
 package agzam4.flow.metric.collectors;
 
 import agzam4.ModWork;
+import agzam4.flow.metric.ClassRegistry;
 import agzam4.flow.metric.metrics.HeatMetric;
 import agzam4.flow.metric.metrics.ItemsMetric;
 import agzam4.flow.metric.metrics.LiquidMetric;
@@ -11,16 +12,20 @@ import mindustry.entities.units.BuildPlan;
 import mindustry.gen.Building;
 import mindustry.world.Block;
 
-public class BaseCollector<T extends Block, B extends Building> {
+public class BlockCollector<T extends Block, B extends Building> {
 
 	public Metrics metrics;
+	
+	/** May be changed */
+	public ClassRegistry<ConsumeCollector<?>> consumersRegistry;
 
 	protected PowerMetrics power;
 	protected ItemsMetric items;
 	protected LiquidMetric liquids;
 	protected HeatMetric heat; // TODO: remove
+
 	
-	public BaseCollector() {
+	public BlockCollector() {
 		
 	}
 	
@@ -55,24 +60,39 @@ public class BaseCollector<T extends Block, B extends Building> {
 
 	protected void collect(B building) {
 		// TODO: remove:
-		ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
-			ModWork.produceHeat(building, craftSpeed, h -> heat.heat += h);
+//		ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
+//			ModWork.produceHeat(building, craftSpeed, h -> heat.heat += h);
 
 			// TODO: consumers system	
-			for (int c = 0; c < building.block.consumers.length; c++) {
-				var consume = building.block.consumers[c];
-				ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> items.sub(item, ips));
-				ModWork.consumeLiquids(consume, building, craftSpeedMultiplier, (liquid, lps) -> liquids.sub(liquid, lps));
-				ModWork.consumePower(consume, building, p -> power.power -= p);
-			}
-			heat.heat -= ModWork.consumeHeat(building, craftSpeed);
-		});
-		
+//			for (int c = 0; c < building.block.consumers.length; c++) {
+//				var consume = building.block.consumers[c];
+//				ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> items.sub(item, ips));
+//				ModWork.consumeLiquids(consume, building, craftSpeedMultiplier, (liquid, lps) -> liquids.sub(liquid, lps));
+//				ModWork.consumePower(consume, building, p -> power.power -= p);
+//			}
+//			heat.heat -= ModWork.consumeHeat(building, craftSpeed);
+//		});
+
 		produce(building);
+		consume(building);
 	}
 
 	protected void produce(B building) {
 		producePower(building);
+	}
+
+	protected void consume(B building) {
+		consumeConsumers(building);
+	}
+
+	protected void consumeConsumers(B building) {
+		float scale = consumersScale(building);
+		for (int i = 0; i < building.block.consumers.length; i++) {
+			var cons = building.block.consumers[i];
+			var cc = consumersRegistry.get(cons.getClass());
+			if(cc == null) continue;
+			cc.from(cons, scale*cons.multiplier.get(building));
+		}
 	}
 	
 	protected void producePower(B building) {
@@ -82,6 +102,14 @@ public class BaseCollector<T extends Block, B extends Building> {
 	@SuppressWarnings("unchecked")
 	public final T block(B buiding) {
 		return (T) buiding.block;
+	}
+	
+	
+	/**
+	 * Used for consumer called by Building::consume (BuildingComp::consume)
+	 */
+	protected float consumersScale(B building) {
+		return building.timeScale();
 	}
 	
 }

@@ -1,10 +1,10 @@
 package agzam4.flow.metric.collectors.production;
 
-import agzam4.flow.metric.collectors.BaseCollector;
+import agzam4.flow.metric.collectors.BlockCollector;
 import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.production.Pump.PumpBuild;
 
-public class PumpCollector<T extends Pump, B extends PumpBuild> extends BaseCollector<T, B> {
+public class PumpCollector<T extends Pump, B extends PumpBuild> extends BlockCollector<T, B> {
 
 	@Override
 	protected void produce(B building) {
