@@ -2,48 +2,32 @@ package agzam4.flow.metric;
 
 import agzam4.debug.Debug;
 import agzam4.flow.metric.collectors.BlockCollector;
-import agzam4.flow.metric.collectors.consumers.ConsumeItemsCollector;
-import agzam4.flow.metric.collectors.defense.BaseTurretCollector;
-import agzam4.flow.metric.collectors.defense.ReloadTurretCollector;
-import agzam4.flow.metric.collectors.heat.HeatProducerCollector;
-import agzam4.flow.metric.collectors.power.VariableReactorCollector;
-import agzam4.flow.metric.collectors.production.AttributeCrafterCollector;
-import agzam4.flow.metric.collectors.production.DrillCollector;
-import agzam4.flow.metric.collectors.production.GenericCrafterCollector;
-import agzam4.flow.metric.collectors.production.HeatCrafterCollector;
-import agzam4.flow.metric.collectors.production.PumpCollector;
-import agzam4.flow.metric.collectors.production.SolidPumpCollector;
-import agzam4.flow.metric.metrics.CombatMetrics;
-import agzam4.flow.metric.metrics.HeatMetric;
-import agzam4.flow.metric.metrics.ItemsMetric;
-import agzam4.flow.metric.metrics.LiquidMetric;
-import agzam4.flow.metric.metrics.PowerMetrics;
+import agzam4.flow.metric.collectors.consumers.*;
+import agzam4.flow.metric.collectors.defense.*;
+import agzam4.flow.metric.collectors.heat.*;
+import agzam4.flow.metric.collectors.power.*;
+import agzam4.flow.metric.collectors.production.*;
+import agzam4.flow.metric.metrics.*;
 import arc.struct.ObjectSet;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.gen.Building;
 import mindustry.world.Block;
-import mindustry.world.blocks.defense.turrets.BaseTurret;
+import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
-import mindustry.world.blocks.defense.turrets.ReloadTurret;
 import mindustry.world.blocks.defense.turrets.ReloadTurret.ReloadTurretBuild;
 import mindustry.world.blocks.heat.HeatProducer;
 import mindustry.world.blocks.heat.HeatProducer.HeatProducerBuild;
 import mindustry.world.blocks.power.VariableReactor;
 import mindustry.world.blocks.power.VariableReactor.VariableReactorBuild;
-import mindustry.world.blocks.production.AttributeCrafter;
+import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.production.AttributeCrafter.AttributeCrafterBuild;
-import mindustry.world.blocks.production.Drill;
 import mindustry.world.blocks.production.Drill.DrillBuild;
-import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.GenericCrafter.GenericCrafterBuild;
-import mindustry.world.blocks.production.HeatCrafter;
 import mindustry.world.blocks.production.HeatCrafter.HeatCrafterBuild;
-import mindustry.world.blocks.production.Pump;
 import mindustry.world.blocks.production.Pump.PumpBuild;
-import mindustry.world.blocks.production.SolidPump;
 import mindustry.world.blocks.production.SolidPump.SolidPumpBuild;
-import mindustry.world.consumers.ConsumeItems;
+import mindustry.world.consumers.*;
 
 public class Collectors {
 	
@@ -86,9 +70,13 @@ public class Collectors {
 		// heat
 		collectors.register(HeatProducer.class, new HeatProducerCollector<HeatProducer, HeatProducerBuild>());
 		
-		
+
 		collectors.register(ConsumeItems.class, new ConsumeItemsCollector<ConsumeItems>());
+		collectors.register(ConsumeItemDynamic.class, new ConsumeItemDynamicCollector<ConsumeItemDynamic>());
 		
+		collectors.register(ConsumeItemFilter.class, new ConsumeItemFilterCollector<ConsumeItemFilter>(
+				new ConsumeItemFilterCollector.ConsumeItemsCache().setup())
+				);
 		
 		collectors.build();
 		

@@ -31,11 +31,11 @@ public class ConsumeCollector<T extends Consume> {
 		Log.info("@, @, @, @", items, liquids, power, heat);
 	}
 
-	protected void collect(T cons, float scale) {}
+	protected void collect(T cons, Building building, float scale) {}
 
 	@SuppressWarnings("unchecked")
-	public void from(Consume cons, float scale) {
-		collect((T) cons, scale);
+	public void from(Consume cons, Building building, float scale) {
+		collect((T) cons, building, scale);
 	}
 
 	

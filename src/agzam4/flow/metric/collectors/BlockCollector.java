@@ -91,7 +91,7 @@ public class BlockCollector<T extends Block, B extends Building> {
 			var cons = building.block.consumers[i];
 			var cc = consumersRegistry.get(cons.getClass());
 			if(cc == null) continue;
-			cc.from(cons, scale*cons.multiplier.get(building));
+			cc.from(cons, building, scale);
 		}
 	}
 	
