@@ -55,7 +55,7 @@ public class BlockCollector<T extends Block, B extends Building> {
 	protected void collect(T block, int x, int y, int rotation, Object config) {
 		float craftSpeed = ModWork.getCraftSpeed(block, x, y, config);
 		ModWork.consumeBlock(block, x, y, config, craftSpeed, items::sub, liquids::sub, power::sub, heat::sub);
-		ModWork.produceBlock(block, x, y, config, craftSpeed, items::add, liquids::sub, power::add, heat::add);
+		ModWork.produceBlock(block, x, y, config, craftSpeed, items::add, liquids::add, power::add, heat::add);
 	}
 
 	protected void collect(B building) {
@@ -72,7 +72,6 @@ public class BlockCollector<T extends Block, B extends Building> {
 //			}
 //			heat.heat -= ModWork.consumeHeat(building, craftSpeed);
 //		});
-
 		produce(building);
 		consume(building);
 	}

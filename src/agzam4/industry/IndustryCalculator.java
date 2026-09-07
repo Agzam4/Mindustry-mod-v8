@@ -673,15 +673,14 @@ public class IndustryCalculator {
 				balanceFragment.element.line(Icon.power.getRegion(), (Collectors.power.power > 0 ? "[green]" : "[scarlet]") + ModWork.round(Collectors.power.power) + Bungle.core("unit.persecond"));
 				balanceFragment.element.color(Pal.engine);
 			}
-//			if(heat != 0) {
-//				balanceFragment.element.line("[red]" + Iconc.waves + (heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(heat) + Bungle.core("unit.persecond"));
-//				if(heat < 0) addHeatCrafters(balanceFragment.element, null, -heat);
-//			}
+			if(Collectors.heat.heat != 0) {
+				balanceFragment.element.line("[red]" + Iconc.waves + (Collectors.heat.heat > 0 ? " [green]" : " [scarlet]") + ModWork.round(Collectors.heat.heat) + Bungle.core("unit.persecond"));
+				if(Collectors.heat.heat < 0) addHeatCrafters(balanceFragment.element, null, -Collectors.heat.heat);
+			}
 			if(Collectors.combat.airDps != 0 || Collectors.combat.groundDps != 0) {
 				balanceFragment.element.line(Icon.modeAttack.getRegion(), "[sky]" + ModWork.round(Collectors.combat.airDps) + " " + Bungle.calculator("line.air-dps"));
 				balanceFragment.element.line(Icon.modeAttack.getRegion(), "[olive]" + ModWork.round(Collectors.combat.groundDps)  + " " + Bungle.calculator("line.ground-dps"));
 			}
-			
 			
 //			balanceFragment.element.line(Icon.power.getRegion(), " " + Collectors.power.power);
 //			balanceFragment.element.color(Pal.engine);
