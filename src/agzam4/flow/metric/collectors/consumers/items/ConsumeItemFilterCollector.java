@@ -1,4 +1,4 @@
-package agzam4.flow.metric.collectors.consumers;
+package agzam4.flow.metric.collectors.consumers.items;
 
 import agzam4.flow.metric.collectors.ConsumeCollector;
 import agzam4.flow.metric.metrics.ItemsMetric;

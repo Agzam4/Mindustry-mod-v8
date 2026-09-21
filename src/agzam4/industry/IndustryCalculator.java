@@ -719,6 +719,17 @@ public class IndustryCalculator {
 //					info.append("\n[white]" + liquid.emoji() + " [green]+" + ModWork.round(lps) + "/sec");
 				}
 			}
+			
+			if(Collectors.payload.size() > 0) {
+				Collectors.payload.each((item, ips) -> {
+					if(ips < 0) {
+						balanceFragment.element.line(item, " [scarlet]" + ModWork.round(ips) + Bungle.core("unit.persecond"));
+						ips = -ips;
+					} else {
+						balanceFragment.element.line(item, " [lightgray]" + ModWork.round(ips) + Bungle.core("unit.persecond"));
+					}
+				});
+			}
 
 //			count.each((block, c) -> {
 //				balanceFragment.element.line(block, "[white]x" + c);

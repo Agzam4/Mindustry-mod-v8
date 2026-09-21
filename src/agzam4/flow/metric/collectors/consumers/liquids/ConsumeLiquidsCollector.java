@@ -1,11 +1,11 @@
-package agzam4.flow.metric.collectors.consumers;
+package agzam4.flow.metric.collectors.consumers.liquids;
 
 import agzam4.flow.metric.collectors.ConsumeCollector;
 import agzam4.flow.metric.metrics.LiquidMetric;
 import mindustry.gen.Building;
-import mindustry.world.consumers.ConsumeLiquid;
+import mindustry.world.consumers.ConsumeLiquids;
 
-public class ConsumeLiquidCollector<T extends ConsumeLiquid> extends ConsumeCollector<T> {
+public class ConsumeLiquidsCollector<T extends ConsumeLiquids> extends ConsumeCollector<T> {
 
 	public LiquidMetric liquids;
 	
@@ -17,7 +17,10 @@ public class ConsumeLiquidCollector<T extends ConsumeLiquid> extends ConsumeColl
 	
 	@Override
 	protected void collect(T cons, Building building, float scale) {
-		liquids.sub(cons.liquid, scale*cons.amount*cons.multiplier.get(building)*60f);
+        float mult = cons.multiplier.get(building);
+        for(var stack : cons.liquids){
+        	liquids.sub(stack.liquid, stack.amount * scale * mult);
+        }
 	}
 	
 	

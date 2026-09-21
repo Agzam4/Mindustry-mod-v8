@@ -3,6 +3,14 @@ package agzam4.flow.metric;
 import agzam4.debug.Debug;
 import agzam4.flow.metric.collectors.BlockCollector;
 import agzam4.flow.metric.collectors.consumers.*;
+import agzam4.flow.metric.collectors.consumers.items.ConsumeItemDynamicCollector;
+import agzam4.flow.metric.collectors.consumers.items.ConsumeItemFilterCollector;
+import agzam4.flow.metric.collectors.consumers.items.ConsumeItemsCollector;
+import agzam4.flow.metric.collectors.consumers.liquids.ConsumeLiquidCollector;
+import agzam4.flow.metric.collectors.consumers.liquids.ConsumeLiquidsCollector;
+import agzam4.flow.metric.collectors.consumers.payload.ConsumePayloadDynamicCollector;
+import agzam4.flow.metric.collectors.consumers.payload.ConsumePayloadFilterCollector;
+import agzam4.flow.metric.collectors.consumers.payload.ConsumePayloadsCollector;
 import agzam4.flow.metric.collectors.defense.*;
 import agzam4.flow.metric.collectors.heat.*;
 import agzam4.flow.metric.collectors.power.*;
@@ -38,6 +46,7 @@ public class Collectors {
 	public static PowerMetrics power = new PowerMetrics();
 	public static CombatMetrics combat = new CombatMetrics();
 	public static HeatMetric heat = new HeatMetric();
+	public static PayloadMetric payload = new PayloadMetric();
 	
 	public static void init() {
 
@@ -46,6 +55,7 @@ public class Collectors {
 		collectors.metric(power);
 		collectors.metric(combat);
 		collectors.metric(heat);
+		collectors.metric(payload);
 		
 		collectors.register(Block.class, new BlockCollector<Block, Building>());
 		
@@ -83,6 +93,11 @@ public class Collectors {
 		
 		collectors.register(ConsumeLiquid.class, new ConsumeLiquidCollector<ConsumeLiquid>());
 		collectors.register(ConsumeLiquids.class, new ConsumeLiquidsCollector<ConsumeLiquids>());
+
+//		TODO:
+//		collectors.register(ConsumePayloads.class, new ConsumePayloadsCollector<ConsumePayloads>());
+//		collectors.register(ConsumePayloadDynamic.class, new ConsumePayloadDynamicCollector<ConsumePayloadDynamic>());
+//		collectors.register(ConsumePayloadFilter.class, new ConsumePayloadFilterCollector<ConsumePayloadFilter>());
 		
 		collectors.build();
 		
