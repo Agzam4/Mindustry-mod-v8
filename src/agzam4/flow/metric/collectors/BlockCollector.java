@@ -8,6 +8,7 @@ import agzam4.flow.metric.metrics.LiquidMetric;
 import agzam4.flow.metric.metrics.Metrics;
 import agzam4.flow.metric.metrics.PowerMetrics;
 import arc.util.Log;
+import mindustry.content.Blocks;
 import mindustry.entities.units.BuildPlan;
 import mindustry.gen.Building;
 import mindustry.world.Block;
@@ -59,19 +60,6 @@ public class BlockCollector<T extends Block, B extends Building> {
 	}
 
 	protected void collect(B building) {
-		// TODO: remove:
-//		ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
-//			ModWork.produceHeat(building, craftSpeed, h -> heat.heat += h);
-
-			// TODO: consumers system	
-//			for (int c = 0; c < building.block.consumers.length; c++) {
-//				var consume = building.block.consumers[c];
-//				ModWork.consumeItems(consume, building, craftSpeed, (item, ips) -> items.sub(item, ips));
-//				ModWork.consumeLiquids(consume, building, craftSpeedMultiplier, (liquid, lps) -> liquids.sub(liquid, lps));
-//				ModWork.consumePower(consume, building, p -> power.power -= p);
-//			}
-//			heat.heat -= ModWork.consumeHeat(building, craftSpeed);
-//		});
 		produce(building);
 		consume(building);
 	}

@@ -70,13 +70,19 @@ public class Collectors {
 		// heat
 		collectors.register(HeatProducer.class, new HeatProducerCollector<HeatProducer, HeatProducerBuild>());
 		
-
+		
+		// Consumers
 		collectors.register(ConsumeItems.class, new ConsumeItemsCollector<ConsumeItems>());
 		collectors.register(ConsumeItemDynamic.class, new ConsumeItemDynamicCollector<ConsumeItemDynamic>());
 		
 		collectors.register(ConsumeItemFilter.class, new ConsumeItemFilterCollector<ConsumeItemFilter>(
 				new ConsumeItemFilterCollector.ConsumeItemsCache().setup())
 				);
+
+		collectors.register(ConsumePower.class, new ConsumePowerCollector<ConsumePower>());
+		
+		collectors.register(ConsumeLiquid.class, new ConsumeLiquidCollector<ConsumeLiquid>());
+		collectors.register(ConsumeLiquids.class, new ConsumeLiquidsCollector<ConsumeLiquids>());
 		
 		collectors.build();
 		
