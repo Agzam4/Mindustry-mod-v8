@@ -36,7 +36,9 @@ import mindustry.game.EventType.*;
 import mindustry.gen.Building;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.logic.LAccess;
 import mindustry.logic.LExecutor;
+import mindustry.logic.LVar;
 import mindustry.type.*;
 import mindustry.ui.Fonts;
 import mindustry.world.*;
@@ -116,6 +118,9 @@ public class IndustryCalculator {
 	public static void draw() {
 		drawSelect();
 	}
+
+	private static LVar memoryIterator = new LVar("");
+	private static LVar memoryReader = new LVar("");
 	
 	public static void drawUi() {
 		
@@ -243,8 +248,14 @@ public class IndustryCalculator {
 				}
 				if(building instanceof MemoryBuild) {
 					MemoryBuild mb = (MemoryBuild) building;
-					for (int i = 0; i < mb.memory.length; i++) {
-						if(mb.memory[i] != 0) buildTooltip.line("[gray]" + i + ". [white]" + mb.memory[i]);
+					for (int i = 0; i < mb.sense(LAccess.memoryCapacity); i++) {
+						memoryIterator.setnum(i);
+						mb.read(memoryIterator, memoryReader);
+						if(memoryReader.isobj) {
+							if(memoryReader.objval != null) buildTooltip.line("[gray]" + i + ". [white]" + memoryReader.objval);
+						} else {
+							if(memoryReader.numval != 0) buildTooltip.line("[gray]" + i + ". [white]" + memoryReader.numval);
+						}
 					}
 				}
 				if(building instanceof LogicBuild) {
