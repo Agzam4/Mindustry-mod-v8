@@ -98,10 +98,7 @@ public class CustomChatFragment extends Table {
 		visible(() -> {
 			if(!net.active() && messages.size > 0){
 				clearMessages();
-				Log.info("clear");
-
 				if(shown){
-					Log.info("hide");
 					hide();
 				}
 			}

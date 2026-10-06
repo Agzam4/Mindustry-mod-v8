@@ -1,12 +1,10 @@
 package agzam4.chat.suggestions;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import agzam4.io.ByteBufferIO;
 import arc.math.Mathf;
 import arc.struct.ObjectMap;
-import arc.util.Log;
 import arc.util.Nullable;
 import mindustry.Vars;
 import mindustry.ctype.ContentType;
@@ -70,7 +68,7 @@ public class Suggestions {
 				ss[i+offset] = Vars.content.getByID(ContentType.values()[Byte.toUnsignedInt(type)], cid);
 			}
 		}
-		Log.info(loaded(ss) ? "accepted [@]" : "accepted part [@]", id);
+//		Log.info(loaded(ss) ? "accepted [@]" : "accepted part [@]", id);
 	}
 	
 	private static Object[] getSuggestionsArray(byte id, int size) {
@@ -88,7 +86,7 @@ public class Suggestions {
 		final byte id = suggestionsId++;
 		suggestionsKeys.put(id, text);
 		suggestionsIds.put(text, id);
-		Log.info("Created id=@ for '@'", id, text);
+//		Log.info("Created id=@ for '@'", id, text);
 		return id;
 	}
 
@@ -105,11 +103,11 @@ public class Suggestions {
 		
 		// Request suggestion from server
 		byte id = force && correct ? b : createId(text); // Creating id only at request
-		Log.info("Request suggestion from server");
+//		Log.info("Request suggestion from server");
 		
 		if(text.isEmpty()) { // Request commands list suggestions
 			var res = ByteBuffer.allocate(5);
-			Log.info("Comands-list: #@", id);
+//			Log.info("Comands-list: #@", id);
 			res.put(id);
 			ByteBufferIO.writeString(res, "");
 			Call.serverBinaryPacketUnreliable("agzam4.cmd-sug", res.array());
@@ -135,7 +133,7 @@ public class Suggestions {
 			}
 		}
 		
-		Log.info("args: @ for '@'", Arrays.toString(args), text);
+//		Log.info("args: @ for '@'", Arrays.toString(args), text);
 //		suggestionsIds.put(command.substring(0, command.lastIndexOf(' ')), id);
 
 		/**
@@ -151,7 +149,7 @@ public class Suggestions {
 		for (int i = 0; i < args.length; i++) {
 			ByteBufferIO.writeString(res, args[i]);
 		}
-		Log.info("request");
+//		Log.info("request");
 		Call.serverBinaryPacketUnreliable("agzam4.cmd-sug", res.array());
 		return id;
 	}
@@ -275,7 +273,6 @@ public class Suggestions {
 	}
 	
 	public static void clearCurrent() {
-		Log.info("[clearCurrent]");
 		current = null;
 		suggestionsFilter = "";
 		suggestionsPrefix = "";
