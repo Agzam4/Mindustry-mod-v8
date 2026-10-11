@@ -57,6 +57,7 @@ public class UpdateInfo {
 		Http.get(Vars.ghApi + "/repos/" + AgzamMod.getRepo() + "/releases", res -> {
 			String version = Vars.mods.getMod("agzam4mod").meta.version;
 			if(version == null) version = "1.0";
+			version = version.replaceFirst("v", "");
 			
 			Jval json = Jval.read(res.getResultAsString());
 			JsonArray releases = json.asArray();
