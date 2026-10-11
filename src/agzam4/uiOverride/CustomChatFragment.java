@@ -324,7 +324,10 @@ public class CustomChatFragment extends Table {
 				}
 				msg.append(message.charAt(i));
 			}
-			message = msg.toString();
+			if(msg.length() < Vars.maxTextLength) message = msg.toString();
+		}
+		if(message.length() > Vars.maxTextLength) {
+			message = message.substring(0, Vars.maxTextLength);
 		}
 		Events.fire(new ClientChatEvent(message));
 		Call.sendChatMessage(message);
