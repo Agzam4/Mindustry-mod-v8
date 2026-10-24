@@ -40,4 +40,9 @@ public class GenericCrafterCollector<T extends GenericCrafter, B extends Generic
 		return 60f / block(building).craftTime * building.efficiencyScale();
 	}
 	
+	@Override
+	protected float consumersScale(B building) {
+		return 60f / block(building).craftTime * building.efficiencyScale() * super.consumersScale(building);
+	}
+	
 }

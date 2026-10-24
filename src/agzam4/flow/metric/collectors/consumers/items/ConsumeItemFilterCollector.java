@@ -52,6 +52,7 @@ public class ConsumeItemFilterCollector<T extends ConsumeItemFilter> extends Con
 		}
 
 		public @Nullable Item get(Building building) {
+			if(lastItems == null) lastItems = new int[Vars.world.width()][Vars.world.height()];
 			int id = lastItems[building.tileX()][building.tileY()];
 			if(id < 1) return null;
 			return Vars.content.item(id-1);

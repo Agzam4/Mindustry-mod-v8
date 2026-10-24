@@ -154,6 +154,7 @@ public class IndustryCalculator {
 		if(Debug.debug && Core.input.keyTap(KeyCode.mouseMiddle) && Core.input.ctrl()) {
 //			ObjectInspector.show(building);
 			new ObjectInspector(building).show();
+			
 		}
 		
 		if(building.team == Vars.player.team() && Prefs.settings.bool("show-blocks-tooltip")) {
@@ -237,7 +238,13 @@ public class IndustryCalculator {
 				buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
 				
 				if(Debug.debug) {
-//					buildTooltip.line(block, "[royal]craftSpeed:[lightgray]" + craftSpeed + "/" + craftSpeedMultiplier);
+					if(building != null) {
+						var collector = Collectors.collectors.collector(block);
+						buildTooltip.line("[royal]Collector:[lightgray]" + (collector == null ? "null" : collector.getClass().getSimpleName()));
+						buildTooltip.line(Strings.format("[royal]timeScale:[lightgray]@ x@[]", building.timeScale(), building.efficiencyScale()));
+						collector.from(building);
+//						craftSpeed(building)*output.amount*building.timeScale()
+					}
 //					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
 				}
 
