@@ -30,6 +30,7 @@ import arc.struct.Seq;
 import arc.util.*;
 import arc.util.pooling.Pools;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.core.World;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.*;
@@ -123,8 +124,7 @@ public class IndustryCalculator {
 	private static LVar memoryReader = new LVar("");
 	
 	public static void drawUi() {
-		
-		buildTooltip.rebuild();
+//		buildTooltip.rebuild();
 
 		final float mouseX = Core.input.mouseWorldX();
 		final float mouseY = Core.input.mouseWorldY();
@@ -152,21 +152,19 @@ public class IndustryCalculator {
 		
 
 		if(Debug.debug && Core.input.keyTap(KeyCode.mouseMiddle) && Core.input.ctrl()) {
-//			ObjectInspector.show(building);
 			new ObjectInspector(building).show();
-			
 		}
 		
 		if(building.team == Vars.player.team() && Prefs.settings.bool("show-blocks-tooltip")) {
 			Block block = building.block;
 
-			if(building instanceof ConstructBuild) {
-				ConstructBuild cb = (ConstructBuild) building;
-				buildTooltip.line(cb.current, "[white]" + cb.current.localizedName.toUpperCase());
-				ModWork.getRequired(cb, (item, amount) -> {
-					buildTooltip.line(item, "[white]" + amount);
-				});
-			}
+//			if(building instanceof ConstructBuild) {
+//				ConstructBuild cb = (ConstructBuild) building;
+//				buildTooltip.line(cb.current, "[white]" + cb.current.localizedName.toUpperCase());
+//				ModWork.getRequired(cb, (item, amount) -> {
+//					buildTooltip.line(item, "[white]" + amount);
+//				});
+//			}
 
 			if(building instanceof DrillBuild drill && drill.dominantItem != null) {
 				IntQueue ores = new IntQueue(128);
@@ -224,84 +222,15 @@ public class IndustryCalculator {
 
 			final float tootlipX = drawX;
 			final float tootlipY = drawY;
-			
-			ModWork.getCraftSpeed(building, (craftSpeed, craftSpeedMultiplier) -> {
-				if(building instanceof ConstructBuild) {
-					Draw.z(Layer.playerName);
-					buildTooltip.draw(tootlipX, tootlipY);
-					return;
-				}
-				
-//					return;
-				
-//				StringBuilder info = new StringBuilder(block.emoji() + " " + block.localizedName.toUpperCase());
-				buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
-				
-				if(Debug.debug) {
-					if(building != null) {
-						var collector = Collectors.collectors.collector(block);
-						buildTooltip.line("[royal]Collector:[lightgray]" + (collector == null ? "null" : collector.getClass().getSimpleName()));
-						buildTooltip.line(Strings.format("[royal]timeScale:[lightgray]@ x@[]", building.timeScale(), building.efficiencyScale()));
-						collector.from(building);
-//						craftSpeed(building)*output.amount*building.timeScale()
-					}
-//					buildTooltip.line(block, "[royal]rid:[lightgray]" + AgzamMod.modRandom);
-				}
 
-				if(building instanceof LogicDisplayBuild) {
-					LogicDisplayBuild ldb = (LogicDisplayBuild) building;
-					buildTooltip.line("[gray]Commands buffer: [white]" + ldb.commands.size);
-					buildTooltip.line("[gray]Operations: [white]" + ldb.operations);
-				}
-				if(building instanceof MemoryBuild) {
-					MemoryBuild mb = (MemoryBuild) building;
-					for (int i = 0; i < mb.sense(LAccess.memoryCapacity); i++) {
-						memoryIterator.setnum(i);
-						mb.read(memoryIterator, memoryReader);
-						if(memoryReader.isobj) {
-							if(memoryReader.objval != null) buildTooltip.line("[gray]" + i + ". [white]" + memoryReader.objval);
-						} else {
-							if(memoryReader.numval != 0) buildTooltip.line("[gray]" + i + ". [white]" + memoryReader.numval);
-						}
-					}
-				}
-				if(building instanceof LogicBuild) {
-					LogicBuild mb = (LogicBuild) building;
-					
-					if(mb.executor.counter != null) {
-						buildTooltip.line("[gray]Line: [white]" + Mathf.round((float) (mb.executor.counter.numval)));
-					}
-					
-					if(mb.executor.graphicsBuffer.size > 0) {
-						buildTooltip.line("[gray]Draw buffer: [white]" + mb.executor.graphicsBuffer.size + "/" + LExecutor.maxGraphicsBuffer);
-					}
-				}
-				
-//				buildTooltip.color(Pal.accent);
-
-				if(craftSpeed > 0) {
-					if(block.consumers != null) {
-						for (int i = 0; i < block.consumers.length; i++) {
-							ModWork.consumeItems(block.consumers[i], building, craftSpeed, (item, ips) -> {
-								addItemInfo(buildTooltip, block, item, ips, false);
-							});
-							ModWork.consumeLiquids(block.consumers[i], building, craftSpeedMultiplier, (liquid, lps) -> {
-								addLiquidInfo(buildTooltip, block, liquid, lps, false);
-							});
-						}
-					}
-				}
-				
-				float heat = ModWork.consumeHeat(building, craftSpeed);
-				if(heat > 0) {
-					buildTooltip.line("[red]" + Iconc.waves + " [lightgray]" + ModWork.round(heat) + Bungle.core("unit.persecond"));
-					addHeatCrafters(buildTooltip, block, heat);
-				}
-				if(buildTooltip.size() <= 1) return;
-						
+			if(building instanceof ConstructBuild) {
 				Draw.z(Layer.playerName);
 				buildTooltip.draw(tootlipX, tootlipY);
-			});
+				return;
+			}
+			if(buildTooltip.size() <= 1) return;
+			Draw.z(Layer.playerName);
+			buildTooltip.draw(tootlipX, tootlipY);
 		}
 	}
 	
@@ -450,7 +379,124 @@ public class IndustryCalculator {
 		}
 		
 		calcBalance();
+		calcTooltip();
 //		balanceFragment.setText(info.toString());
+	}
+	
+
+	public static void calcTooltip() {
+		if(!Prefs.settings.bool("show-blocks-tooltip")) return;
+		
+		buildTooltip.rebuild();
+
+		final float mouseX = Core.input.mouseWorldX();
+		final float mouseY = Core.input.mouseWorldY();
+		
+		Tile tile = Vars.world.tileWorld(mouseX, mouseY);
+		if(tile == null) return;
+		if(tile.build == null) return;
+		Building building = tile.build;
+
+		if(building.team != Vars.player.team()) return;
+		
+		Block block = building.block;
+
+		if(building instanceof ConstructBuild) {
+			ConstructBuild cb = (ConstructBuild) building;
+			buildTooltip.line(cb.current, "[white]" + cb.current.localizedName.toUpperCase());
+			ModWork.getRequired(cb, (item, amount) -> {
+				buildTooltip.line(item, "[white]" + amount);
+			});
+			return;
+		}
+		
+		
+		buildTooltip.line(block, "[white]" + block.localizedName.toUpperCase());
+
+		if(Debug.debug) {
+			if(building != null) {
+				var collector = Collectors.collectors.collector(block);
+				buildTooltip.line("[royal]Collector:[lightgray]" + (collector == null ? "null" : collector.getClass().getSimpleName()));
+				buildTooltip.line(Strings.format("[royal]timeScale:[lightgray]@ x@[]", building.timeScale(), building.efficiencyScale()));
+				collector.from(building);
+				String[] blines = collector.debugBuilding(building).split("\n");
+				if(blines.length > 0) {
+					buildTooltip.line("[white]=== Building ===");
+					for (var l : blines) {
+						buildTooltip.line(l);
+						buildTooltip.color(Color.white);
+					}
+				}
+				String[] tlines = collector.debugBlock(block).split("\n");
+				if(tlines.length > 0) {
+					buildTooltip.line("[white]=== Block ===");
+					for (var l : tlines) {
+						buildTooltip.line(l);
+						buildTooltip.color(Color.white);
+					}
+				}
+			}
+		}
+
+		if(building instanceof LogicDisplayBuild) {
+			LogicDisplayBuild ldb = (LogicDisplayBuild) building;
+			buildTooltip.line("[gray]Commands buffer: [white]" + ldb.commands.size);
+			buildTooltip.line("[gray]Operations: [white]" + ldb.operations);
+		}
+		
+		if(building instanceof MemoryBuild) {
+			MemoryBuild mb = (MemoryBuild) building;
+			for (int i = 0; i < mb.sense(LAccess.memoryCapacity); i++) {
+				memoryIterator.setnum(i);
+				mb.read(memoryIterator, memoryReader);
+				if(memoryReader.isobj) {
+					if(memoryReader.objval != null) buildTooltip.line("[gray]" + i + ". [white]" + memoryReader.objval);
+				} else {
+					if(memoryReader.numval != 0) buildTooltip.line("[gray]" + i + ". [white]" + memoryReader.numval);
+				}
+			}
+		}
+		
+		if(building instanceof LogicBuild) {
+			LogicBuild mb = (LogicBuild) building;
+
+			if(mb.executor.counter != null) {
+				buildTooltip.line("[gray]Line: [white]" + Mathf.round((float) (mb.executor.counter.numval)));
+			}
+
+			if(mb.executor.graphicsBuffer.size > 0) {
+				buildTooltip.line("[gray]Draw buffer: [white]" + mb.executor.graphicsBuffer.size + "/" + LExecutor.maxGraphicsBuffer);
+			}
+		}
+
+		Collectors.collectors.reset();
+		Collectors.collectors.collector(block).from(building);
+		
+		{
+
+
+			for (int i = 0; i < Collectors.items.size(); i++) {
+				Item item = Vars.content.item(i);
+				float ips = Collectors.items.balance[i];
+				if(ips == 0) continue;
+				addItemInfo(buildTooltip, block, item, ips, false);
+			}
+
+			for (int i = 0; i < Collectors.liquids.size(); i++) {
+				Liquid liquid = Vars.content.liquid(i);
+				float lps = Collectors.liquids.balance[i];
+				if(lps == 0) continue;
+				addLiquidInfo(buildTooltip, block, liquid, lps, false);
+			}
+
+			if(Collectors.heat.heat < 0) {
+				buildTooltip.line("[red]" + Iconc.waves + " [lightgray]" + ModWork.round(Collectors.heat.heat) + Bungle.core("unit.persecond"));
+				addHeatCrafters(buildTooltip, block, Collectors.heat.heat);
+			}
+
+//			Draw.z(Layer.playerName);
+//			buildTooltip.draw(tootlipX, tootlipY);
+		}
 	}
 	
 	public static void clearSelection() {
@@ -604,7 +650,6 @@ public class IndustryCalculator {
 			if(building == null) continue;
 			Collectors.collectors.collector(block).from(building); //(block, building);
 			count.put(block, count.get(block, 0)+1);
-			
 //			if(building instanceof BaseTurretBuild && block instanceof BaseTurret) {
 //				BaseTurretBuild baseTurretBuild = (BaseTurretBuild) building;
 //				float dps = baseTurretBuild.estimateDps();
