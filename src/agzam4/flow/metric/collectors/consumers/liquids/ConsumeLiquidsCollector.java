@@ -19,7 +19,7 @@ public class ConsumeLiquidsCollector<T extends ConsumeLiquids> extends ConsumeCo
 	protected void collect(T cons, Building building, float scale) {
         float mult = cons.multiplier.get(building);
         for(var stack : cons.liquids){
-        	liquids.sub(stack.liquid, stack.amount * scale * mult);
+        	liquids.sub(stack.liquid, stack.amount * building.timeScale() * mult);
         }
 	}
 	

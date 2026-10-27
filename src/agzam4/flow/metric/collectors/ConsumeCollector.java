@@ -32,10 +32,18 @@ public class ConsumeCollector<T extends Consume> {
 	}
 
 	protected void collect(T cons, Building building, float scale) {}
+	protected String debug(T cons, Building building, float scale) {
+		return "";
+	}
 
 	@SuppressWarnings("unchecked")
 	public void from(Consume cons, Building building, float scale) {
 		collect((T) cons, building, scale);
+	}
+
+	@SuppressWarnings("unchecked")
+	public final String debugFrom(Consume cons, Building building, float scale) {
+		return debug((T) cons, building, scale);
 	}
 
 	

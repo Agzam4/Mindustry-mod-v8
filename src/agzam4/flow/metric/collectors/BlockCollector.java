@@ -8,6 +8,8 @@ import agzam4.flow.metric.metrics.LiquidMetric;
 import agzam4.flow.metric.metrics.Metrics;
 import agzam4.flow.metric.metrics.PowerMetrics;
 import arc.util.Log;
+import arc.util.Strings;
+import mindustry.content.Blocks;
 import mindustry.entities.units.BuildPlan;
 import mindustry.gen.Building;
 import mindustry.world.Block;
@@ -54,6 +56,7 @@ public class BlockCollector<T extends Block, B extends Building> {
 
 	protected void collect(T block, int x, int y, int rotation, Object config) {
 		float craftSpeed = ModWork.getCraftSpeed(block, x, y, config);
+		// FIXME: consume generator is wrong
 		ModWork.consumeBlock(block, x, y, config, craftSpeed, items::sub, liquids::sub, power::sub, heat::sub);
 		ModWork.produceBlock(block, x, y, config, craftSpeed, items::add, liquids::add, power::add, heat::add);
 	}
@@ -97,5 +100,34 @@ public class BlockCollector<T extends Block, B extends Building> {
 	protected float consumersScale(B building) {
 		return building.timeScale();
 	}
+
+	protected String debug(B building) {
+		float scale = consumersScale(building);
+		StringBuilder builder = new StringBuilder();
+		builder.append("[stat]consumers:[] ").append(building.block.consumers.length);
+		builder.append("[stat]consumersScale:[] ").append(scale);
+		for (int i = 0; i < building.block.consumers.length; i++) {
+			var cons = building.block.consumers[i];
+			var cc = consumersRegistry.get(cons.getClass());
+			if(cc == null) continue;
+			builder.append("\n").append(cc.getClass().getSimpleName()).append(": ").append(cc.debugFrom(cons, building, scale));
+		}
+		return builder.toString();
+	}
 	
+	protected String debug(T block) {
+		return "";
+	}
+	
+	@SuppressWarnings("unchecked")
+	public String debugBuilding(Building building) {
+		if(building == null) return "";
+		return debug((B)building);
+	}
+
+	@SuppressWarnings("unchecked")
+	public String debugBlock(Block block) {
+		if(block == null) return "";
+		return debug((T)block);
+	}
 }

@@ -30,14 +30,25 @@ public class ConsumeItemFilterCollector<T extends ConsumeItemFilter> extends Con
 	
 	@Override
 	protected void collect(T cons, Building building, float scale) {
-		super.collect(cons, building, scale);
+		Item consumed = consumed(cons, building);
+		if(consumed == null) return;
+		items.sub(consumed, scale);
+	}
+	
+	protected Item consumed(T cons, Building building) {
 		Item consumed = cons.getConsumed(building);
 		if(cache != null) {
 			if(consumed == null) consumed = cache.get(building);
 			else cache.put(building, consumed);
 		}
-		if(consumed == null) return;
-		items.sub(consumed, scale);
+		return consumed;
+	}
+	
+	@Override
+	protected String debug(T cons, Building building, float scale) {
+		Item consumed = cons.getConsumed(building);
+		if(consumed == null) return "";
+		return scale + " " + consumed.emoji();
 	}
 
 	public static class ConsumeItemsCache {

@@ -3,14 +3,9 @@ package agzam4.flow.metric;
 import agzam4.debug.Debug;
 import agzam4.flow.metric.collectors.BlockCollector;
 import agzam4.flow.metric.collectors.consumers.*;
-import agzam4.flow.metric.collectors.consumers.items.ConsumeItemDynamicCollector;
-import agzam4.flow.metric.collectors.consumers.items.ConsumeItemFilterCollector;
-import agzam4.flow.metric.collectors.consumers.items.ConsumeItemsCollector;
-import agzam4.flow.metric.collectors.consumers.liquids.ConsumeLiquidCollector;
-import agzam4.flow.metric.collectors.consumers.liquids.ConsumeLiquidsCollector;
-import agzam4.flow.metric.collectors.consumers.payload.ConsumePayloadDynamicCollector;
-import agzam4.flow.metric.collectors.consumers.payload.ConsumePayloadFilterCollector;
-import agzam4.flow.metric.collectors.consumers.payload.ConsumePayloadsCollector;
+import agzam4.flow.metric.collectors.consumers.items.*;
+import agzam4.flow.metric.collectors.consumers.liquids.*;
+import agzam4.flow.metric.collectors.consumers.payload.*;
 import agzam4.flow.metric.collectors.defense.*;
 import agzam4.flow.metric.collectors.heat.*;
 import agzam4.flow.metric.collectors.power.*;
@@ -26,6 +21,8 @@ import mindustry.world.blocks.defense.turrets.BaseTurret.BaseTurretBuild;
 import mindustry.world.blocks.defense.turrets.ReloadTurret.ReloadTurretBuild;
 import mindustry.world.blocks.heat.HeatProducer;
 import mindustry.world.blocks.heat.HeatProducer.HeatProducerBuild;
+import mindustry.world.blocks.power.ConsumeGenerator;
+import mindustry.world.blocks.power.ConsumeGenerator.ConsumeGeneratorBuild;
 import mindustry.world.blocks.power.VariableReactor;
 import mindustry.world.blocks.power.VariableReactor.VariableReactorBuild;
 import mindustry.world.blocks.production.*;
@@ -65,6 +62,7 @@ public class Collectors {
 		collectors.register(BaseTurret.class, new BaseTurretCollector<BaseTurret, BaseTurretBuild>());
 
 		// power
+		collectors.register(ConsumeGenerator.class, new ConsumeGeneratorCollector<ConsumeGenerator, ConsumeGeneratorBuild>());
 		collectors.register(VariableReactor.class, new VariableReactorCollector<VariableReactor, VariableReactorBuild>());
 		
 		// production
@@ -80,15 +78,16 @@ public class Collectors {
 		// heat
 		collectors.register(HeatProducer.class, new HeatProducerCollector<HeatProducer, HeatProducerBuild>());
 		
-		
 		// Consumers
 		collectors.register(ConsumeItems.class, new ConsumeItemsCollector<ConsumeItems>());
 		collectors.register(ConsumeItemDynamic.class, new ConsumeItemDynamicCollector<ConsumeItemDynamic>());
 		
-		collectors.register(ConsumeItemFilter.class, new ConsumeItemFilterCollector<ConsumeItemFilter>(
-				new ConsumeItemFilterCollector.ConsumeItemsCache().setup())
-				);
-
+		var cache = new ConsumeItemFilterCollector.ConsumeItemsCache().setup();
+		collectors.register(ConsumeItemFilter.class, new ConsumeItemFilterCollector<ConsumeItemFilter>(cache));
+		collectors.register(ConsumeItemEfficiency.class, new ConsumeItemEfficiencyCollector<ConsumeItemEfficiency>(cache));
+		collectors.register(ConsumeItemExplode.class, new ConsumeItemExplodeCollector<ConsumeItemExplode>(cache));
+		
+		
 		collectors.register(ConsumePower.class, new ConsumePowerCollector<ConsumePower>());
 		
 		collectors.register(ConsumeLiquid.class, new ConsumeLiquidCollector<ConsumeLiquid>());

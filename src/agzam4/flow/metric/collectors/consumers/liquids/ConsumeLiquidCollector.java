@@ -17,7 +17,7 @@ public class ConsumeLiquidCollector<T extends ConsumeLiquid> extends ConsumeColl
 	
 	@Override
 	protected void collect(T cons, Building building, float scale) {
-		liquids.sub(cons.liquid, scale*cons.amount*cons.multiplier.get(building)*60f);
+		liquids.sub(cons.liquid, building.timeScale()*cons.amount*cons.multiplier.get(building)*60f);
 	}
 	
 	
